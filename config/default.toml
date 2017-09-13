@@ -1,0 +1,15 @@
+# steemit-adsorber default configuration, override in your config/local.toml
+
+# port to listen on
+port = 8090
+
+# application name used for logging
+name = 'adsorber-dev'
+
+# number of worker processes to spawn, 0 = autodetect
+num_workers = 1
+
+# logging output, can be repeated
+[[log]]
+level = 'debug'
+out = 'stdout' # path or stdout/err

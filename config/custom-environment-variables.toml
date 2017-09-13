@@ -1,0 +1,5 @@
+port = 'PORT'
+num_workers = 'NUM_WORKERS'
+[log]
+__name = 'LOG_STREAMS'
+__format = 'json'

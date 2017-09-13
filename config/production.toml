@@ -1,0 +1,6 @@
+name = 'adsorber'
+num_workers = 0
+port = 8080
+[[log]]
+level = 'info'
+out = 'stdout'
