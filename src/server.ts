@@ -12,11 +12,6 @@ import * as UUID from 'uuid/v4'
 
 import JsonRpc, {JsonRpcRequest, JsonRpcResponse} from './jsonrpc'
 
-const rakam = new Rakam(
-    config.get('rakam.api_endpoint'),
-    config.get('rakam.api_key')
-)
-
 const logger = bunyan.createLogger({
     name: config.get('name'),
     streams: (config.get('log') as any[]).map(({level, out}) => {
