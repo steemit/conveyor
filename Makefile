@@ -20,20 +20,20 @@ coverage: node_modules
 
 .PHONY: test
 test: node_modules
-	mocha --require ts-node/register test/*.ts --grep '$(grep)'
+	NODE_ENV=test mocha --require ts-node/register test/*.ts --grep '$(grep)'
 
 .PHONY: ci-test
 ci-test: node_modules
 	nsp check
 	tslint -p tsconfig.json -c tslint.json
-	nyc -r lcov -e .ts -i ts-node/register mocha --reporter tap --require ts-node/register test/*.ts
+	NODE_ENV=test nyc -r lcov -e .ts -i ts-node/register mocha --reporter tap --require ts-node/register test/*.ts
 
 .PHONY: lint
 lint: node_modules
 	tslint -p tsconfig.json -c tslint.json -t stylish --fix
 
 node_modules: package.json
-	npm install
+	yarn install --non-interactive
 
 .PHONY: clean
 clean:

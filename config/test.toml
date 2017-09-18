@@ -1,0 +1,4 @@
+name = 'adsorber-test'
+[[log]]
+level = 'fatal'
+out = 'stdout'
