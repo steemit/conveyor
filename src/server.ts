@@ -25,7 +25,7 @@ const logger = bunyan.createLogger({
 })
 
 export const app = new Koa()
-const rpc = new JsonRpc()
+const rpc = new JsonRpc(config.get('name'))
 
 app.proxy = true
 app.on('error', (error) => {

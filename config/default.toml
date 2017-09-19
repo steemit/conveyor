@@ -3,8 +3,8 @@
 # port to listen on
 port = 8090
 
-# application name used for logging
-name = 'adsorber-dev'
+# application name used for logging and service namespace
+name = 'steemitapi'
 
 # number of worker processes to spawn, 0 = autodetect
 num_workers = 1
