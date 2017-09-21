@@ -20,4 +20,12 @@ describe('server', function() {
         assert.deepEqual(rv, {jsonrpc: '2.0', id: 1, result: "I'm sorry, Dave, I can't do that."})
     })
 
+    it('should healthcheck', async function() {
+        const rv = await utils.jsonRequest(
+            {port, protocol: 'http:', method: 'get', path: '/.well-known/healthcheck.json'},
+            {}
+        )
+        assert.deepEqual(rv, {ok: true})
+    })
+
 })
