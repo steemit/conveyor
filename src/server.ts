@@ -1,5 +1,5 @@
 /**
- * @file Overseer server.
+ * @file Steemitapi server.
  * @author Johan Nordberg <johan@steemit.com>
  */
 
