@@ -1,5 +1,5 @@
 /**
- * @file Overseer server.
+ * @file Steemitapi server.
  * @author Johan Nordberg <johan@steemit.com>
  */
 
@@ -7,6 +7,7 @@ import * as bunyan from 'bunyan'
 import * as cluster from 'cluster'
 import * as config from 'config'
 import * as Koa from 'koa'
+import * as Router from 'koa-router'
 import * as os from 'os'
 
 import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
@@ -25,6 +26,8 @@ const logger = bunyan.createLogger({
 })
 
 export const app = new Koa()
+
+const router = new Router()
 const rpc = new JsonRpc(config.get('name'))
 
 app.proxy = true
@@ -34,7 +37,14 @@ app.on('error', (error) => {
 
 app.use(requestLogger(logger))
 app.use(rpcLogger(logger))
-app.use(rpc.middleware)
+
+router.post('/', rpc.middleware)
+
+router.get('/.well-known/healthcheck.json', async (ctx, next) => {
+    ctx.body = {ok: true}
+})
+
+app.use(router.routes())
 
 rpc.register('hello', async function(name: string) {
     this.log.info('Hello %s', name)
