@@ -10,20 +10,10 @@ import * as Koa from 'koa'
 import * as Router from 'koa-router'
 import * as os from 'os'
 
-import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
+import * as drafts from './drafts'
 
-const logger = bunyan.createLogger({
-    name: config.get('name'),
-    streams: (config.get('log') as any[]).map(({level, out}) => {
-        if (out === 'stdout') {
-            return {level, stream: process.stdout}
-        } else if (out === 'stderr') {
-            return {level, stream: process.stderr}
-        } else {
-            return {level, path: out}
-        }
-    })
-})
+import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
+import {logger} from './logger'
 
 export const app = new Koa()
 
@@ -50,6 +40,10 @@ rpc.register('hello', async function(name: string) {
     this.log.info('Hello %s', name)
     return `I'm sorry, ${ name }, I can't do that.`
 })
+
+rpc.register('list_drafts', drafts.list)
+rpc.register('save_draft', drafts.save)
+rpc.register('remove_draft', drafts.remove)
 
 function run() {
     const port = config.get('port')

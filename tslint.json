@@ -6,6 +6,7 @@
     "interface-name": [true, "never-prefix"],
     "max-classes-per-file": false,
     "no-string-literal": false,
+    "no-var-requires": false,
     "object-literal-sort-keys": false,
     "quotemark": [true, "single", "avoid-escape"],
     "semicolon": [true, "never"],

@@ -2,19 +2,13 @@
 # yarn lockfile v1
 
 
-"@steemit/jsonrpc@git+https://github.com/steemit/koa-jsonrpc.git#1b8dc8dd05a30823d3baf972c2f1d9fee10aa8ea":
+"@steemit/jsonrpc@git+https://github.com/steemit/koa-jsonrpc.git#71d90ecf2f7f58178eefc30f98e4a7d81d471414":
   version "1.0.0"
-  resolved "git+https://github.com/steemit/koa-jsonrpc.git#1b8dc8dd05a30823d3baf972c2f1d9fee10aa8ea"
+  resolved "git+https://github.com/steemit/koa-jsonrpc.git#71d90ecf2f7f58178eefc30f98e4a7d81d471414"
   dependencies:
-    "@types/bunyan" "^1.8.2"
-    "@types/koa" "^2.0.39"
-    "@types/mocha" "^2.2.41"
-    "@types/node" "^8.0.26"
-    "@types/uuid" "^3.4.1"
-    "@types/verror" "^1.10.1"
-    typescript "^2.5.0"
     uuid "^3.1.0"
     verror "^1.10.0"
+    ypib "git+https://github.com/jnordberg/ypib.git#9f083bfee7a220188f5be46513c499ce1fa8f9c8"
 
 "@types/accepts@*":
   version "1.3.3"
@@ -106,19 +100,22 @@
     "@types/express-serve-static-core" "*"
     "@types/mime" "*"
 
-"@types/uuid@^3.4.1":
+"@types/uuid@^3.4.2":
   version "3.4.2"
   resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-3.4.2.tgz#b8cde3c32c273d3fc658b96f810e8ff091e1b723"
   dependencies:
     "@types/node" "*"
 
-"@types/verror@^1.10.1":
-  version "1.10.1"
-  resolved "https://registry.yarnpkg.com/@types/verror/-/verror-1.10.1.tgz#ce9bb8cb3a7f1a21e7a70f11e1878258c6ee38a5"
-
 abbrev@1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.0.tgz#d0554c2256636e2f56e7c2e5ad183f859428d81f"
+
+abstract-blob-store@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/abstract-blob-store/-/abstract-blob-store-3.2.0.tgz#f1f6595622ad45fdd339e2d1371354c9ee0bd30b"
+  dependencies:
+    concat-stream "^1.4.6"
+    from2-array "0.0.3"
 
 accepts@^1.2.2:
   version "1.3.4"
@@ -524,6 +521,14 @@ concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
 
+concat-stream@^1.4.6:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/concat-stream/-/concat-stream-1.6.0.tgz#0aac662fd52be78964d5532f694784e70110acf7"
+  dependencies:
+    inherits "^2.0.3"
+    readable-stream "^2.2.2"
+    typedarray "^0.0.6"
+
 config@^1.26.2:
   version "1.26.2"
   resolved "https://registry.yarnpkg.com/config/-/config-1.26.2.tgz#2466291168d8afae0aae8ab99ea4d4272f520cae"
@@ -844,6 +849,19 @@ fresh@^0.5.0:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
 
+from2-array@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/from2-array/-/from2-array-0.0.3.tgz#68e03fe61f827583ad61eb303d4add9e1947e9ed"
+  dependencies:
+    from2 "^1.2.0"
+
+from2@^1.2.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/from2/-/from2-1.3.0.tgz#88413baaa5f9a597cfde9221d86986cd3c061dfd"
+  dependencies:
+    inherits "~2.0.1"
+    readable-stream "~1.1.10"
+
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
@@ -1073,7 +1091,7 @@ inflight@^1.0.4:
     once "^1.3.0"
     wrappy "1"
 
-inherits@2, inherits@2.0.3, inherits@^2.0.1, inherits@~2.0.0, inherits@~2.0.3:
+inherits@2, inherits@2.0.3, inherits@^2.0.1, inherits@^2.0.3, inherits@~2.0.0, inherits@~2.0.1, inherits@~2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
 
@@ -2005,7 +2023,7 @@ read-pkg@^2.0.0:
     normalize-package-data "^2.3.2"
     path-type "^2.0.0"
 
-readable-stream@^2.0.2, readable-stream@^2.0.6, readable-stream@^2.1.4:
+readable-stream@^2.0.2, readable-stream@^2.0.6, readable-stream@^2.1.4, readable-stream@^2.2.2:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.3.3.tgz#368f2512d79f9d46fdfc71349ae7878bbc1eb95c"
   dependencies:
@@ -2016,6 +2034,15 @@ readable-stream@^2.0.2, readable-stream@^2.0.6, readable-stream@^2.1.4:
     safe-buffer "~5.1.1"
     string_decoder "~1.0.3"
     util-deprecate "~1.0.1"
+
+readable-stream@~1.1.10:
+  version "1.1.14"
+  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-1.1.14.tgz#7cf4c54ef648e3813084c636dd2079e166c081d9"
+  dependencies:
+    core-util-is "~1.0.0"
+    inherits "~2.0.1"
+    isarray "0.0.1"
+    string_decoder "~0.10.x"
 
 readdirp@^2.0.0:
   version "2.1.0"
@@ -2257,6 +2284,10 @@ string.prototype.trim@~1.1.2:
     es-abstract "^1.5.0"
     function-bind "^1.0.2"
 
+string_decoder@~0.10.x:
+  version "0.10.31"
+  resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-0.10.31.tgz#62e203bc41766c6c28c9fc84301dab1c5310fa94"
+
 string_decoder@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-1.0.3.tgz#0fc67d7c141825de94282dd536bec6b9bce860ab"
@@ -2473,6 +2504,10 @@ type-is@^1.5.5:
     media-typer "0.3.0"
     mime-types "~2.1.15"
 
+typedarray@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
+
 typescript@^2.5.0:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.5.2.tgz#038a95f7d9bbb420b1bf35ba31d4c5c1dd3ffe34"
@@ -2639,3 +2674,7 @@ yargs@~3.10.0:
 yn@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/yn/-/yn-2.0.0.tgz#e5adabc8acf408f6385fc76495684c88e6af689a"
+
+"ypib@git+https://github.com/jnordberg/ypib.git#9f083bfee7a220188f5be46513c499ce1fa8f9c8":
+  version "1.0.1"
+  resolved "git+https://github.com/jnordberg/ypib.git#9f083bfee7a220188f5be46513c499ce1fa8f9c8"

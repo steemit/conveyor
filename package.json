@@ -9,12 +9,13 @@
     "node": "^8"
   },
   "dependencies": {
-    "@steemit/jsonrpc": "git+https://github.com/steemit/koa-jsonrpc.git#1b8dc8dd05a30823d3baf972c2f1d9fee10aa8ea",
+    "@steemit/jsonrpc": "git+https://github.com/steemit/koa-jsonrpc.git#71d90ecf2f7f58178eefc30f98e4a7d81d471414",
     "bunyan": "^2.0.2",
     "config": "^1.26.2",
     "koa": "^2.3.0",
     "koa-router": "^7.2.1",
-    "toml": "^2.3.3"
+    "toml": "^2.3.3",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.2",
@@ -23,6 +24,8 @@
     "@types/koa-router": "^7.0.23",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.26",
+    "@types/uuid": "^3.4.2",
+    "abstract-blob-store": "^3.2.0",
     "mocha": "^3.5.0",
     "nsp": "^2.8.0",
     "nyc": "^11.1.0",
