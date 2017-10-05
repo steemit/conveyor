@@ -1,8 +1,8 @@
 
-import * as rjs from 'random-js'
+import {JsonRpcError, JsonRpcMethodContext as JCtx} from '@steemit/jsonrpc'
 import * as config from 'config'
 import {createHash} from 'crypto'
-import {JsonRpcError, JsonRpcMethodContext as JCtx} from '@steemit/jsonrpc'
+import * as rjs from 'random-js'
 
 import {store} from './store'
 
@@ -14,10 +14,10 @@ const engine = rjs.engines.mt19937()
 const random = rjs.real(0, 1)
 
 function flagProbability(username: string, flag: string) {
-    const hash = sha256(username+flag)
-    let seeds: number[] = []
+    const hash = sha256(username + flag)
+    const seeds: number[] = []
     for (let i = 0; i < 8; i++) {
-        seeds.push(hash.readInt32LE(i*4))
+        seeds.push(hash.readInt32LE(i * 4))
     }
     engine.seedWithArray(seeds)
     return random(engine)
@@ -95,17 +95,17 @@ export async function getFlag(this: JCtx, username: string, flag: string) {
     }
     const probabilities = await readProbabilities()
     if (probabilities[flag]) {
-        return flagProbability(username, flag) < probabilities[flag]
+        return (flagProbability(username, flag) < probabilities[flag])
     }
     return false
 }
 
 export async function getFlags(this: JCtx, username: string) {
-    let rv = await readFlags(username)
+    const rv = await readFlags(username)
     const probabilities = await readProbabilities()
     for (const flag of Object.keys(probabilities)) {
         if (rv[flag] === undefined) {
-            rv[flag] = flagProbability(username, flag) < probabilities[flag]
+            rv[flag] = (flagProbability(username, flag) < probabilities[flag])
         }
     }
     return rv

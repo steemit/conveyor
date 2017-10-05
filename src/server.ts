@@ -32,7 +32,7 @@ app.use(rpcLogger(logger))
 
 async function healthcheck(ctx: Koa.Context) {
     const ok = true
-    const date = new Date
+    const date = new Date()
     ctx.body = {ok, version, date}
 }
 

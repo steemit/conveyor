@@ -50,7 +50,7 @@ export type BlobKey = string | {[key: string]: any}
  */
 export class AsyncBlobStore {
 
-    constructor(public store: BlobStore) {}
+    constructor(public store: BlobStore) {} // tslint:disable-line:no-shadowed-variable
 
     public async read(opts: BlobKey) {
         return new Promise<Buffer>((resolve, reject) => {
