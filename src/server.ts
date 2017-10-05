@@ -15,6 +15,7 @@ import * as drafts from './drafts'
 import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
 import {logger} from './logger'
 
+export const version = require('./version')
 export const app = new Koa()
 
 const router = new Router()
@@ -28,11 +29,15 @@ app.on('error', (error) => {
 app.use(requestLogger(logger))
 app.use(rpcLogger(logger))
 
-router.post('/', rpc.middleware)
+async function healthcheck(ctx: Koa.Context) {
+    const ok = true
+    const date = new Date
+    ctx.body = {ok, version, date}
+}
 
-router.get('/.well-known/healthcheck.json', async (ctx, next) => {
-    ctx.body = {ok: true}
-})
+router.post('/', rpc.middleware)
+router.get('/.well-known/healthcheck.json', healthcheck)
+router.get('/', healthcheck)
 
 app.use(router.routes())
 

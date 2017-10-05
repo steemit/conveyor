@@ -8,6 +8,9 @@ all: lib
 
 lib: $(SRC_FILES) node_modules tsconfig.json
 	tsc -p tsconfig.json --outDir lib
+	VERSION="$$(node -p 'require("./package.json").version')"; \
+	BUILD="$$(git rev-parse --short HEAD)-$$(date +%s)"; \
+	echo "module.exports = '$${VERSION}-$${BUILD}';" > lib/version.js
 	touch lib
 
 .PHONY: devserver

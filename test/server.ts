@@ -25,7 +25,7 @@ describe('server', function() {
             {port, protocol: 'http:', method: 'get', path: '/.well-known/healthcheck.json'},
             {}
         )
-        assert.deepEqual(rv, {ok: true})
+        assert(rv.ok, 'healthcheck failed')
     })
 
 })
