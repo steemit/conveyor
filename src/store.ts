@@ -86,6 +86,17 @@ export class AsyncBlobStore {
         })
     }
 
+    public async readJSON(opts: BlobKey) {
+        const data = await this.safeRead(opts)
+        if (data) {
+            return JSON.parse(data.toString('utf8'))
+        }
+    }
+
+    public async writeJSON(opts: BlobKey, data: any) {
+        return this.write(opts, JSON.stringify(data))
+    }
+
 }
 
 /** Main application store */

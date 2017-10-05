@@ -7,7 +7,6 @@ import * as config from 'config'
 import * as UUID from 'uuid/v4'
 
 import {JsonRpcError, JsonRpcMethodContext} from '@steemit/jsonrpc'
-import {logger} from './logger'
 import {store} from './store'
 
 const KEY_PREFIX = config.get('name')
@@ -16,15 +15,11 @@ function draftsKey(username: string) {
 }
 
 async function readDrafts(username: string): Promise<any[]> {
-    const data = await store.safeRead(draftsKey(username))
-    if (data) {
-        return JSON.parse(data.toString('utf8'))
-    }
-    return []
+    return await store.readJSON(draftsKey(username)) || []
 }
 
 async function writeDrafts(username: string, drafts: any) {
-    await store.write(draftsKey(username), JSON.stringify(drafts))
+    await store.writeJSON(draftsKey(username), drafts)
 }
 
 export async function list(this: JsonRpcMethodContext, username: string) {

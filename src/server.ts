@@ -11,6 +11,7 @@ import * as Router from 'koa-router'
 import * as os from 'os'
 
 import * as drafts from './drafts'
+import * as featureFlags from './feature-flags'
 
 import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
 import {logger} from './logger'
@@ -49,6 +50,12 @@ rpc.register('hello', async function(name: string) {
 rpc.register('list_drafts', drafts.list)
 rpc.register('save_draft', drafts.save)
 rpc.register('remove_draft', drafts.remove)
+
+rpc.register('get_feature_flag', featureFlags.getFlag)
+rpc.register('set_feature_flag', featureFlags.setFlag)
+rpc.register('get_feature_flags', featureFlags.getFlags)
+rpc.register('set_feature_flag_probability', featureFlags.setProbability)
+rpc.register('get_feature_flag_probabilities', featureFlags.getProbabilities)
 
 function run() {
     const port = config.get('port')
