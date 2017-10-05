@@ -9,7 +9,7 @@
     "node": "^8"
   },
   "dependencies": {
-    "@steemit/jsonrpc": "git+https://github.com/steemit/koa-jsonrpc.git#71d90ecf2f7f58178eefc30f98e4a7d81d471414",
+    "@steemit/jsonrpc": "git+https://github.com/steemit/koa-jsonrpc.git#5656beaf564b886f141d336864d60a3d1997ca6f",
     "bunyan": "^2.0.2",
     "config": "^1.26.2",
     "koa": "^2.3.0",
