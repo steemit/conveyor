@@ -17,7 +17,14 @@ if (storageConf.type === 'memory') {
     logger.warn('using memory store')
     store = new AsyncBlobStore(require('abstract-blob-store')())
 } else if (storageConf.type === 's3') {
-    throw new Error('Not implemented')
+    const aws = require('aws-sdk')
+    const S3BlobStore = require('s3-blob-store')
+    const client = new aws.S3({
+        accessKeyId: storageConf.get('s3_access_key'),
+        secretAccessKey: storageConf.get('s3_secret_key'),
+    })
+    const bucket = storageConf.get('s3_bucket')
+    store = new AsyncBlobStore(new S3BlobStore({client, bucket}))
 } else {
     throw new Error(`Invalid storage type: ${ storageConf.type }`)
 }

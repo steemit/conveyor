@@ -11,10 +11,12 @@
   "dependencies": {
     "@steemit/jsonrpc": "git+https://github.com/steemit/koa-jsonrpc.git#5656beaf564b886f141d336864d60a3d1997ca6f",
     "abstract-blob-store": "^3.2.0",
+    "aws-sdk": "^2.127.0",
     "bunyan": "^2.0.2",
     "config": "^1.26.2",
     "koa": "^2.3.0",
     "koa-router": "^7.2.1",
+    "s3-blob-store": "^2.0.1",
     "toml": "^2.3.3",
     "uuid": "^3.1.0"
   },

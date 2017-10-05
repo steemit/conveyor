@@ -64,7 +64,10 @@ export class AsyncBlobStore {
             return await this.read(opts)
         } catch (error) {
             // https://github.com/maxogden/abstract-blob-store/pull/31
-            if (!error.notFound && error.message !== 'Blob not found') {
+            if (!error.notFound &&
+                error.message !== 'Blob not found' &&
+                error.message !== 'The specified key does not exist.'
+            ) {
                 throw error
             }
         }
