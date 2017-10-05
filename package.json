@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@steemit/jsonrpc": "git+https://github.com/steemit/koa-jsonrpc.git#5656beaf564b886f141d336864d60a3d1997ca6f",
+    "abstract-blob-store": "^3.2.0",
     "bunyan": "^2.0.2",
     "config": "^1.26.2",
     "koa": "^2.3.0",
@@ -25,7 +26,6 @@
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.26",
     "@types/uuid": "^3.4.2",
-    "abstract-blob-store": "^3.2.0",
     "mocha": "^3.5.0",
     "nsp": "^2.8.0",
     "nyc": "^11.1.0",
