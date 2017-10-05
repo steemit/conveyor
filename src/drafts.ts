@@ -8,26 +8,7 @@ import * as UUID from 'uuid/v4'
 
 import {JsonRpcError, JsonRpcMethodContext} from '@steemit/jsonrpc'
 import {logger} from './logger'
-import {AsyncBlobStore, BlobStore} from './store'
-
-let store: AsyncBlobStore
-
-const storageConf: any = config.get('storage')
-if (storageConf.type === 'memory') {
-    logger.warn('using memory store')
-    store = new AsyncBlobStore(require('abstract-blob-store')())
-} else if (storageConf.type === 's3') {
-    const aws = require('aws-sdk')
-    const S3BlobStore = require('s3-blob-store')
-    const client = new aws.S3({
-        accessKeyId: storageConf.get('s3_access_key'),
-        secretAccessKey: storageConf.get('s3_secret_key'),
-    })
-    const bucket = storageConf.get('s3_bucket')
-    store = new AsyncBlobStore(new S3BlobStore({client, bucket}))
-} else {
-    throw new Error(`Invalid storage type: ${ storageConf.type }`)
-}
+import {store} from './store'
 
 const KEY_PREFIX = config.get('name')
 function draftsKey(username: string) {
