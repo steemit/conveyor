@@ -1,5 +1,7 @@
 num_workers = 0
 port = 8080
+[storage]
+type = 's3'
 [[log]]
 level = 'info'
 out = 'stdout'

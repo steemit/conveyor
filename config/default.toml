@@ -1,4 +1,4 @@
-# steemit-adsorber default configuration, override in your config/local.toml
+# steemitapi default configuration, override in your config/local-development.toml
 
 # port to listen on
 port = 8090
@@ -13,3 +13,10 @@ num_workers = 1
 [[log]]
 level = 'debug'
 out = 'stdout' # path or stdout/err
+
+# storage for drafts
+[storage]
+type = 'memory' # valid types are: memory, s3
+# s3_access_key = 'foo'
+# s3_secret_key = 'bar'
+# s3_bucket = 'mybucket'

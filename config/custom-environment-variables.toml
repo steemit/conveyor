@@ -3,3 +3,8 @@ num_workers = 'NUM_WORKERS'
 [log]
 __name = 'LOG_STREAMS'
 __format = 'json'
+[storage]
+type = 'STORAGE_TYPE'
+s3_access_key = 'S3_ACCESS_KEY'
+s3_secret_key = 'S3_SECRET_KEY'
+s3_bucket = 'S3_BUCKET'

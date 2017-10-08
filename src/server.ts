@@ -10,21 +10,13 @@ import * as Koa from 'koa'
 import * as Router from 'koa-router'
 import * as os from 'os'
 
+import * as drafts from './drafts'
+import * as featureFlags from './feature-flags'
+
 import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
+import {logger} from './logger'
 
-const logger = bunyan.createLogger({
-    name: config.get('name'),
-    streams: (config.get('log') as any[]).map(({level, out}) => {
-        if (out === 'stdout') {
-            return {level, stream: process.stdout}
-        } else if (out === 'stderr') {
-            return {level, stream: process.stderr}
-        } else {
-            return {level, path: out}
-        }
-    })
-})
-
+export const version = require('./version')
 export const app = new Koa()
 
 const router = new Router()
@@ -38,11 +30,15 @@ app.on('error', (error) => {
 app.use(requestLogger(logger))
 app.use(rpcLogger(logger))
 
-router.post('/', rpc.middleware)
+async function healthcheck(ctx: Koa.Context) {
+    const ok = true
+    const date = new Date()
+    ctx.body = {ok, version, date}
+}
 
-router.get('/.well-known/healthcheck.json', async (ctx, next) => {
-    ctx.body = {ok: true}
-})
+router.post('/', rpc.middleware)
+router.get('/.well-known/healthcheck.json', healthcheck)
+router.get('/', healthcheck)
 
 app.use(router.routes())
 
@@ -50,6 +46,16 @@ rpc.register('hello', async function(name: string) {
     this.log.info('Hello %s', name)
     return `I'm sorry, ${ name }, I can't do that.`
 })
+
+rpc.register('list_drafts', drafts.list)
+rpc.register('save_draft', drafts.save)
+rpc.register('remove_draft', drafts.remove)
+
+rpc.register('get_feature_flag', featureFlags.getFlag)
+rpc.register('set_feature_flag', featureFlags.setFlag)
+rpc.register('get_feature_flags', featureFlags.getFlags)
+rpc.register('set_feature_flag_probability', featureFlags.setProbability)
+rpc.register('get_feature_flag_probabilities', featureFlags.getProbabilities)
 
 function run() {
     const port = config.get('port')
