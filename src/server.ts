@@ -14,6 +14,7 @@ import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
 
 import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
+import {db} from './database'
 import {logger} from './logger'
 
 export const version = require('./version')
@@ -65,6 +66,11 @@ function run() {
 }
 
 if (module === require.main) {
+    if (cluster.isMaster) {
+        db.sync().catch((error) => {
+            logger.fatal(error, 'unable to sync database')
+        })
+    }
     let numWorkers = config.get('num_workers')
     if (numWorkers === 0) {
         numWorkers = os.cpus().length
