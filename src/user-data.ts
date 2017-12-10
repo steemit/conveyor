@@ -15,11 +15,11 @@ interface UserData {
 
 export async function getUserData(this: JCtx, account: string) {
     // TODO: Add auth, account or admin role
-    const user = await User.findOne({where: {account}})
-    if (user) {
-        const {email, phone} = user as UserData
-        return {email, phone}
+    const user: any = await User.findOne({where: {account}})
+    if (!user) {
+        throw new JsonRpcError(404, 'No such user')
     }
+    return {email: user.email, phone: user.phone}
 }
 
 export async function setUserData(this: JCtx, account: string, data: UserData) {

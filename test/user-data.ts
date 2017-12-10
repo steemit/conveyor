@@ -58,8 +58,9 @@ describe('user data', function() {
         await assertThrows(async () => {
             await call('steemitapi.set_user_data', 'nooo', {})
         })
-        const rv = await call('steemitapi.get_user_data', 'nooo')
-        assert.equal(rv, undefined)
+        await assertThrows(async () => {
+            await call('steemitapi.get_user_data', 'nooo')
+        })
     })
 
     it('should check if email exists', async function() {
