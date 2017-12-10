@@ -1,11 +1,9 @@
 FROM node:8-alpine
 
-RUN apk add --no-cache make bash git
+RUN apk add --no-cache make bash git yarn
 
 # use bash as the default shell, the busybox shell does not work with ypib
 RUN cp /bin/bash /bin/sh
-
-RUN npm install -g yarn
 
 WORKDIR /app
 COPY . .
