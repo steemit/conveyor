@@ -16,6 +16,8 @@
     "config": "^1.26.2",
     "koa": "^2.3.0",
     "koa-router": "^7.2.1",
+    "pg": "^6.4.2",
+    "pg-hstore": "^2.3.2",
     "random-js": "^1.0.8",
     "s3-blob-store": "^2.0.1",
     "sequelize": "^4.27.0",
