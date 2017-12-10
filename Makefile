@@ -36,7 +36,7 @@ lint: node_modules
 	tslint -p tsconfig.json -c tslint.json -t stylish --fix
 
 node_modules: package.json
-	yarn install --non-interactive
+	yarn install --non-interactive --frozen-lockfile
 
 .PHONY: clean
 clean:
