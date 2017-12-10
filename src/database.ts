@@ -17,7 +17,24 @@ logger.info('setting up database with dialect %s', dbConfig.dialect)
 export const db = new Sequelize(config.get('database'))
 
 export const User = db.define('user', {
-    account: Sequelize.STRING,
-    email: Sequelize.STRING,
-    phone: Sequelize.STRING,
+    account: {
+        type: Sequelize.STRING,
+        primaryKey: true,
+    },
+    email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            isEmail: true
+        }
+    },
+    phone: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            is: /^\+[0-9]+$/
+        }
+    },
 })
