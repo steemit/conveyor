@@ -12,6 +12,7 @@ import * as os from 'os'
 
 import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
+import * as userData from './user-data'
 
 import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
 import {db} from './database'
@@ -57,6 +58,10 @@ rpc.register('set_feature_flag', featureFlags.setFlag)
 rpc.register('get_feature_flags', featureFlags.getFlags)
 rpc.register('set_feature_flag_probability', featureFlags.setProbability)
 rpc.register('get_feature_flag_probabilities', featureFlags.getProbabilities)
+
+rpc.register('get_user_data', userData.getUserData)
+rpc.register('set_user_data', userData.setUserData)
+rpc.register('is_email_registered', userData.isEmailRegistered)
 
 function run() {
     const port = config.get('port')
