@@ -71,5 +71,12 @@ describe('user data', function() {
         assert.equal(rv, false)
     })
 
+    it('should check if phone exists', async function() {
+        let rv
+        rv = await call('steemitapi.is_phone_registered', '+99123123123')
+        assert.equal(rv, true)
+        rv = await call('steemitapi.is_phone_registered', '+123456767899')
+        assert.equal(rv, false)
+    })
 
 })

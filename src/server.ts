@@ -62,6 +62,7 @@ rpc.register('get_feature_flag_probabilities', featureFlags.getProbabilities)
 rpc.register('get_user_data', userData.getUserData)
 rpc.register('set_user_data', userData.setUserData)
 rpc.register('is_email_registered', userData.isEmailRegistered)
+rpc.register('is_phone_registered', userData.isPhoneRegistered)
 
 function run() {
     const port = config.get('port')

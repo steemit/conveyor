@@ -49,3 +49,9 @@ export async function isEmailRegistered(this: JCtx, email: string) {
     const user = await User.findOne({where: {email}})
     return user != undefined
 }
+
+export async function isPhoneRegistered(this: JCtx, phone: string) {
+    // TODO: Add auth, admin role
+    const user = await User.findOne({where: {phone}})
+    return user != undefined
+}
