@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import {utils} from '@steemit/jsonrpc'
+import {utils} from '@steemit/koa-jsonrpc'
 
 export async function assertThrows(block: () => Promise<any>) {
     try {

@@ -2,7 +2,7 @@ import 'mocha'
 import * as assert from 'assert'
 import * as http from 'http'
 import * as UUID from 'uuid/v4'
-import {utils} from '@steemit/jsonrpc'
+import {utils} from '@steemit/koa-jsonrpc'
 
 import {makeClient} from './common'
 

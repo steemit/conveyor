@@ -14,7 +14,7 @@ import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
 import * as userData from './user-data'
 
-import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
+import {JsonRpc, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
 import {db} from './database'
 import {logger} from './logger'
 

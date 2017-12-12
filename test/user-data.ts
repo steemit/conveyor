@@ -1,7 +1,7 @@
 import 'mocha'
 import * as assert from 'assert'
 import * as http from 'http'
-import {utils} from '@steemit/jsonrpc'
+import {utils} from '@steemit/koa-jsonrpc'
 
 import {makeClient, assertThrows} from './common'
 

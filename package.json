@@ -9,7 +9,7 @@
     "node": "^8"
   },
   "dependencies": {
-    "@steemit/jsonrpc": "git+https://github.com/steemit/koa-jsonrpc.git#20e393f966da7d888e47e36a7b202469a7e13dca",
+    "@steemit/koa-jsonrpc": "^1.0.0",
     "abstract-blob-store": "^3.2.0",
     "aws-sdk": "^2.127.0",
     "bunyan": "^2.0.2",
