@@ -1,5 +1,5 @@
 {
-  "name": "@steemit/steemitapi",
+  "name": "@steemit/conveyor",
   "version": "1.0.0",
   "private": true,
   "scripts": {

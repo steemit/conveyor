@@ -1,5 +1,5 @@
 /**
- * @file Steemitapi server.
+ * @file Conveyor server.
  * @author Johan Nordberg <johan@steemit.com>
  */
 
