@@ -12,8 +12,10 @@ import * as os from 'os'
 
 import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
+import * as userData from './user-data'
 
 import {JsonRpc, requestLogger, rpcLogger} from '@steemit/jsonrpc'
+import {db} from './database'
 import {logger} from './logger'
 
 export const version = require('./version')
@@ -57,6 +59,11 @@ rpc.register('get_feature_flags', featureFlags.getFlags)
 rpc.register('set_feature_flag_probability', featureFlags.setProbability)
 rpc.register('get_feature_flag_probabilities', featureFlags.getProbabilities)
 
+rpc.register('get_user_data', userData.getUserData)
+rpc.register('set_user_data', userData.setUserData)
+rpc.register('is_email_registered', userData.isEmailRegistered)
+rpc.register('is_phone_registered', userData.isPhoneRegistered)
+
 function run() {
     const port = config.get('port')
     app.listen(port, () => {
@@ -65,6 +72,11 @@ function run() {
 }
 
 if (module === require.main) {
+    if (cluster.isMaster) {
+        db.sync().catch((error) => {
+            logger.fatal(error, 'unable to sync database')
+        })
+    }
     let numWorkers = config.get('num_workers')
     if (numWorkers === 0) {
         numWorkers = os.cpus().length

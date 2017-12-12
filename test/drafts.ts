@@ -4,6 +4,8 @@ import * as http from 'http'
 import * as UUID from 'uuid/v4'
 import {utils} from '@steemit/jsonrpc'
 
+import {makeClient} from './common'
+
 import {app} from './../src/server'
 
 describe('drafts', function() {
@@ -13,18 +15,7 @@ describe('drafts', function() {
     before((done) => { server.listen(port, 'localhost', done) })
     after((done) => { server.close(done) })
 
-    let id = 0
-    const call = async (method: string, ...params) => {
-        const rv = await utils.jsonRequest(
-            {port, protocol: 'http:', method: 'post'},
-            {id: ++id, jsonrpc: '2.0', method, params}
-        )
-        if (rv.error) {
-            throw new Error(rv.error.message)
-        }
-        return rv.result
-    }
-
+    const call = makeClient(port)
     const uuid = UUID()
 
     it('should create draft', async function() {
@@ -53,8 +44,5 @@ describe('drafts', function() {
         assert.equal(rv.length, 2)
         assert.deepEqual(rv[1], {uuid, title: 'foo2', body: 'bar2'})
     })
-
-
-
 
 })

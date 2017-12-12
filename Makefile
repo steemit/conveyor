@@ -19,7 +19,7 @@ devserver: node_modules
 
 .PHONY: coverage
 coverage: node_modules
-	nyc -r html -r text -e .ts -i ts-node/register mocha --reporter nyan --require ts-node/register test/*.ts
+	NODE_ENV=test nyc -r html -r text -e .ts -i ts-node/register mocha --reporter nyan --require ts-node/register test/*.ts
 
 .PHONY: test
 test: node_modules
@@ -36,7 +36,7 @@ lint: node_modules
 	tslint -p tsconfig.json -c tslint.json -t stylish --fix
 
 node_modules: package.json
-	yarn install --non-interactive
+	yarn install --non-interactive --frozen-lockfile
 
 .PHONY: clean
 clean:

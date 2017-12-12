@@ -6,6 +6,8 @@ import * as fs from 'fs'
 import {utils} from '@steemit/jsonrpc'
 import {join as joinPath} from 'path'
 
+import {makeClient} from './common'
+
 // first 1000 steem accounts for every letter of the alphabet
 const usernames = fs.readFileSync(joinPath(__dirname, 'usernames.txt'))
     .toString('utf8').split('\n')
@@ -19,18 +21,7 @@ describe('feature flags', function() {
     before((done) => { server.listen(port, 'localhost', done) })
     after((done) => { server.close(done) })
 
-    let id = 0
-    const call = async (method: string, ...params) => {
-        const rv = await utils.jsonRequest(
-            {port, protocol: 'http:', method: 'post'},
-            {id: ++id, jsonrpc: '2.0', method, params}
-        )
-        if (rv.error) {
-            throw new Error(rv.error.message)
-        }
-        return rv.result
-    }
-
+    const call = makeClient(port)
     const uuid = UUID()
 
     it('should set flag probabilities', async function() {

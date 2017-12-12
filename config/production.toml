@@ -5,3 +5,7 @@ type = 's3'
 [[log]]
 level = 'info'
 out = 'stdout'
+[database]
+dialect = 'postgres'
+[database.dialectOptions]
+ssl = true
