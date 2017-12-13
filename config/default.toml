@@ -1,10 +1,10 @@
-# steemitapi default configuration, override in your config/local-development.toml
+# conveyor default configuration, override in your config/local-development.toml
 
 # port to listen on
 port = 8090
 
 # application name used for logging and service namespace
-name = 'steemitapi'
+name = 'conveyor'
 
 # number of worker processes to spawn, 0 = autodetect
 num_workers = 1

@@ -3,7 +3,7 @@
  * @author Johan Nordberg <johan@steemit.com>
  */
 
-import {JsonRpcError, JsonRpcMethodContext as JCtx} from '@steemit/jsonrpc'
+import {JsonRpcError, JsonRpcMethodContext as JCtx} from '@steemit/koa-jsonrpc'
 import {ValidationError} from 'sequelize'
 
 import {User} from './database'

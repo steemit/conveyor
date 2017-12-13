@@ -6,7 +6,7 @@
 import * as config from 'config'
 import * as UUID from 'uuid/v4'
 
-import {JsonRpcError, JsonRpcMethodContext} from '@steemit/jsonrpc'
+import {JsonRpcError, JsonRpcMethodContext} from '@steemit/koa-jsonrpc'
 import {store} from './store'
 
 const KEY_PREFIX = config.get('name')

@@ -1,7 +1,7 @@
 import 'mocha'
 import * as assert from 'assert'
 import * as http from 'http'
-import {utils} from '@steemit/jsonrpc'
+import {utils} from '@steemit/koa-jsonrpc'
 
 import {app} from './../src/server'
 
@@ -15,7 +15,7 @@ describe('server', function() {
     it('should work', async function() {
         const rv = await utils.jsonRequest(
             {port, protocol: 'http:', method: 'post'},
-            {id: 1, jsonrpc: '2.0', method: 'steemitapi.hello', params: {name: 'Dave'}}
+            {id: 1, jsonrpc: '2.0', method: 'conveyor.hello', params: {name: 'Dave'}}
         )
         assert.deepEqual(rv, {jsonrpc: '2.0', id: 1, result: "I'm sorry, Dave, I can't do that."})
     })

@@ -1,5 +1,5 @@
 
-import {JsonRpcError, JsonRpcMethodContext as JCtx} from '@steemit/jsonrpc'
+import {JsonRpcError, JsonRpcMethodContext as JCtx} from '@steemit/koa-jsonrpc'
 import * as config from 'config'
 import {createHash} from 'crypto'
 import * as rjs from 'random-js'
