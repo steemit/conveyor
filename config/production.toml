@@ -1,5 +1,7 @@
 num_workers = 0
 port = 8080
+rpc_node = 'https://api.steemit.com'
+admin_role = 'steem'
 [storage]
 type = 's3'
 [[log]]
