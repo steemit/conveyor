@@ -26,6 +26,8 @@ export interface RPCSigner {
     key: string
 }
 
+const SEQNO_STEP_SIZE = 1
+
 export class RPC {
     private requestOpts: any
     private seqNo = 0
@@ -45,7 +47,11 @@ export class RPC {
         return await utils.jsonRequest(this.requestOpts, data)
     }
     private buildRequest(method: string, ...params): any {
-        return {id: ++this.seqNo, jsonrpc: '2.0', method, params}
+        const currentSeqNo = this.seqNo
+        const nextSeqNo = currentSeqNo + SEQNO_STEP_SIZE
+        const request = {id: nextSeqNo, jsonrpc: '2.0', method, params}
+        this.seqNo = nextSeqNo
+        return request
     }
     private resolveResponse(response) {
         if (response.error) {
