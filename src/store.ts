@@ -109,10 +109,7 @@ if (storageConf.type === 'memory') {
 } else if (storageConf.type === 's3') {
     const aws = require('aws-sdk')
     const S3BlobStore = require('s3-blob-store')
-    const client = new aws.S3({
-        accessKeyId: storageConf.get('s3_access_key'),
-        secretAccessKey: storageConf.get('s3_secret_key'),
-    })
+    const client = new aws.S3()
     const bucket = storageConf.get('s3_bucket')
     store = new AsyncBlobStore(new S3BlobStore({client, bucket}))
 } else {
