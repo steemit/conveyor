@@ -16,7 +16,15 @@ logger.info('setting up database with dialect %s', dbConfig.dialect)
 
 export const db = new Sequelize(config.get('database'))
 
-export const User = db.define('user', {
+export interface UserAttributes {
+    account: string
+    email: string
+    phone: string
+}
+
+export interface UserInstance extends Sequelize.Instance<UserAttributes>, UserAttributes {}
+
+export const User = db.define<UserInstance, UserAttributes>('user', {
     account: {
         type: Sequelize.STRING,
         primaryKey: true,
