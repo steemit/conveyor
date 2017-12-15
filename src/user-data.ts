@@ -3,10 +3,13 @@
  * @author Johan Nordberg <johan@steemit.com>
  */
 
-import {JsonRpcError, JsonRpcMethodContext as JCtx} from '@steemit/koa-jsonrpc'
+import {JsonRpcAuthMethodContext as JCtx, JsonRpcError} from '@steemit/koa-jsonrpc'
+import * as config from 'config'
 import {ValidationError} from 'sequelize'
 
 import {User} from './database'
+
+const ADMIN_ACCOUNT = config.get('admin_role')
 
 interface UserData {
     email: string
@@ -14,7 +17,7 @@ interface UserData {
 }
 
 export async function getUserData(this: JCtx, account: string) {
-    // TODO: Add auth, account or admin role
+    this.assert(this.account === account || this.account === ADMIN_ACCOUNT, 'Unauthorized')
     const user: any = await User.findOne({where: {account}})
     if (!user) {
         throw new JsonRpcError(404, 'No such user')
@@ -23,7 +26,7 @@ export async function getUserData(this: JCtx, account: string) {
 }
 
 export async function setUserData(this: JCtx, account: string, data: UserData) {
-    // TODO: Add auth, account or admin role
+    this.assert(this.account === account || this.account === ADMIN_ACCOUNT, 'Unauthorized')
     this.assert(typeof data === 'object', 'data must be object')
     this.assert(Object.keys(data).length > 0, 'no keys in data')
     const {phone, email} = data
@@ -45,13 +48,13 @@ export async function setUserData(this: JCtx, account: string, data: UserData) {
 }
 
 export async function isEmailRegistered(this: JCtx, email: string) {
-    // TODO: Add auth, admin role
+    this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized')
     const user = await User.findOne({where: {email}})
     return user != undefined
 }
 
 export async function isPhoneRegistered(this: JCtx, phone: string) {
-    // TODO: Add auth, admin role
+    this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized')
     const user = await User.findOne({where: {phone}})
     return user != undefined
 }

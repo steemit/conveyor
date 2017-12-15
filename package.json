@@ -34,6 +34,7 @@
     "@types/random-js": "^1.0.30",
     "@types/sequelize": "^4.0.79",
     "@types/uuid": "^3.4.2",
+    "dsteem": "^0.8.5",
     "mocha": "^3.5.0",
     "nsp": "^2.8.0",
     "nyc": "^11.1.0",

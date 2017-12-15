@@ -14,7 +14,7 @@ import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
 import * as userData from './user-data'
 
-import {JsonRpc, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
+import {JsonRpcAuth, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
 import {db} from './database'
 import {logger} from './logger'
 
@@ -22,7 +22,7 @@ export const version = require('./version')
 export const app = new Koa()
 
 const router = new Router()
-const rpc = new JsonRpc(config.get('name'))
+const rpc = new JsonRpcAuth(config.get('rpc_node'), config.get('name'))
 
 app.proxy = true
 app.on('error', (error) => {
@@ -49,20 +49,25 @@ rpc.register('hello', async function(name: string) {
     return `I'm sorry, ${ name }, I can't do that.`
 })
 
-rpc.register('list_drafts', drafts.list)
-rpc.register('save_draft', drafts.save)
-rpc.register('remove_draft', drafts.remove)
+rpc.registerAuthenticated('whoami', async function() {
+    this.log.info('Whoami %s', this.account)
+    return this.account
+})
 
-rpc.register('get_feature_flag', featureFlags.getFlag)
-rpc.register('set_feature_flag', featureFlags.setFlag)
-rpc.register('get_feature_flags', featureFlags.getFlags)
-rpc.register('set_feature_flag_probability', featureFlags.setProbability)
-rpc.register('get_feature_flag_probabilities', featureFlags.getProbabilities)
+rpc.registerAuthenticated('list_drafts', drafts.list)
+rpc.registerAuthenticated('save_draft', drafts.save)
+rpc.registerAuthenticated('remove_draft', drafts.remove)
 
-rpc.register('get_user_data', userData.getUserData)
-rpc.register('set_user_data', userData.setUserData)
-rpc.register('is_email_registered', userData.isEmailRegistered)
-rpc.register('is_phone_registered', userData.isPhoneRegistered)
+rpc.registerAuthenticated('get_feature_flag', featureFlags.getFlag)
+rpc.registerAuthenticated('set_feature_flag', featureFlags.setFlag)
+rpc.registerAuthenticated('get_feature_flags', featureFlags.getFlags)
+rpc.registerAuthenticated('set_feature_flag_probability', featureFlags.setProbability)
+rpc.registerAuthenticated('get_feature_flag_probabilities', featureFlags.getProbabilities)
+
+rpc.registerAuthenticated('get_user_data', userData.getUserData)
+rpc.registerAuthenticated('set_user_data', userData.setUserData)
+rpc.registerAuthenticated('is_email_registered', userData.isEmailRegistered)
+rpc.registerAuthenticated('is_phone_registered', userData.isPhoneRegistered)
 
 function run() {
     const port = config.get('port')

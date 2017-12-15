@@ -10,11 +10,15 @@
     uuid "^3.1.0"
     verror "^1.10.0"
 
+"@steemit/libcrypto@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@steemit/libcrypto/-/libcrypto-1.0.1.tgz#c31ab3e5deb667628169b3d54d746b015de31a79"
+
 "@steemit/rpc-auth@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@steemit/rpc-auth/-/rpc-auth-1.0.2.tgz#7a76826a91698c262149a444ad068127120b8298"
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@steemit/rpc-auth/-/rpc-auth-1.1.0.tgz#4170c04d928ef37af5bdbde3f517ef74909480bd"
   dependencies:
-    dsteem "^0.8.5"
+    "@steemit/libcrypto" "^1.0.1"
 
 "@types/accepts@*":
   version "1.3.3"
@@ -1015,9 +1019,13 @@ extglob@^0.3.1:
   dependencies:
     is-extglob "^1.0.0"
 
-extsprintf@1.3.0, extsprintf@^1.2.0:
+extsprintf@1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/extsprintf/-/extsprintf-1.3.0.tgz#96918440e3041a7a414f8c52e3c574eb3c3e1e05"
+
+extsprintf@^1.2.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/extsprintf/-/extsprintf-1.4.0.tgz#e2689f8f356fad62cca65a3a91c5df5f9551692f"
 
 filename-regex@^2.0.0:
   version "2.0.1"
