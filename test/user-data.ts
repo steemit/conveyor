@@ -96,4 +96,39 @@ describe('user data', function() {
         assert.equal(rv, false)
     })
 
+    it('should enforce email uniqueness', async function() {
+        await rpc.signedCall('conveyor.set_user_data', adminSigner, 'user1', {email: 'user1@mail.com', phone: '+99911112'})
+        const error = await assertThrows(async () => {
+            await rpc.signedCall('conveyor.set_user_data', adminSigner, 'user2', {email: 'user1@mail.com', phone: '+44223121'})
+        })
+        assert.deepEqual(error.data, {errors: [ { message: 'email must be unique', path: 'email' } ]})
+    })
+
+    it('should enforce phone uniqueness', async function() {
+        await rpc.signedCall('conveyor.set_user_data', adminSigner, 'userphone1', {email: 'userphone1@mail.com', phone: '+42424242'})
+        const error = await assertThrows(async () => {
+            await rpc.signedCall('conveyor.set_user_data', adminSigner, 'userphone2', {email: 'userphone2@mail.com', phone: '+42424242'})
+        })
+        assert.deepEqual(error.data, {errors: [ { message: 'phone must be unique', path: 'phone' } ]})
+    })
+
+    it('should update user data', async function() {
+        let rv
+        await rpc.signedCall('conveyor.set_user_data', adminSigner, 'updateguy', {email: 'updateguy@hey.no', phone: '+1230002'})
+        rv = await rpc.signedCall('conveyor.is_email_registered', adminSigner, 'updateguy@hey.no')
+        assert.equal(rv, true, 'email registered')
+        rv = await rpc.signedCall('conveyor.get_user_data', adminSigner, 'updateguy')
+        assert.deepEqual(rv, {email: 'updateguy@hey.no', phone: '+1230002'}, 'data set')
+        await rpc.signedCall('conveyor.set_user_data', adminSigner, 'updateguy', {email: 'updateguy@your.up', phone: '+1230002'})
+        rv = await rpc.signedCall('conveyor.get_user_data', adminSigner, 'updateguy')
+        assert.deepEqual(rv, {email: 'updateguy@your.up', phone: '+1230002'}, 'data updated')
+        rv = await rpc.signedCall('conveyor.is_email_registered', adminSigner, 'updateguy@hey.no')
+        assert.equal(rv, false, 'prev email not registered')
+        rv = await rpc.signedCall('conveyor.is_email_registered', adminSigner, 'updateguy@your.up')
+        assert.equal(rv, true, 'new email registered')
+        await assertThrows(async () => {
+            await rpc.signedCall('conveyor.set_user_data', adminSigner, 'updateguy', {email: 'foo@bar.com', phone: '+1230002'})
+        })
+    })
+
 })

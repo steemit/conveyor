@@ -18,7 +18,7 @@ interface UserData {
 
 export async function getUserData(this: JCtx, account: string) {
     this.assert(this.account === account || this.account === ADMIN_ACCOUNT, 'Unauthorized')
-    const user: any = await User.findOne({where: {account}})
+    const user: any = await User.findByPrimary(account)
     if (!user) {
         throw new JsonRpcError(404, 'No such user')
     }
@@ -30,10 +30,16 @@ export async function setUserData(this: JCtx, account: string, data: UserData) {
     this.assert(typeof data === 'object', 'data must be object')
     this.assert(Object.keys(data).length > 0, 'no keys in data')
     const {phone, email} = data
-    const update = {account, phone, email}
     try {
-        await User.upsert(update)
-        this.log.info('updated user data for %s', account)
+        const existing = await User.findByPrimary(account)
+        if (existing) {
+            this.log.info('updating user data for %s', account)
+            existing.set({phone, email})
+            await existing.save()
+        } else {
+            this.log.info('creating user data for %s', account)
+            await User.create({account, phone, email})
+        }
     } catch (error) {
         if (error instanceof ValidationError) {
             const errors = (error as ValidationError).errors.map((error) => {
