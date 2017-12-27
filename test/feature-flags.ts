@@ -17,8 +17,8 @@ import {app} from './../src/server'
 import {getFlags} from './../src/feature-flags'
 
 describe('feature flags', function() {
-    this.slow(10 * 1000)
-    this.timeout(20 * 1000)
+    this.slow(3000)
+    this.timeout(6000)
 
     const port = process.env['TEST_HTTP_PORT'] ? parseInt(process.env['TEST_HTTP_PORT'] as string) : 63205
     const server = http.createServer(app.callback())
