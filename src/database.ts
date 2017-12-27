@@ -31,7 +31,7 @@ export const User = db.define<UserInstance, UserAttributes>('user', {
     },
     email: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true,
         validate: {
             isEmail: true
@@ -39,7 +39,7 @@ export const User = db.define<UserInstance, UserAttributes>('user', {
     },
     phone: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true,
         validate: {
             is: /^\+[0-9]+$/
