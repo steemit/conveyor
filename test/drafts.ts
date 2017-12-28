@@ -10,8 +10,8 @@ import {RPC, assertThrows} from './common'
 import {app} from './../src/server'
 
 describe('drafts', function() {
-    this.slow(10 * 1000)
-    this.timeout(20 * 1000)
+    this.slow(1000)
+    this.timeout(2000)
 
     const port = process.env['TEST_HTTP_PORT'] ? parseInt(process.env['TEST_HTTP_PORT'] as string) : 63205
     const server = http.createServer(app.callback())

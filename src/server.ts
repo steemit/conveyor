@@ -22,7 +22,7 @@ export const version = require('./version')
 export const app = new Koa()
 
 const router = new Router()
-const rpc = new JsonRpcAuth(config.get('rpc_node'), config.get('name'))
+export const rpc = new JsonRpcAuth(config.get('rpc_node'), config.get('name'))
 
 app.proxy = true
 app.on('error', (error) => {
