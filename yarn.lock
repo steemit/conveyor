@@ -2,11 +2,12 @@
 # yarn lockfile v1
 
 
-"@steemit/koa-jsonrpc@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@steemit/koa-jsonrpc/-/koa-jsonrpc-1.0.0.tgz#3843b9573a002810a729600a6f5ab3a7270e3789"
+"@steemit/koa-jsonrpc@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@steemit/koa-jsonrpc/-/koa-jsonrpc-1.1.0.tgz#fe511ef08263f310f8dbd0217a5b938a864c83c0"
   dependencies:
-    "@steemit/rpc-auth" "^1.0.2"
+    "@steemit/rpc-auth" "^1.1.0"
+    dsteem "^0.8.6"
     uuid "^3.1.0"
     verror "^1.10.0"
 
@@ -14,7 +15,7 @@
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@steemit/libcrypto/-/libcrypto-1.0.1.tgz#c31ab3e5deb667628169b3d54d746b015de31a79"
 
-"@steemit/rpc-auth@^1.0.2":
+"@steemit/rpc-auth@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@steemit/rpc-auth/-/rpc-auth-1.1.0.tgz#4170c04d928ef37af5bdbde3f517ef74909480bd"
   dependencies:
@@ -876,6 +877,18 @@ drbg.js@^1.0.1:
     create-hmac "^1.1.4"
 
 dsteem@^0.8.5:
+  version "0.8.6"
+  resolved "https://registry.yarnpkg.com/dsteem/-/dsteem-0.8.6.tgz#6f11333903537503267441e842ae92117beadcc0"
+  dependencies:
+    bs58 "^4.0.1"
+    bytebuffer "^5.0.1"
+    core-js "^2.5.0"
+    node-fetch "^2.0.0-alpha.9"
+    secp256k1 "^3.3.1"
+    verror "^1.10.0"
+    whatwg-fetch "^2.0.3"
+
+dsteem@^0.8.6:
   version "0.8.6"
   resolved "https://registry.yarnpkg.com/dsteem/-/dsteem-0.8.6.tgz#6f11333903537503267441e842ae92117beadcc0"
   dependencies:
