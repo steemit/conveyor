@@ -64,6 +64,8 @@ describe('feature flags', function() {
     })
 
     it('should have correct random distributions', async function() {
+        this.timeout(30 * 1000)
+
         let total = 0
         const distr = {}
         const fakeCtx = {account: 'foo', assert: () => {}}
