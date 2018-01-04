@@ -41,13 +41,12 @@ describe('user data', function() {
         assert.deepEqual(rv, {email: 'foo@bar.com', phone: '+99123123123'})
     })
 
-    it('should throw on missing data', async function() {
-        const error = await assertThrows(async () => {
-            await rpc.signedCall('conveyor.set_user_data', adminSigner, 'foo', {phone: '+12345567'})
-        })
-        assert.deepEqual(error.data, {errors: [{
-            path: 'email', message: 'user.email cannot be null',
-        }]})
+    it('should allow missing data', async function() {
+        await rpc.signedCall('conveyor.set_user_data', adminSigner, 'missing', {phone: null})
+        await rpc.signedCall('conveyor.set_user_data', adminSigner, 'missing', {phone: null, email: null})
+        await rpc.signedCall('conveyor.set_user_data', adminSigner, 'missing', {email: null})
+        const rv = await rpc.signedCall('conveyor.get_user_data', adminSigner, 'missing')
+        assert.deepEqual(rv, {email: null, phone: null})
     })
 
     it('should throw on invalid email', async function() {
