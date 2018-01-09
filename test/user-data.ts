@@ -11,7 +11,7 @@ import {db} from './../src/database'
 
 describe('user data', function() {
     this.slow(1000)
-    this.timeout(2000)
+    this.timeout(10 * 1000)
 
     const port = process.env['TEST_HTTP_PORT'] ? parseInt(process.env['TEST_HTTP_PORT'] as string) : 63205
     const server = http.createServer(app.callback())

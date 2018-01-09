@@ -18,7 +18,7 @@ import {getFlags} from './../src/feature-flags'
 
 describe('feature flags', function() {
     this.slow(3000)
-    this.timeout(6000)
+    this.timeout(10 * 1000)
 
     const port = process.env['TEST_HTTP_PORT'] ? parseInt(process.env['TEST_HTTP_PORT'] as string) : 63205
     const server = http.createServer(app.callback())
@@ -64,6 +64,8 @@ describe('feature flags', function() {
     })
 
     it('should have correct random distributions', async function() {
+        this.timeout(30 * 1000)
+
         let total = 0
         const distr = {}
         const fakeCtx = {account: 'foo', assert: () => {}}
