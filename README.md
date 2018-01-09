@@ -68,3 +68,47 @@ Get all the set flag probabilities.
     lucky_af: 0.0001
 }
 ```
+
+
+User data
+---------
+
+Conveyor is the central point for storing sensitive user data (email, phone, etc). No other services should store this data and should instead query for it here every time.
+
+### API
+
+#### `get_user_data <username>`
+
+Return user data for `<username>`, returns an error if the account is not found.
+
+*Authenticated: requires signature of an admin account or the requested user.*
+
+```js
+{
+    phone: '+1480080085',
+    email: 'foo@bar.com'
+}
+```
+
+
+#### `set_user_data <username> <data>`
+
+Set user data for `<username>`.
+
+*Authenticated: requires signature of an admin account.*
+
+`<data>` is an object with the keys `email` and `phone`.
+
+
+#### `is_email_registered <email>`
+
+Check if the `<email>` address is in the database.
+
+Returns `true` or `false`
+
+
+#### `is_phone_registered <phone>`
+
+Check if the `<phone>` number is in the database.
+
+Returns `true` or `false`
