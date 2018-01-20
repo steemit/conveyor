@@ -104,11 +104,15 @@ Set user data for `<username>`.
 
 Check if the `<email>` address is in the database.
 
+*Authenticated: requires signature of an admin account.*
+
 Returns `true` or `false`
 
 
 #### `is_phone_registered <phone>`
 
 Check if the `<phone>` number is in the database.
+
+*Authenticated: requires signature of an admin account.*
 
 Returns `true` or `false`
