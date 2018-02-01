@@ -57,7 +57,14 @@ function validateFlag(flag: string) {
 export async function setProbability(this: JCtx, flag: string, probability: number) {
     this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized')
     validateFlag(flag)
-    this.assert(probability >= 0 && probability <= 1, 'Probability must be a fraction between 0 and 1')
+    if (typeof probability !== 'number') {
+        probability = Number.parseFloat(probability)
+    }
+    this.assert(
+        Number.isFinite(probability) &&
+        probability >= 0 && probability <= 1,
+        'Probability must be a fraction between 0 and 1'
+    )
     this.log.info('set probability for feature flag %s to %d%', flag, ~~(probability * 100))
     const probabilities = await readProbabilities()
     if (probability === 0) {
