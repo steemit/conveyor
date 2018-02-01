@@ -7,7 +7,7 @@ import {utils} from '@steemit/koa-jsonrpc'
 import {PrivateKey} from 'dsteem'
 import {join as joinPath} from 'path'
 
-import {RPC} from './common'
+import {RPC, assertThrows} from './common'
 
 // first 1000 steem accounts for every letter of the alphabet
 const usernames = fs.readFileSync(joinPath(__dirname, 'usernames.txt'))
@@ -41,12 +41,20 @@ describe('feature flags', function() {
 
     it('should set flag probabilities', async function() {
         await rpc.signedCall('conveyor.set_feature_flag_probability', adminSigner, 'unicorn_mode', 0.05)
-        await rpc.signedCall('conveyor.set_feature_flag_probability', adminSigner, 'darkness', 0.99)
+        await rpc.signedCall('conveyor.set_feature_flag_probability', adminSigner, 'darkness', '0.99')
         await rpc.signedCall('conveyor.set_feature_flag_probability', adminSigner, 'obsolete', 0)
         await rpc.signedCall('conveyor.set_feature_flag_probability', adminSigner, 'always', 1)
         await rpc.signedCall('conveyor.set_feature_flag_probability', adminSigner, 'coin_toss', 0.5)
         const probs = await rpc.signedCall('conveyor.get_feature_flag_probabilities', adminSigner)
         assert.deepEqual(probs, {unicorn_mode: 0.05, darkness: 0.99, always: 1, coin_toss: 0.5})
+    })
+
+    it('should handle invalid flag probabilities', async function() {
+        for (const val of [Infinity, -Infinity, false, true, '☃︎', NaN, null, 1e203, -1.23]) {
+            await assertThrows(async () => {
+                await rpc.signedCall('conveyor.set_feature_flag_probability', adminSigner, 'flag', val)
+            })
+        }
     })
 
     it('should set flag for user', async function() {
