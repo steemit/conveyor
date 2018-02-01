@@ -6,10 +6,10 @@
     "test": "make ci-test"
   },
   "engines": {
-    "node": "^8"
+    "node": ">=8"
   },
   "dependencies": {
-    "@steemit/koa-jsonrpc": "^1.1.0",
+    "@steemit/koa-jsonrpc": "^1.1.2",
     "abstract-blob-store": "^3.2.0",
     "aws-sdk": "^2.127.0",
     "bunyan": "^2.0.2",
