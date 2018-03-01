@@ -46,3 +46,52 @@ export const User = db.define<UserInstance, UserAttributes>('user', {
         }
     },
 })
+
+export interface TagAttributes {
+    /** Tag name, may only contain alphanumeric and underscore. */
+    name: string
+    /** Description of tag. */
+    description: string
+}
+
+export interface TagInstance extends Sequelize.Instance<TagAttributes>, TagAttributes {}
+
+export const Tag = db.define<TagInstance, TagAttributes>('tag', {
+    name: {
+        type: Sequelize.STRING,
+        primaryKey: true,
+        validate: {
+            is: /^[a-z0-9_]+$/
+        }
+    },
+    description: {
+        allowNull: false,
+        type: Sequelize.STRING,
+    }
+})
+
+export interface UserTagAttributes {
+    /** Account name or other unique identifier. */
+    uid: string
+    /** Assigned tag. */
+    tag: string
+}
+
+export interface UserTagInstance extends Sequelize.Instance<UserTagAttributes>, UserTagAttributes {}
+
+export const UserTag = db.define<UserTagInstance, UserTagAttributes>('usertag', {
+    uid: {
+        type: Sequelize.STRING,
+        allowNull: false,
+    },
+    tag: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        references: {
+            model: Tag,
+            key: 'name',
+        }
+   },
+}, {
+    indexes: [{fields: ['uid']}]
+})
