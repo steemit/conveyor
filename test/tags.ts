@@ -112,4 +112,12 @@ describe('user tags', function() {
         assert.deepEqual(Object.keys(rv[0]).sort(), [ 'createdAt', 'deletedAt', 'id', 'memo', 'tag', 'uid', 'updatedAt' ])
     })
 
+    it('should re-nassign tag', async function() {
+        await rpc.signedCall('conveyor.assign_tag', adminSigner, 'user4', 'bar')
+        await rpc.signedCall('conveyor.unassign_tag', adminSigner, 'user4', 'bar')
+        await rpc.signedCall('conveyor.assign_tag', adminSigner, 'user4', 'bar')
+        const tags = await rpc.signedCall('conveyor.get_tags_for_user', adminSigner, 'user4')
+        assert.deepEqual(tags, ['bar', 'foo'])
+    })
+
 })

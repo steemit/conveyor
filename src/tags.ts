@@ -30,7 +30,7 @@ export async function assignTag(this: JCtx, uid: string, tag: string, memo: stri
     if (typeof memo !== 'string') {
         memo = `Created by ${ this.account } from ${ this.ctx.ip }`
     }
-    const existing = await UserTag.find({where: {uid, tag}})
+    const existing = await UserTag.find({where: {uid, tag, deletedAt: {[Op.eq]: null}}})
     if (!existing) {
         try {
             await UserTag.create({uid, tag, memo})
