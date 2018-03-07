@@ -23,14 +23,17 @@ export async function listTags(this: JCtx) {
     return (await Tag.all({order: ['name']})).map(({name, description}) => ({name, description}))
 }
 
-export async function assignTag(this: JCtx, uid: string, tag: string) {
+export async function assignTag(this: JCtx, uid: string, tag: string, memo: string) {
     this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized')
     this.assert(typeof uid === 'string', 'Invalid user uid')
     this.assert(typeof tag === 'string', 'Invalid tag')
+    if (typeof memo !== 'string') {
+        memo = `Created by ${ this.account } from ${ this.ctx.ip }`
+    }
     const existing = await UserTag.find({where: {uid, tag}})
     if (!existing) {
         try {
-            await UserTag.create({uid, tag})
+            await UserTag.create({uid, tag, memo})
         } catch (error) {
             if (error.name === 'SequelizeForeignKeyConstraintError') {
                 throw new JsonRpcError(420, 'No such tag')
@@ -44,7 +47,7 @@ export async function unassignTag(this: JCtx, uid: string, tag: string) {
     this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized')
     this.assert(typeof uid === 'string', 'Invalid user uid')
     this.assert(typeof tag === 'string', 'Invalid tag')
-    await UserTag.destroy({where: {uid, tag}})
+    await UserTag.update({deletedAt: new Date()}, {where: {uid, tag, deletedAt: {[Op.eq]: null}}})
 }
 
 export async function getUsersByTags(this: JCtx, tags: string | string[]) {
@@ -54,10 +57,10 @@ export async function getUsersByTags(this: JCtx, tags: string | string[]) {
     }
     this.assert(Array.isArray(tags) && tags.every((tag) => typeof tag === 'string'), 'Invalid tags')
     const tagmap = new Map<string, string[]>()
-    const where = {[Op.or]: tags.map((tag) => ({tag}))}
+    const where = {[Op.or]: tags.map((tag) => ({tag})), deletedAt: {[Op.eq]: null}}
     for (const {tag, uid} of await UserTag.all({where})) {
-        if (!tagmap.has(uid)) { tagmap.set(uid, []) }
-        tagmap.get(uid)!.push(tag)
+        if (!tagmap.has(uid!)) { tagmap.set(uid!, []) }
+        tagmap.get(uid!)!.push(tag!)
     }
     const rv: string[] = []
     for (const [uid, taglist] of tagmap) {
@@ -68,8 +71,13 @@ export async function getUsersByTags(this: JCtx, tags: string | string[]) {
     return rv.sort()
 }
 
-export async function getTagsForUser(this: JCtx, uid: string) {
+export async function getTagsForUser(this: JCtx, uid: string, audit: boolean) {
     this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized')
     this.assert(typeof uid === 'string', 'Invalid user uid')
-    return (await UserTag.all({where: {uid}})).map((usertag) => usertag.tag).sort()
+    if (audit) {
+        return await UserTag.all({where: {uid}})
+    } else {
+        const where = {uid, deletedAt: {[Op.eq]: null}}
+        return (await UserTag.all({where})).map((usertag) => usertag.tag).sort()
+    }
 }

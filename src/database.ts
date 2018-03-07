@@ -72,9 +72,13 @@ export const Tag = db.define<TagInstance, TagAttributes>('tag', {
 
 export interface UserTagAttributes {
     /** Account name or other unique identifier. */
-    uid: string
+    uid?: string
     /** Assigned tag. */
-    tag: string
+    tag?: string,
+    /** Note for housekeeping. */
+    memo?: string,
+    /** Date tag was deleted. */
+    deletedAt?: Date
 }
 
 export interface UserTagInstance extends Sequelize.Instance<UserTagAttributes>, UserTagAttributes {}
@@ -92,6 +96,15 @@ export const UserTag = db.define<UserTagInstance, UserTagAttributes>('usertag', 
             key: 'name',
         }
    },
+   deletedAt: {
+       type: Sequelize.DATE,
+       allowNull: true,
+       defaultValue: null,
+   },
+   memo: {
+       type: Sequelize.STRING,
+       allowNull: false
+   }
 }, {
     indexes: [{fields: ['uid']}]
 })

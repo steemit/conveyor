@@ -103,5 +103,13 @@ describe('user tags', function() {
         await assertThrows(async () => await rpc.signedCall('conveyor.get_tags_for_user', userSigner, 'user1'))
     })
 
+    it('should show tag audit log', async function() {
+        await rpc.signedCall('conveyor.unassign_tag', adminSigner, 'user3', 'bar')
+        const rv = await rpc.signedCall('conveyor.get_tags_for_user', adminSigner, 'user3', true)
+        assert.equal(rv.length, 2)
+        assert(rv[0].deletedAt !== null)
+        assert(rv[1].deletedAt === null)
+        assert.deepEqual(Object.keys(rv[0]).sort(), [ 'createdAt', 'deletedAt', 'id', 'memo', 'tag', 'uid', 'updatedAt' ])
+    })
 
 })
