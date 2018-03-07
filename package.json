@@ -36,6 +36,7 @@
     "@types/uuid": "^3.4.2",
     "dsteem": "^0.8.5",
     "mocha": "^3.5.0",
+    "mocha-junit-reporter": "^1.17.0",
     "nsp": "^2.8.0",
     "nyc": "^11.1.0",
     "onchange": "^3.2.1",

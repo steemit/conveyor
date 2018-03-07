@@ -17,19 +17,29 @@ lib: $(SRC_FILES) node_modules tsconfig.json
 devserver: node_modules
 	@onchange -i 'src/**/*.ts' 'config/*' -- ts-node src/server.ts | bunyan -o short
 
+reports:
+	mkdir reports
+
 .PHONY: coverage
-coverage: node_modules
-	NODE_ENV=test nyc -r html -r text -e .ts -i ts-node/register mocha --reporter nyan --require ts-node/register test/*.ts
+coverage: node_modules reports
+	NODE_ENV=test nyc -r html -r text -e .ts -i ts-node/register \
+		--report-dir reports/coverage \
+		mocha --reporter nyan --require ts-node/register test/*.ts
 
 .PHONY: test
 test: node_modules
 	NODE_ENV=test mocha --require ts-node/register test/*.ts --grep '$(grep)'
 
 .PHONY: ci-test
-ci-test: node_modules
+ci-test: node_modules reports
 	nsp check
 	tslint -p tsconfig.json -c tslint.json
-	NODE_ENV=test nyc -r lcov -e .ts -i ts-node/register mocha --reporter tap --require ts-node/register test/*.ts
+	NODE_ENV=test nyc -r lcov -e .ts -i ts-node/register \
+		--report-dir reports/coverage \
+		mocha --require ts-node/register \
+		--reporter mocha-junit-reporter \
+		--reporter-options mochaFile=./reports/unit-tests/junit.xml \
+		test/*.ts
 
 .PHONY: lint
 lint: node_modules
