@@ -75,7 +75,7 @@ export async function getTagsForUser(this: JCtx, uid: string, audit: boolean) {
     this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized')
     this.assert(typeof uid === 'string', 'Invalid user uid')
     if (audit) {
-        return await UserTag.all({where: {uid}})
+        return await UserTag.all({where: {uid}, order: ['createdAt']})
     } else {
         const where = {uid, deletedAt: {[Op.eq]: null}}
         return (await UserTag.all({where})).map((usertag) => usertag.tag).sort()
