@@ -71,5 +71,5 @@ export async function getUsersByTags(this: JCtx, tags: string | string[]) {
 export async function getTagsForUser(this: JCtx, uid: string) {
     this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized')
     this.assert(typeof uid === 'string', 'Invalid user uid')
-    return (await UserTag.all({where: {uid}})).map((usertag) => usertag.tag)
+    return (await UserTag.all({where: {uid}})).map((usertag) => usertag.tag).sort()
 }
