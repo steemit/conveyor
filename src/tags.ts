@@ -65,7 +65,7 @@ export async function getUsersByTags(this: JCtx, tags: string | string[]) {
             rv.push(uid)
         }
     }
-    return rv
+    return rv.sort()
 }
 
 export async function getTagsForUser(this: JCtx, uid: string) {
