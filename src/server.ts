@@ -12,6 +12,7 @@ import * as os from 'os'
 
 import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
+import * as tags from './tags'
 import * as userData from './user-data'
 
 import {JsonRpcAuth, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
@@ -68,6 +69,13 @@ rpc.registerAuthenticated('get_user_data', userData.getUserData)
 rpc.registerAuthenticated('set_user_data', userData.setUserData)
 rpc.registerAuthenticated('is_email_registered', userData.isEmailRegistered)
 rpc.registerAuthenticated('is_phone_registered', userData.isPhoneRegistered)
+
+rpc.registerAuthenticated('define_tag', tags.defineTag)
+rpc.registerAuthenticated('list_tags', tags.listTags)
+rpc.registerAuthenticated('assign_tag', tags.assignTag)
+rpc.registerAuthenticated('unassign_tag', tags.unassignTag)
+rpc.registerAuthenticated('get_users_by_tags', tags.getUsersByTags)
+rpc.registerAuthenticated('get_tags_for_user', tags.getTagsForUser)
 
 function run() {
     const port = config.get('port')

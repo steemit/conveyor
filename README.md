@@ -116,3 +116,71 @@ Check if the `<phone>` number is in the database.
 *Authenticated: requires signature of an admin account.*
 
 Returns `true` or `false`
+
+
+
+User tags
+---------
+
+Tagging mechanism for other services, allows defining and assigning tags to accounts (or other identifiers) and querying for them.
+
+### API
+
+#### `define_tag <tag_name> <description>`
+
+Define a new tag, valid tag names include only alphanumeric characters and underscore (`_`), description is required.
+
+*Authenticated: requires signature of an admin account.*
+
+
+#### `list_tags`
+
+List all defined tags.
+
+*Authenticated: requires signature of an admin account.*
+
+```js
+[ { name: 'make_site_unbearable', description: 'Slows down the site for user by adding a sleep(5) to every request.' },
+  { name: 'accepted_tos', description: 'User has accepted the terms of service' } ]
+```
+
+#### `assign_tag <user_or_id> <tag>`
+
+Assign `<tag>` to user, throws if tag is not defined.
+
+Note that this is a no-op if user already has the tag.
+
+*Authenticated: requires signature of an admin account.*
+
+
+#### `unassign_tag <user_or_id> <tag>`
+
+Remove `<tag>` from user.
+
+Note that this is a no-op if user already has the tag.
+
+*Authenticated: requires signature of an admin account.*
+
+
+#### `get_users_by_tags <tags>`
+
+Get a list of users that has `<tags>` assigned, `<tags>` can be either
+a string or an array of strings in which case the user must have all the tags given
+to be included in the response.
+
+*Authenticated: requires signature of an admin account.*
+
+```js
+[ 'some_user', 'another_user' ]
+```
+
+
+#### `get_tags_for_user <user_or_id>`
+
+Get a list of tags assigned to `<user_or_id>`.
+
+```js
+[ 'some_tag', 'another_tag' ]
+```
+
+*Authenticated: requires signature of an admin account.*
