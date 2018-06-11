@@ -1,12 +1,14 @@
-FROM node:9-alpine as build-stage
+FROM node:10-alpine as build-stage
 
 WORKDIR /app
 
 # install build dependencies
 RUN apk add --no-cache \
     bash \
+    build-base \
     git \
-    make
+    make \
+    python
 
 # install application dependencies
 COPY package.json yarn.lock ./
@@ -22,7 +24,7 @@ RUN make lib ci-test
 RUN yarn install --non-interactive --frozen-lockfile --production
 
 # copy built application to runtime image
-FROM node:9-alpine
+FROM node:10-alpine
 WORKDIR /app
 COPY --from=build-stage /app/config config
 COPY --from=build-stage /app/lib lib
