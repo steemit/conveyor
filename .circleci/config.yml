@@ -7,21 +7,21 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: docker build .
-  node8:
+  node10:
     docker:
-      - image: node:8-alpine
+      - image: node:10-alpine
     steps:
       - run: apk add --no-cache make bash ca-certificates
       - checkout
       - restore_cache:
           keys:
-          - node8-dependencies-{{ checksum "yarn.lock" }}
-          - node8-dependencies-
+          - node10-dependencies-{{ checksum "yarn.lock" }}
+          - node10-dependencies-
       - run: yarn install --frozen-lockfile
       - save_cache:
           paths:
             - node_modules
-          key: node8-dependencies-{{ checksum "yarn.lock" }}
+          key: node10-dependencies-{{ checksum "yarn.lock" }}
       - run: yarn test
       - store_test_results:
           path: reports
@@ -54,5 +54,5 @@ workflows:
   build:
     jobs:
       - build
-      - node8
       - node9
+      - node10
