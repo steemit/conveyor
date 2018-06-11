@@ -16,11 +16,11 @@ Flags set individually per user always takes precedence.
 
 ### API
 
-#### `get_feature_flags <username>`
+#### `get_feature_flags <account>`
 
-Get feature flags object for `<username>`.
+Get feature flags object for the username `<account>`.
 
-*Authenticated: requires signature of `<username>` or an admin account.*
+*Authenticated: requires signature of `<account>` or an admin account.*
 
 Returns: Key value mapping of feature flags, missing flags should be treated as `false` by the client.
 
@@ -32,18 +32,18 @@ Returns: Key value mapping of feature flags, missing flags should be treated as 
 ```
 
 
-#### `get_feature_flag <username> <flag>`
+#### `get_feature_flag <account> <flag>`
 
-Get specific `<flag>` for `<username>`.
+Get specific `<flag>` for the username `<account>`.
 
-*Authenticated: requires signature of <username> or an admin account.*
+*Authenticated: requires signature of <account> or an admin account.*
 
 Returns: false/true
 
 
-#### `set_feature_flag <username> <flag> <true/false>`
+#### `set_feature_flag <account> <flag> <value>`
 
-Set a `<flag>` override for `<username>`.
+Set a `<flag>` override for the username `<account>`.
 
 *Authenticated: requires signature of an admin account.*
 
@@ -77,9 +77,9 @@ Conveyor is the central point for storing sensitive user data (email, phone, etc
 
 ### API
 
-#### `get_user_data <username>`
+#### `get_user_data <account>`
 
-Return user data for `<username>`, returns an error if the account is not found.
+Return user data for `<account>`, returns an error if the account is not found.
 
 *Authenticated: requires signature of an admin account or the requested user.*
 
@@ -91,9 +91,9 @@ Return user data for `<username>`, returns an error if the account is not found.
 ```
 
 
-#### `set_user_data <username> <data>`
+#### `set_user_data <account> <data>`
 
-Set user data for `<username>`.
+Set user data for `<account>`.
 
 *Authenticated: requires signature of an admin account.*
 
@@ -126,7 +126,7 @@ Tagging mechanism for other services, allows defining and assigning tags to acco
 
 ### API
 
-#### `define_tag <tag_name> <description>`
+#### `define_tag <name> <description>`
 
 Define a new tag, valid tag names include only alphanumeric characters and underscore (`_`), description is required.
 
@@ -144,7 +144,7 @@ List all defined tags.
   { name: 'accepted_tos', description: 'User has accepted the terms of service' } ]
 ```
 
-#### `assign_tag <user_or_id> <tag>`
+#### `assign_tag <uid> <tag> [memo]`
 
 Assign `<tag>` to user, throws if tag is not defined.
 
@@ -153,7 +153,7 @@ Note that this is a no-op if user already has the tag.
 *Authenticated: requires signature of an admin account.*
 
 
-#### `unassign_tag <user_or_id> <tag>`
+#### `unassign_tag <uid> <tag>`
 
 Remove `<tag>` from user.
 
@@ -175,9 +175,9 @@ to be included in the response.
 ```
 
 
-#### `get_tags_for_user <user_or_id>`
+#### `get_tags_for_user <uid>`
 
-Get a list of tags assigned to `<user_or_id>`.
+Get a list of tags assigned to `<uid>`.
 
 ```js
 [ 'some_tag', 'another_tag' ]
