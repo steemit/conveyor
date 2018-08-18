@@ -28,7 +28,7 @@ export async function getPrices(this: JCtx) {
     // STEEM<>USD is reported by witnesses
     // (unit reported is SBD but under the assumption that 1 USD always equals 1 SBD)
     const steemUsdPrice = Price.from(feed.price_history[feed.price_history.length - 1])
-    const usdPerSteem = steemUsdPrice.convert(Asset.from('1.000 STEEM')).amount
+    const usdPerSteem = steemUsdPrice.convert(ONE_STEEM).amount
 
     // VESTS<>STEEM price
     const vestsPrice = Price.from({
