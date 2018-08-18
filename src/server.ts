@@ -46,7 +46,7 @@ router.get('/', healthcheck)
 
 app.use(router.routes())
 
-rpc.register('hello', async function(name: string) {
+rpc.register('hello', async function(name: string = 'Anonymous') {
     this.log.info('Hello %s', name)
     return `I'm sorry, ${ name }, I can't do that.`
 })
