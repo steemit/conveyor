@@ -9,7 +9,7 @@ name = 'conveyor'
 # number of worker processes to spawn, 0 = autodetect
 num_workers = 1
 
-# steem rpc node used to verify signed requests
+# steem rpc node used to verify signed requests and get price feeds
 rpc_node = 'https://testnet.steem.vc'
 
 # admin role allowed to make authenticated calls
