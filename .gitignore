@@ -3,3 +3,4 @@ lib/
 reports/
 .nyc_output/
 config/local*
+.idea/

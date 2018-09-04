@@ -14,6 +14,7 @@ import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
 import * as tags from './tags'
 import * as userData from './user-data'
+import * as userSearch from './user-search'
 
 import {JsonRpcAuth, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
 import {db} from './database'
@@ -76,6 +77,7 @@ rpc.registerAuthenticated('assign_tag', tags.assignTag)
 rpc.registerAuthenticated('unassign_tag', tags.unassignTag)
 rpc.registerAuthenticated('get_users_by_tags', tags.getUsersByTags)
 rpc.registerAuthenticated('get_tags_for_user', tags.getTagsForUser)
+rpc.registerAuthenticated('get_account', userSearch.getAccount)
 
 function run() {
     const port = config.get('port')

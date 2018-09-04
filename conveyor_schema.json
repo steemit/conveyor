@@ -1,0 +1,553 @@
+{"$schema": "https://rawgit.com/mzernetsch/jrgen/master/jrgen-spec.schema.json",
+  "jrgen": "1.1",
+  "jsonrpc": "2.0",
+  "info": {
+    "title": "Conveyor",
+    "description": [
+      "An api which handles various stemit rpc requests.",
+      "This api follows the json-rpc 2.0 specification. More information available at http://www.jsonrpc.org/specification.",
+      "## Drafts",
+      "Drafts provide ability to store and resume editing posts.",
+      "## Feature Flags",
+      "Feature flags allows our apps (condenser mainly) to hide certain features behind flags.",
+      "Flags can be set individually for users or probabilistically to roll out a feature incrementally, for example `set_flag_probability orange_theme 0.5` will enable the flag for ~50% of our users. Changing the flag probability does not re-randomize the user selection so that a user that had their flag enabled at 0.5 will still have it enabled when going to 0.75. This is achieved by seeding a PRNG with the shasum of username+flag.",
+      "Flags set individually per user always takes precedence.",
+      "## User Data",
+      "Conveyor is the central point for storing sensitive user data (email, phone, etc). No other services should store this data and should instead query for it here every time.",
+      "## Tags",
+      "Tagging mechanism for other services, allows defining and assigning tags to accounts (or other identifiers) and querying for them."
+    ],
+    "version": "1.0"
+  },
+  "definitions": {
+    "account": {
+      "type": "object",
+      "properties": {
+        "name": {"$ref":"#/definitions/account_name"},
+        "vote_sp": {
+          "description": "SP minus delegated away plus delegated to",
+          "type": "number",
+          "default": 100.1
+        },
+        "joined_at": {
+          "description": "account creation date",
+          "type": "string",
+          "default": "2016-03-24T17:00"
+        },
+        "reputation": {
+          "description": "legacy rep score (centered at 25)",
+          "type": "number",
+          "default": 100
+        },
+        "context": {
+          "description": "relationship context",
+          "type": "object",
+          "properties":{}
+        },
+        "context.recent_sends": {
+          "description": "last 30d number of xfers to this acct",
+          "type": "integer",
+          "default": 100
+
+        },
+        "context.is_following": {
+          "description": "if ctx follows this user",
+          "type": "boolean",
+          "default": false
+        },
+        "context.is_follower": {
+          "description": "if ctx follows this user",
+          "type": "boolean",
+          "default": false
+        },
+        "context.is_muted": {
+          "description": "if ctx muted (ignored) this user",
+          "type": "boolean",
+          "default": false
+        },
+        "tags": {
+          "description": "{abuse exchange verified none}",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+  "abuse",
+  "exchange",
+  "verified",
+  "none"
+]
+            },
+          "default": ["none"]
+        },
+        "value_sp": {
+          "description": "effective SP value of all held tokens",
+          "type": "number",
+          "default": 1000.1
+        },
+        "followers": {
+          "description": "follower count",
+          "type": "integer",
+          "default": 100
+        },
+        "following": {
+          "description": "following count",
+          "type": "integer",
+          "default": 100
+        }
+      }
+    },
+    "account_name": {
+      "type":"string",
+      "description": "steem blockchain account",
+      "default":"steemit"
+    },
+    "email":{
+      "type":"string",
+      "format":"email",
+      "default":"steemit@steemit.com"
+    },
+    "flag": {
+      "type":"string",
+      "default": "example-flag"
+    },
+    "phone": {
+      "type":"string",
+      "default":"+10008675309"
+    },
+    "probability":{
+      "type":"number",
+      "min":0,
+      "max":1,
+      "default":0.5
+    },
+    "saved_draft": {
+      "type":"object",
+      "properties":{
+        "title":{
+          "type":"string",
+          "default":"example draft title"
+        },
+        "body":{
+          "type":"string",
+          "default":"example draft body"
+        },
+        "uuid":{"$ref":"#/definitions/uuid"}
+      }
+    },
+    "request_signature":{
+      "type":"string",
+      "default":"dlfkjdlkfjsldkfjsdlkfjsldkfj"
+    },
+    "tag": {
+      "type":"string",
+      "default":"example-tag"
+    },
+    "uid": {
+      "type":"string",
+      "default":"1001"
+    },
+    "unsaved_draft": {
+      "type":"object",
+      "properties":{
+        "title":{
+          "type":"string",
+          "default":"example draft title"
+        },
+        "body":{
+          "type":"string",
+          "default":"example draft body"
+        }
+      }
+    },
+    "uuid": {
+      "type":"string",
+      "default": "dce998f6-b811-4181-a056-19886a6db7c6"
+    },
+    "userData": {
+      "type": "object",
+      "properties": {
+        "email": {"$ref":"#/definitions/email"},
+        "phone": {"$ref":"#/definitions/phone"}
+      }
+    }
+  },
+  "methods": {
+    "conveyor.list_drafts": {
+      "summary":"List stored drafts for account.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["drafts"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "account": {"$ref":"#/definitions/account_name"}
+        },
+        "required": ["account"]
+      },
+      "result":{
+        "description":"",
+        "type":"array",
+        "items":{"$ref":"#/definitions/saved_draft"
+        }
+      }
+    },
+    "conveyor.save_draft":{
+      "summary":"Save draft for account.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["drafts"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "account": {"$ref":"#/definitions/account_name"},
+          "draft": {"$ref":"#/definitions/unsaved_draft"}
+        },
+        "required": ["account","draft"]
+      },
+      "result":{
+        "description":"",
+        "type":"object",
+        "properties":{
+          "uuid":{"$ref":"#/definitions/uuid"}
+        }}
+    },
+    "conveyor.remove_draft":{
+      "summary":"Delete saved draft with uuid for account.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["drafts"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "account": {"$ref":"#/definitions/account_name"},
+          "uuid": {"$ref":"#/definitions/uuid"}
+        },
+        "required": ["account","uuid"]
+      },
+      "result":{
+        "description":"",
+        "type":"object",
+        "properties":{
+          "uuid":{"$ref":"#/definitions/uuid"}
+        }}
+    },
+    "conveyor.get_feature_flag":{
+      "summary":"Get specific flag for the username account.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["feature-flags"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "account": {"$ref":"#/definitions/account_name"},
+          "flag": {"$ref":"#/definitions/flag"}
+        },
+        "required": ["account","flag"]
+      },
+      "result":{
+        "description":"",
+        "type":"object",
+        "properties":{}}
+    },
+    "conveyor.set_feature_flag":{
+      "summary":"Set a flag override for the username account.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["feature-flags"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "account": {"$ref":"#/definitions/account_name"},
+          "flag": {"$ref":"#/definitions/flag"},
+          "value": {
+            "oneOf": [
+              {"type":"boolean"},
+              {"type":"null"}]
+          }
+        },
+        "required": ["account","flag","value"]
+      },
+      "result":{
+        "description":"",
+        "type":"object",
+        "properties":{}}
+    },
+    "conveyor.get_feature_flags":{
+      "summary":"Get feature flags object for the username account",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["feature-flags"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "account": {"$ref":"#/definitions/account_name"}
+        },
+        "required": ["account"]
+      },
+      "result":{
+        "description":"",
+        "type":"object",
+        "properties":{}}
+    },
+    "conveyor.set_feature_flag_probability":{
+      "summary":"Set the probability expressed as a fraction 0.0 to 1.0 that a flag will resolve to true.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["feature-flags"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "flag": {"$ref":"#/definitions/flag"},
+          "probability": {"$ref":"#/definitions/probability"}
+        },
+        "required": ["flag","probability"]
+      },
+      "result":{
+        "description":"",
+        "type":"object",
+        "properties":{}}
+    },
+    "conveyor.get_feature_flag_probabilities":{
+      "summary":"Get all the set flag probabilities.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["feature-flags"],
+      "params": {
+        "type": "object",
+        "properties": {}
+      },
+      "result":{
+        "description":"",
+        "type":"object",
+        "properties":{}}
+    },
+    "conveyor.get_user_data":{
+      "summary":"Return user data for account, returns an error if the account is not found.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["user-data"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "account": {"$ref":"#/definitions/account_name"}
+        },
+        "required": ["account"]
+      },
+      "result":{
+        "$ref":"#/definitions/userData"
+      }
+    },
+    "conveyor.set_user_data":{
+      "summary":"Set user data for account.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["user-data"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "account": {"$ref":"#/definitions/account_name"},
+          "userData":{"$ref":"#/definitions/userData"}
+        },
+        "required": ["account","userData"]
+      },
+      "result":{
+        "description":"",
+        "type":"object",
+        "properties":{}}
+    },
+    "conveyor.is_email_registered":{
+      "summary":"Check if the email address is in the database.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["user-data"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "$ref": "#/definitions/email"
+          }
+        },
+        "required": ["email"]
+      },
+      "result":{
+        "description":"",
+        "type":"boolean",
+        "default":false
+        }
+    },
+    "conveyor.is_phone_registered":{
+      "summary":"Check if the phone number is in the database.",
+      "description":"*Authenticated: requires signature of account or an admin account.*",
+      "tags":["user-data"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "$ref": "#/definitions/phone"
+          }
+        },
+        "required": ["phone"]
+      },
+      "result":{
+        "description":"",
+        "type":"boolean",
+        "default":false}
+    },
+    "conveyor.define_tag":{
+      "summary":"",
+      "description":"*Authenticated: requires signature of admin account.*",
+      "tags":["tags"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "tag": {"$ref":"#/definitions/tag"},
+          "description": {
+            "type":"string",
+            "default":"tag-string is an example tag"}
+        },
+        "required": ["tag","description"]
+      },
+      "result":{
+        "description":"",
+        "type":"boolean",
+        "default":false}
+    },
+    "conveyor.list_tags":{
+      "summary":"List all defined tags.",
+      "description":"*Authenticated: requires signature of admin account.*",
+      "tags":["tags"],
+      "params": {
+        "type": "object",
+        "properties": {}
+      },
+      "result":{
+        "description":"",
+        "type":"array",
+        "items":{"$ref":"#/definitions/tag"}
+      }
+    },
+    "conveyor.assign_tag":{
+      "summary":"Assign tag to user, throws if tag is not defined.",
+      "description":"*Authenticated: requires signature of admin account.*",
+      "tags":["tags"],
+      "params": {
+        "type":"object",
+        "properties":{
+          "uid":{"$ref":"#/definitions/uid"},
+          "tag":{"$ref":"#/definitions/tag"},
+          "memo":{"type":"string","default":"this is a tag memo"}
+        },
+        "required":["uid","tag"]
+      },
+      "result":{
+        "description":"",
+        "type":"array",
+        "items":{"type":"string"}}
+    },
+    "conveyor.unassign_tag":{
+      "summary":"Remove tag from user.",
+      "description":"*Authenticated: requires signature of admin account.*",
+      "tags":["tags"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "uid": {"$ref":"#/definitions/uid"},
+          "tag":{"$ref":"#/definitions/tag"}
+        },
+        "required": ["uid","tag"]
+      },
+      "result":{
+        "description":"",
+        "type":"object",
+        "properties":{}}
+    },
+    "conveyor.get_users_by_tags":{
+      "summary":"Get a list of users that has tags assigned.",
+      "description":"tags can be either a string or an array of strings in which case the user must have all the tags givento be included in the response. *Authenticated: requires signature of an admin account.* ",
+      "tags":["tags"],
+      "params": {
+        "type":"object",
+        "properties": {
+          "tags":{
+            "oneOf": [
+              {"$ref":"#/definitions/tag"},
+              {
+                "type": "array",
+                "items":{"$ref":"#/definitions/tag"}
+              }
+            ]
+          }
+        },
+        "required": ["tags"]
+      },
+      "result":{
+        "description":"",
+        "type":"array",
+        "items":{"$ref":"#/definitions/uid"}}
+    },
+    "conveyor.get_tags_for_user":{
+      "summary":"Get a list of tags assigned to uid.",
+      "description":"*Authenticated: requires signature of an admin account.*",
+      "tags":["tags"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "uid": {"$ref":"#/definitions/uid"},
+          "audit":{
+            "type":"boolean",
+            "default": false
+          }
+        },
+        "required": ["uid","audit"]
+      },
+      "result":{
+        "description":"",
+        "type":"array",
+        "items":{"type":"string"}}
+    },
+    "conveyor.get_account": {
+      "summary":"","description":"*Authenticated: requires signature of an admin account.*",
+      "tags":["user"],
+      "params": {
+        "type": "object",
+        "properties": {
+          "name": {"$ref":"#/definitions/account_name"},
+          "user_context": {
+            "description": "the user performing the search",
+            "type":"string",
+            "default":"steemit"
+          }
+        },
+        "required": ["name"]
+      },
+      "result":{
+        "$ref":"#/definitions/account"}
+    },
+    "conveyor.autocomplete_account": {
+      "summary":"","description":"*Authenticated: requires signature of an admin account.*",
+      "tags":["user"],
+      "params": {
+        "type": "object",
+        "properties":{
+          "account_substring": {
+            "type": "string",
+            "default":"ste"
+          }
+        }
+      },
+      "result":{
+        "type":"object",
+        "properties": {
+            "recent": {
+              "description":"recently referenced accounts",
+              "type":"array",
+              "items": {"$ref":"#/definitions/account"},
+              "maxItems":10
+            },
+            "friend": {
+              "description":"friend accounts",
+              "type":"array",
+              "items": {"$ref":"#/definitions/account"},
+              "maxItems":10
+            },
+            "global": {
+              "description":"all accounts",
+              "type":"array",
+              "items": {"$ref":"#/definitions/account"},
+              "maxItems":10
+            }
+          }
+      }
+      
+    }
+  }
+}

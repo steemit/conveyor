@@ -4,6 +4,10 @@ PATH  := ./node_modules/.bin:$(PATH)
 
 SRC_FILES := $(shell find src -name '*.ts')
 
+DOCS_ROOT := docs
+API_TESTS_ROOT := api-tests
+CONVEYOR_SCHEMA := conveyor_schema.json
+
 all: lib
 
 lib: $(SRC_FILES) node_modules tsconfig.json
@@ -55,3 +59,21 @@ clean:
 .PHONY: distclean
 distclean: clean
 	rm -rf node_modules/
+
+.PHONY:docs
+docs: $(DOCS_ROOT)/Conveyor.html $(DOCS_ROOT)/Conveyor.md
+
+$(DOCS_ROOT)/Conveyor.html:$(CONVEYOR_SCHEMA)
+	-mkdir -p $(HTML_DOCS_ROOT)
+	./node_modules/.bin/jrgen --outdir $(DOCS_ROOT) docs/html $<
+
+
+$(DOCS_ROOT)/Conveyor.md: $(CONVEYOR_SCHEMA)
+	-mkdir -p $(MD_DOCS_ROOT)
+	./node_modules/.bin/jrgen --outdir $(DOCS_ROOT) docs/md $<
+
+
+.PHONY: api-tests
+api-tests: $(CONVEYOR_SCHEMA)
+	-mkdir -p $(API_TESTS_ROOT)
+	./node_modules/.bin/jrgen --outdir $(API_TESTS_ROOT) test/jasmine $<
