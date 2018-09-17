@@ -39,6 +39,16 @@
           "type": "number",
           "default": 100
         },
+        "bad_actor":{
+          "description":"is account on one or more bad actor lists",
+          "type": "boolean",
+          "default": false
+        },
+        "verified":{
+          "description":"is account a verified account, eg, an exchange",
+          "type": "boolean",
+          "default": false
+        },
         "context": {
           "description": "relationship context",
           "type": "object",
@@ -48,7 +58,6 @@
           "description": "last 30d number of xfers to this acct",
           "type": "integer",
           "default": 100
-
         },
         "context.is_following": {
           "description": "if ctx follows this user",
