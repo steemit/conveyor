@@ -1,0 +1,4067 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conveyor</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ"
+    crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+    crossorigin="anonymous"></script>
+
+  <style>
+    .summary-container {
+      word-wrap: break-word;
+    }
+
+    .description-container {
+      word-wrap: break-word;
+    }
+
+    .container {
+      margin: 25px;
+    }
+
+    .card-header>h3 {
+      display: inline;
+    }
+
+    .card-header[data-toggle] {
+      cursor: pointer;
+    }
+
+    .card-header .badge {
+      margin-top: .35rem;
+    }
+
+    textarea {
+      word-wrap: normal !important;
+      white-space: nowrap;
+      height: 200px;
+    }
+
+    .textarea-success {
+      background-color: #dff0d8 !important;
+      border-color: #d0e9c6 !important;
+      color: #3c763d !important;
+    }
+
+    .textarea-danger {
+      background-color: #f2dede !important;
+      border-color: #ebcccc !important;
+      color: #a94442 !important;
+    }
+
+    #toc {
+      position: sticky;
+      top: 25px;
+      height: calc(100vh - 50px);
+      overflow: auto;
+      font-size: 0.75em;
+    }
+
+    .main-col {
+      border-left: 1px solid rgba(0, 0, 0, .1)
+    }
+
+    .nav-link {
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+    }
+
+    h4 {
+      font-size: 1.25rem;
+    }
+
+    .schema-preview {
+      max-height: 500px;
+      margin-bottom: 0px;
+    }
+
+    @media (max-width: 992px) {
+      #toc {
+        display: none;
+      }
+      .main-col {
+        border-left: none;
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  </style>
+
+  <script>
+    var methodsCollapsed = true;
+    var toggleMethods = function () {
+      methodsCollapsed = !methodsCollapsed;
+      if (methodsCollapsed) {
+        $('.collapse').collapse('hide')
+      } else {
+        $('.collapse').collapse('show')
+      }
+    }
+
+    var showSendRequestModal = function (request) {
+      $('#send-request-request').val(JSON.stringify(JSON.parse(decodeURIComponent(request)), null, 4));
+      $('#send-request-response').val('');
+      $("#send-request-response").removeClass("textarea-danger textarea-success");
+      $('#send-request-modal').modal('show')
+    }
+
+    var showExampleModal = function (request, response) {
+      $('#show-example-request').val(JSON.stringify(JSON.parse(decodeURIComponent(request)), null, 4));
+      $('#show-example-response').val(JSON.stringify(JSON.parse(decodeURIComponent(response)), null, 4));
+      $('#show-example-modal').modal('show')
+    }
+
+    var sendRequest = function () {
+      var url = $('#send-request-url').val();
+      var request = $('#send-request-request').val();
+      fetch(url, {
+        method: 'post',
+        body: request,
+      }).then(function (response) {
+        if (response.ok) {
+          response.json().then((rpcResponse) => {
+            $("#send-request-response").val(JSON.stringify(rpcResponse, null, 4));
+            $("#send-request-response").removeClass("textarea-danger").addClass("textarea-success");
+          });
+        } else {
+          $("#send-request-response").val(response.status + ' - ' + response.statusText);
+          $("#send-request-response").removeClass("textarea-success").addClass("textarea-danger");
+        }
+      }).catch(function (error) {
+        $("#send-request-response").val(error);
+        $("#send-request-response").removeClass("textarea-success").addClass("textarea-danger");
+      });
+    }
+
+    $(function () {
+      $('[data-toggle="popover"]').popover();
+      $('#send-request-url').val('http://127.0.0.1:8080');
+    })
+  </script>
+</head>
+
+<body data-spy="scroll" data-target="#toc">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-3">
+        <nav id="toc" data-spy="affix" class="affix" data-toggle="toc">
+          <ul class="nav nav-pills flex-column">
+  <li class="nav-item">
+  <a class="nav-link" href="#conveyor_list_drafts">conveyor.list_drafts</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_save_draft">conveyor.save_draft</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_remove_draft">conveyor.remove_draft</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_get_feature_flag">conveyor.get_feature_flag</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_set_feature_flag">conveyor.set_feature_flag</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_get_feature_flags">conveyor.get_feature_flags</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_set_feature_flag_probability">conveyor.set_feature_flag_probability</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_get_feature_flag_probabilities">conveyor.get_feature_flag_probabilities</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_get_user_data">conveyor.get_user_data</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_set_user_data">conveyor.set_user_data</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_is_email_registered">conveyor.is_email_registered</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_is_phone_registered">conveyor.is_phone_registered</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_define_tag">conveyor.define_tag</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_list_tags">conveyor.list_tags</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_assign_tag">conveyor.assign_tag</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_unassign_tag">conveyor.unassign_tag</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_get_users_by_tags">conveyor.get_users_by_tags</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_get_tags_for_user">conveyor.get_tags_for_user</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_get_account">conveyor.get_account</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_autocomplete_account">conveyor.autocomplete_account</a>
+</li>
+
+</ul>
+
+        </nav>
+      </div>
+      <div class="col-lg-9 main-col">
+
+        <h1>Conveyor</h1>
+        <div class="introduction">
+          <p>An api which handles various stemit rpc requests.<br>This api follows the json-rpc 2.0 specification. More information available at http://www.jsonrpc.org/specification.<br>## Drafts<br>Drafts provide ability to store and resume editing posts.<br>## Feature Flags<br>Feature flags allows our apps (condenser mainly) to hide certain features behind flags.<br>Flags can be set individually for users or probabilistically to roll out a feature incrementally, for example `set_flag_probability orange_theme 0.5` will enable the flag for ~50% of our users. Changing the flag probability does not re-randomize the user selection so that a user that had their flag enabled at 0.5 will still have it enabled when going to 0.75. This is achieved by seeding a PRNG with the shasum of username+flag.<br>Flags set individually per user always takes precedence.<br>## User Data<br>Conveyor is the central point for storing sensitive user data (email, phone, etc). No other services should store this data and should instead query for it here every time.<br>## Tags<br>Tagging mechanism for other services, allows defining and assigning tags to accounts (or other identifiers) and querying for them.</p>
+          <strong>Version: 1.0</strong>
+        </div>
+        <hr>
+        <button type="button" class="btn btn-primary btn-sm" onclick="toggleMethods()">
+          Toggle all
+        </button>
+        <br>
+        <hr> <div class="method" id="conveyor_list_drafts">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_list_drafts-content">
+      <h3>conveyor.list_drafts</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">drafts</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_list_drafts-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.list_drafts%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%22title%22%3A%20%22example%20draft%20title%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%22body%22%3A%20%22example%20draft%20body%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%22uuid%22%3A%20%22dce998f6-b811-4181-a056-19886a6db7c6%22%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%5D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.list_drafts%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>List stored drafts for account.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'account': {
+      'type': 'string',
+      'description': 'steem blockchain account',
+      'default': 'steemit'
+    }
+  },
+  'required': [
+    'account'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'description': 'steem blockchain account',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params.account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'array',
+    'items': {
+        'type': 'object',
+        'properties': {
+            'title': {
+                'type': 'string',
+                'default': 'example draft title'
+            },
+            'body': {
+                'type': 'string',
+                'default': 'example draft body'
+            },
+            'uuid': {
+                'type': 'string',
+                'default': 'dce998f6-b811-4181-a056-19886a6db7c6'
+            }
+        }
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>array</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'object',
+    'properties': {
+        'title': {
+            'type': 'string',
+            'default': 'example draft title'
+        },
+        'body': {
+            'type': 'string',
+            'default': 'example draft body'
+        },
+        'uuid': {
+            'type': 'string',
+            'default': 'dce998f6-b811-4181-a056-19886a6db7c6'
+        }
+    }
+}</pre>" data-html="true">
+  <td>result[#]</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'default': 'example draft title'
+}</pre>" data-html="true">
+  <td>result[#]?.title</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'default': 'example draft body'
+}</pre>" data-html="true">
+  <td>result[#]?.body</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'default': 'dce998f6-b811-4181-a056-19886a6db7c6'
+}</pre>" data-html="true">
+  <td>result[#]?.uuid</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_save_draft">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_save_draft-content">
+      <h3>conveyor.save_draft</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">drafts</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_save_draft-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.save_draft%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22draft%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%22title%22%3A%20%22example%20draft%20title%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%22body%22%3A%20%22example%20draft%20body%22%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22uuid%22%3A%20%22dce998f6-b811-4181-a056-19886a6db7c6%22%0A%20%20%20%20%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.save_draft%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22draft%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%22title%22%3A%20%22example%20draft%20title%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%22body%22%3A%20%22example%20draft%20body%22%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Save draft for account.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'account': {
+      'type': 'string',
+      'description': 'steem blockchain account',
+      'default': 'steemit'
+    },
+    'draft': {
+      'type': 'object',
+      'properties': {
+        'title': {
+          'type': 'string',
+          'default': 'example draft title'
+        },
+        'body': {
+          'type': 'string',
+          'default': 'example draft body'
+        }
+      }
+    }
+  },
+  'required': [
+    'account',
+    'draft'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'description': 'steem blockchain account',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params.account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'title': {
+      'type': 'string',
+      'default': 'example draft title'
+    },
+    'body': {
+      'type': 'string',
+      'default': 'example draft body'
+    }
+  }
+}</pre>" data-html="true">
+  <td>params.draft</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'example draft title'
+}</pre>" data-html="true">
+  <td>params.draft?.title</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'example draft body'
+}</pre>" data-html="true">
+  <td>params.draft?.body</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'object',
+    'properties': {
+        'uuid': {
+            'type': 'string',
+            'default': 'dce998f6-b811-4181-a056-19886a6db7c6'
+        }
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'default': 'dce998f6-b811-4181-a056-19886a6db7c6'
+}</pre>" data-html="true">
+  <td>result?.uuid</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_remove_draft">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_remove_draft-content">
+      <h3>conveyor.remove_draft</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">drafts</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_remove_draft-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.remove_draft%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22uuid%22%3A%20%22dce998f6-b811-4181-a056-19886a6db7c6%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22uuid%22%3A%20%22dce998f6-b811-4181-a056-19886a6db7c6%22%0A%20%20%20%20%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.remove_draft%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22uuid%22%3A%20%22dce998f6-b811-4181-a056-19886a6db7c6%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Delete saved draft with uuid for account.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'account': {
+      'type': 'string',
+      'description': 'steem blockchain account',
+      'default': 'steemit'
+    },
+    'uuid': {
+      'type': 'string',
+      'default': 'dce998f6-b811-4181-a056-19886a6db7c6'
+    }
+  },
+  'required': [
+    'account',
+    'uuid'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'description': 'steem blockchain account',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params.account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'dce998f6-b811-4181-a056-19886a6db7c6'
+}</pre>" data-html="true">
+  <td>params.uuid</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'object',
+    'properties': {
+        'uuid': {
+            'type': 'string',
+            'default': 'dce998f6-b811-4181-a056-19886a6db7c6'
+        }
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'default': 'dce998f6-b811-4181-a056-19886a6db7c6'
+}</pre>" data-html="true">
+  <td>result?.uuid</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_get_feature_flag">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_get_feature_flag-content">
+      <h3>conveyor.get_feature_flag</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">feature-flags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_get_feature_flag-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_feature_flag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22flag%22%3A%20%22example-flag%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_feature_flag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22flag%22%3A%20%22example-flag%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Get specific flag for the username account.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'account': {
+      'type': 'string',
+      'description': 'steem blockchain account',
+      'default': 'steemit'
+    },
+    'flag': {
+      'type': 'string',
+      'default': 'example-flag'
+    }
+  },
+  'required': [
+    'account',
+    'flag'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'description': 'steem blockchain account',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params.account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'example-flag'
+}</pre>" data-html="true">
+  <td>params.flag</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_set_feature_flag">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_set_feature_flag-content">
+      <h3>conveyor.set_feature_flag</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">feature-flags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_set_feature_flag-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.set_feature_flag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22flag%22%3A%20%22example-flag%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.set_feature_flag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22flag%22%3A%20%22example-flag%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Set a flag override for the username account.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'account': {
+      'type': 'string',
+      'description': 'steem blockchain account',
+      'default': 'steemit'
+    },
+    'flag': {
+      'type': 'string',
+      'default': 'example-flag'
+    },
+    'value': {
+      'oneOf': [
+        {
+          'type': 'boolean'
+        },
+        {
+          'type': 'null'
+        }
+      ]
+    }
+  },
+  'required': [
+    'account',
+    'flag',
+    'value'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'description': 'steem blockchain account',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params.account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'example-flag'
+}</pre>" data-html="true">
+  <td>params.flag</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'oneOf': [
+    {
+      'type': 'boolean'
+    },
+    {
+      'type': 'null'
+    }
+  ]
+}</pre>" data-html="true">
+  <td>params.value</td>
+  <td>undefined</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_get_feature_flags">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_get_feature_flags-content">
+      <h3>conveyor.get_feature_flags</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">feature-flags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_get_feature_flags-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_feature_flags%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_feature_flags%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Get feature flags object for the username account</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'account': {
+      'type': 'string',
+      'description': 'steem blockchain account',
+      'default': 'steemit'
+    }
+  },
+  'required': [
+    'account'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'description': 'steem blockchain account',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params.account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_set_feature_flag_probability">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_set_feature_flag_probability-content">
+      <h3>conveyor.set_feature_flag_probability</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">feature-flags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_set_feature_flag_probability-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.set_feature_flag_probability%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22flag%22%3A%20%22example-flag%22%2C%0A%20%20%20%20%20%20%20%20%22probability%22%3A%200.5%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.set_feature_flag_probability%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22flag%22%3A%20%22example-flag%22%2C%0A%20%20%20%20%20%20%20%20%22probability%22%3A%200.5%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Set the probability expressed as a fraction 0.0 to 1.0 that a flag will resolve to true.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'flag': {
+      'type': 'string',
+      'default': 'example-flag'
+    },
+    'probability': {
+      'type': 'number',
+      'min': 0,
+      'max': 1,
+      'default': 0.5
+    }
+  },
+  'required': [
+    'flag',
+    'probability'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'example-flag'
+}</pre>" data-html="true">
+  <td>params.flag</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'number',
+  'min': 0,
+  'max': 1,
+  'default': 0.5
+}</pre>" data-html="true">
+  <td>params.probability</td>
+  <td>number</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_get_feature_flag_probabilities">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_get_feature_flag_probabilities-content">
+      <h3>conveyor.get_feature_flag_probabilities</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">feature-flags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_get_feature_flag_probabilities-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_feature_flag_probabilities%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_feature_flag_probabilities%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Get all the set flag probabilities.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {}
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_get_user_data">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_get_user_data-content">
+      <h3>conveyor.get_user_data</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">user-data</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_get_user_data-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_user_data%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22email%22%3A%20%22steemit%40steemit.com%22%2C%0A%20%20%20%20%20%20%20%20%22phone%22%3A%20%22%2B10008675309%22%0A%20%20%20%20%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_user_data%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Return user data for account, returns an error if the account is not found.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'account': {
+      'type': 'string',
+      'description': 'steem blockchain account',
+      'default': 'steemit'
+    }
+  },
+  'required': [
+    'account'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'description': 'steem blockchain account',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params.account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'object',
+    'properties': {
+        'email': {
+            'type': 'string',
+            'format': 'email',
+            'default': 'steemit@steemit.com'
+        },
+        'phone': {
+            'type': 'string',
+            'default': '+10008675309'
+        }
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'format': 'email',
+    'default': 'steemit@steemit.com'
+}</pre>" data-html="true">
+  <td>result?.email</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'default': '+10008675309'
+}</pre>" data-html="true">
+  <td>result?.phone</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_set_user_data">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_set_user_data-content">
+      <h3>conveyor.set_user_data</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">user-data</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_set_user_data-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.set_user_data%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22userData%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%22email%22%3A%20%22steemit%40steemit.com%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%22phone%22%3A%20%22%2B10008675309%22%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.set_user_data%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22userData%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%22email%22%3A%20%22steemit%40steemit.com%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%22phone%22%3A%20%22%2B10008675309%22%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Set user data for account.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'account': {
+      'type': 'string',
+      'description': 'steem blockchain account',
+      'default': 'steemit'
+    },
+    'userData': {
+      'type': 'object',
+      'properties': {
+        'email': {
+          'type': 'string',
+          'format': 'email',
+          'default': 'steemit@steemit.com'
+        },
+        'phone': {
+          'type': 'string',
+          'default': '+10008675309'
+        }
+      }
+    }
+  },
+  'required': [
+    'account',
+    'userData'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'description': 'steem blockchain account',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params.account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'email': {
+      'type': 'string',
+      'format': 'email',
+      'default': 'steemit@steemit.com'
+    },
+    'phone': {
+      'type': 'string',
+      'default': '+10008675309'
+    }
+  }
+}</pre>" data-html="true">
+  <td>params.userData</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'format': 'email',
+  'default': 'steemit@steemit.com'
+}</pre>" data-html="true">
+  <td>params.userData?.email</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': '+10008675309'
+}</pre>" data-html="true">
+  <td>params.userData?.phone</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_is_email_registered">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_is_email_registered-content">
+      <h3>conveyor.is_email_registered</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">user-data</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_is_email_registered-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.is_email_registered%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22email%22%3A%20%22steemit%40steemit.com%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20false%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.is_email_registered%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22email%22%3A%20%22steemit%40steemit.com%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Check if the email address is in the database.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'email': {
+      'type': 'string',
+      'format': 'email',
+      'default': 'steemit@steemit.com'
+    }
+  },
+  'required': [
+    'email'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'format': 'email',
+  'default': 'steemit@steemit.com'
+}</pre>" data-html="true">
+  <td>params.email</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>boolean</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_is_phone_registered">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_is_phone_registered-content">
+      <h3>conveyor.is_phone_registered</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">user-data</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_is_phone_registered-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.is_phone_registered%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22phone%22%3A%20%22%2B10008675309%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20false%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.is_phone_registered%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22phone%22%3A%20%22%2B10008675309%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Check if the phone number is in the database.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of account or an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'phone': {
+      'type': 'string',
+      'default': '+10008675309'
+    }
+  },
+  'required': [
+    'phone'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': '+10008675309'
+}</pre>" data-html="true">
+  <td>params.phone</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>boolean</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_define_tag">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_define_tag-content">
+      <h3>conveyor.define_tag</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">tags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_define_tag-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.define_tag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22tag%22%3A%20%22example-tag%22%2C%0A%20%20%20%20%20%20%20%20%22description%22%3A%20%22tag-string%20is%20an%20example%20tag%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20false%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.define_tag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22tag%22%3A%20%22example-tag%22%2C%0A%20%20%20%20%20%20%20%20%22description%22%3A%20%22tag-string%20is%20an%20example%20tag%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p></p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'tag': {
+      'type': 'string',
+      'default': 'example-tag'
+    },
+    'description': {
+      'type': 'string',
+      'default': 'tag-string is an example tag'
+    }
+  },
+  'required': [
+    'tag',
+    'description'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'example-tag'
+}</pre>" data-html="true">
+  <td>params.tag</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'tag-string is an example tag'
+}</pre>" data-html="true">
+  <td>params.description</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>boolean</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_list_tags">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_list_tags-content">
+      <h3>conveyor.list_tags</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">tags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_list_tags-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.list_tags%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%22example-tag%22%0A%20%20%20%20%5D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.list_tags%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>List all defined tags.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {}
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'array',
+    'items': {
+        'type': 'string',
+        'default': 'example-tag'
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>array</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'default': 'example-tag'
+}</pre>" data-html="true">
+  <td>result[#]</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_assign_tag">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_assign_tag-content">
+      <h3>conveyor.assign_tag</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">tags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_assign_tag-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.assign_tag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22uid%22%3A%20%221001%22%2C%0A%20%20%20%20%20%20%20%20%22tag%22%3A%20%22example-tag%22%2C%0A%20%20%20%20%20%20%20%20%22memo%22%3A%20%22this%20is%20a%20tag%20memo%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%5B%0A%20%20%20%20%20%20%20%20null%0A%20%20%20%20%5D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.assign_tag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22uid%22%3A%20%221001%22%2C%0A%20%20%20%20%20%20%20%20%22tag%22%3A%20%22example-tag%22%2C%0A%20%20%20%20%20%20%20%20%22memo%22%3A%20%22this%20is%20a%20tag%20memo%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Assign tag to user, throws if tag is not defined.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'uid': {
+      'type': 'string',
+      'default': '1001'
+    },
+    'tag': {
+      'type': 'string',
+      'default': 'example-tag'
+    },
+    'memo': {
+      'type': 'string',
+      'default': 'this is a tag memo'
+    }
+  },
+  'required': [
+    'uid',
+    'tag'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': '1001'
+}</pre>" data-html="true">
+  <td>params.uid</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'example-tag'
+}</pre>" data-html="true">
+  <td>params.tag</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'this is a tag memo'
+}</pre>" data-html="true">
+  <td>params?.memo</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'array',
+    'items': {
+        'type': 'string'
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>array</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string'
+}</pre>" data-html="true">
+  <td>result[#]</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_unassign_tag">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_unassign_tag-content">
+      <h3>conveyor.unassign_tag</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">tags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_unassign_tag-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.unassign_tag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22uid%22%3A%20%221001%22%2C%0A%20%20%20%20%20%20%20%20%22tag%22%3A%20%22example-tag%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.unassign_tag%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22uid%22%3A%20%221001%22%2C%0A%20%20%20%20%20%20%20%20%22tag%22%3A%20%22example-tag%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Remove tag from user.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'uid': {
+      'type': 'string',
+      'default': '1001'
+    },
+    'tag': {
+      'type': 'string',
+      'default': 'example-tag'
+    }
+  },
+  'required': [
+    'uid',
+    'tag'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': '1001'
+}</pre>" data-html="true">
+  <td>params.uid</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'example-tag'
+}</pre>" data-html="true">
+  <td>params.tag</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_get_users_by_tags">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_get_users_by_tags-content">
+      <h3>conveyor.get_users_by_tags</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">tags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_get_users_by_tags-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_users_by_tags%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%221001%22%0A%20%20%20%20%5D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_users_by_tags%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Get a list of users that has tags assigned.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">tags can be either a string or an array of strings in which case the user must have all the tags givento be included in the response. *Authenticated: requires signature of an admin account.* </p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'tags': {
+      'oneOf': [
+        {
+          'type': 'string',
+          'default': 'example-tag'
+        },
+        {
+          'type': 'array',
+          'items': {
+            'type': 'string',
+            'default': 'example-tag'
+          }
+        }
+      ]
+    }
+  },
+  'required': [
+    'tags'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'oneOf': [
+    {
+      'type': 'string',
+      'default': 'example-tag'
+    },
+    {
+      'type': 'array',
+      'items': {
+        'type': 'string',
+        'default': 'example-tag'
+      }
+    }
+  ]
+}</pre>" data-html="true">
+  <td>params.tags</td>
+  <td>undefined</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'array',
+    'items': {
+        'type': 'string',
+        'default': '1001'
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>array</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'default': '1001'
+}</pre>" data-html="true">
+  <td>result[#]</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_get_tags_for_user">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_get_tags_for_user-content">
+      <h3>conveyor.get_tags_for_user</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">tags</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_get_tags_for_user-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_tags_for_user%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22uid%22%3A%20%221001%22%2C%0A%20%20%20%20%20%20%20%20%22audit%22%3A%20false%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%5B%0A%20%20%20%20%20%20%20%20null%0A%20%20%20%20%5D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_tags_for_user%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22uid%22%3A%20%221001%22%2C%0A%20%20%20%20%20%20%20%20%22audit%22%3A%20false%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p>Get a list of tags assigned to uid.</p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'uid': {
+      'type': 'string',
+      'default': '1001'
+    },
+    'audit': {
+      'type': 'boolean',
+      'default': false
+    }
+  },
+  'required': [
+    'uid',
+    'audit'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': '1001'
+}</pre>" data-html="true">
+  <td>params.uid</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'boolean',
+  'default': false
+}</pre>" data-html="true">
+  <td>params.audit</td>
+  <td>boolean</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '',
+    'type': 'array',
+    'items': {
+        'type': 'string'
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>array</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string'
+}</pre>" data-html="true">
+  <td>result[#]</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_get_account">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_get_account-content">
+      <h3>conveyor.get_account</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">user</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_get_account-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22user_context%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%22bad_actor%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22verified%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22context%22%3A%20%7B%7D%2C%0A%20%20%20%20%20%20%20%20%22context.recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%22context.is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22context.is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22context.is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%22value_sp%22%3A%201000.1%2C%0A%20%20%20%20%20%20%20%20%22followers%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%22following%22%3A%20100%0A%20%20%20%20%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22user_context%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p></p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'name': {
+      'type': 'string',
+      'description': 'steem blockchain account',
+      'default': 'steemit'
+    },
+    'user_context': {
+      'description': 'the user performing the search',
+      'type': 'string',
+      'default': 'steemit'
+    }
+  },
+  'required': [
+    'name'
+  ]
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'description': 'steem blockchain account',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params.name</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'description': 'the user performing the search',
+  'type': 'string',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params?.user_context</td>
+  <td>string</td>
+  <td>the user performing the search</td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'object',
+    'properties': {
+        'name': {
+            'type': 'string',
+            'description': 'steem blockchain account',
+            'default': 'steemit'
+        },
+        'vote_sp': {
+            'description': 'SP minus delegated away plus delegated to',
+            'type': 'number',
+            'default': 100.1
+        },
+        'joined_at': {
+            'description': 'account creation date',
+            'type': 'string',
+            'default': '2016-03-24T17:00'
+        },
+        'reputation': {
+            'description': 'legacy rep score (centered at 25)',
+            'type': 'number',
+            'default': 100
+        },
+        'bad_actor': {
+            'description': 'is account on one or more bad actor lists',
+            'type': 'boolean',
+            'default': false
+        },
+        'verified': {
+            'description': 'is account a verified account, eg, an exchange',
+            'type': 'boolean',
+            'default': false
+        },
+        'context': {
+            'description': 'relationship context',
+            'type': 'object',
+            'properties': {}
+        },
+        'context.recent_sends': {
+            'description': 'last 30d number of xfers to this acct',
+            'type': 'integer',
+            'default': 100
+        },
+        'context.is_following': {
+            'description': 'if ctx follows this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'context.is_follower': {
+            'description': 'if ctx follows this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'context.is_muted': {
+            'description': 'if ctx muted (ignored) this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'tags': {
+            'description': '{abuse exchange verified none}',
+            'type': 'array',
+            'items': {
+                'type': 'string',
+                'enum': [
+                    'abuse',
+                    'exchange',
+                    'verified',
+                    'none'
+                ]
+            },
+            'default': [
+                'none'
+            ]
+        },
+        'value_sp': {
+            'description': 'effective SP value of all held tokens',
+            'type': 'number',
+            'default': 1000.1
+        },
+        'followers': {
+            'description': 'follower count',
+            'type': 'integer',
+            'default': 100
+        },
+        'following': {
+            'description': 'following count',
+            'type': 'integer',
+            'default': 100
+        }
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'description': 'steem blockchain account',
+    'default': 'steemit'
+}</pre>" data-html="true">
+  <td>result?.name</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'SP minus delegated away plus delegated to',
+    'type': 'number',
+    'default': 100.1
+}</pre>" data-html="true">
+  <td>result?.vote_sp</td>
+  <td>number</td>
+  <td>SP minus delegated away plus delegated to</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'account creation date',
+    'type': 'string',
+    'default': '2016-03-24T17:00'
+}</pre>" data-html="true">
+  <td>result?.joined_at</td>
+  <td>string</td>
+  <td>account creation date</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'legacy rep score (centered at 25)',
+    'type': 'number',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.reputation</td>
+  <td>number</td>
+  <td>legacy rep score (centered at 25)</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'is account on one or more bad actor lists',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.bad_actor</td>
+  <td>boolean</td>
+  <td>is account on one or more bad actor lists</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'is account a verified account, eg, an exchange',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.verified</td>
+  <td>boolean</td>
+  <td>is account a verified account, eg, an exchange</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'relationship context',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result?.context</td>
+  <td>object</td>
+  <td>relationship context</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'last 30d number of xfers to this acct',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.context.recent_sends</td>
+  <td>integer</td>
+  <td>last 30d number of xfers to this acct</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx follows this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.context.is_following</td>
+  <td>boolean</td>
+  <td>if ctx follows this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx follows this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.context.is_follower</td>
+  <td>boolean</td>
+  <td>if ctx follows this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx muted (ignored) this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.context.is_muted</td>
+  <td>boolean</td>
+  <td>if ctx muted (ignored) this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '{abuse exchange verified none}',
+    'type': 'array',
+    'items': {
+        'type': 'string',
+        'enum': [
+            'abuse',
+            'exchange',
+            'verified',
+            'none'
+        ]
+    },
+    'default': [
+        'none'
+    ]
+}</pre>" data-html="true">
+  <td>result?.tags</td>
+  <td>array</td>
+  <td>{abuse exchange verified none}</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'enum': [
+        'abuse',
+        'exchange',
+        'verified',
+        'none'
+    ]
+}</pre>" data-html="true">
+  <td>result?.tags[#]</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'effective SP value of all held tokens',
+    'type': 'number',
+    'default': 1000.1
+}</pre>" data-html="true">
+  <td>result?.value_sp</td>
+  <td>number</td>
+  <td>effective SP value of all held tokens</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'follower count',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.followers</td>
+  <td>integer</td>
+  <td>follower count</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'following count',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.following</td>
+  <td>integer</td>
+  <td>following count</td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_autocomplete_account">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_autocomplete_account-content">
+      <h3>conveyor.autocomplete_account</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">user</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_autocomplete_account-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.autocomplete_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account_substring%22%3A%20%22ste%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22recent%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22bad_actor%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22verified%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context%22%3A%20%7B%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22value_sp%22%3A%201000.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22followers%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22following%22%3A%20100%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%22friend%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22bad_actor%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22verified%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context%22%3A%20%7B%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22value_sp%22%3A%201000.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22followers%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22following%22%3A%20100%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%22global%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22bad_actor%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22verified%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context%22%3A%20%7B%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22value_sp%22%3A%201000.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22followers%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22following%22%3A%20100%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%5D%0A%20%20%20%20%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.autocomplete_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account_substring%22%3A%20%22ste%22%0A%20%20%20%20%7D%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p></p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">*Authenticated: requires signature of an admin account.*</p>
+ <br>
+<h4>Parameters</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'object',
+  'properties': {
+    'account_substring': {
+      'type': 'string',
+      'default': 'ste'
+    }
+  }
+}</pre>" data-html="true">
+  <td>params</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'type': 'string',
+  'default': 'ste'
+}</pre>" data-html="true">
+  <td>params?.account_substring</td>
+  <td>string</td>
+  <td></td>
+</tr>
+
+  </table>
+</div> <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'object',
+    'properties': {
+        'recent': {
+            'description': 'recently referenced accounts',
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'name': {
+                        'type': 'string',
+                        'description': 'steem blockchain account',
+                        'default': 'steemit'
+                    },
+                    'vote_sp': {
+                        'description': 'SP minus delegated away plus delegated to',
+                        'type': 'number',
+                        'default': 100.1
+                    },
+                    'joined_at': {
+                        'description': 'account creation date',
+                        'type': 'string',
+                        'default': '2016-03-24T17:00'
+                    },
+                    'reputation': {
+                        'description': 'legacy rep score (centered at 25)',
+                        'type': 'number',
+                        'default': 100
+                    },
+                    'bad_actor': {
+                        'description': 'is account on one or more bad actor lists',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'verified': {
+                        'description': 'is account a verified account, eg, an exchange',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'context': {
+                        'description': 'relationship context',
+                        'type': 'object',
+                        'properties': {}
+                    },
+                    'context.recent_sends': {
+                        'description': 'last 30d number of xfers to this acct',
+                        'type': 'integer',
+                        'default': 100
+                    },
+                    'context.is_following': {
+                        'description': 'if ctx follows this user',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'context.is_follower': {
+                        'description': 'if ctx follows this user',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'context.is_muted': {
+                        'description': 'if ctx muted (ignored) this user',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'tags': {
+                        'description': '{abuse exchange verified none}',
+                        'type': 'array',
+                        'items': {
+                            'type': 'string',
+                            'enum': [
+                                'abuse',
+                                'exchange',
+                                'verified',
+                                'none'
+                            ]
+                        },
+                        'default': [
+                            'none'
+                        ]
+                    },
+                    'value_sp': {
+                        'description': 'effective SP value of all held tokens',
+                        'type': 'number',
+                        'default': 1000.1
+                    },
+                    'followers': {
+                        'description': 'follower count',
+                        'type': 'integer',
+                        'default': 100
+                    },
+                    'following': {
+                        'description': 'following count',
+                        'type': 'integer',
+                        'default': 100
+                    }
+                }
+            },
+            'maxItems': 10
+        },
+        'friend': {
+            'description': 'friend accounts',
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'name': {
+                        'type': 'string',
+                        'description': 'steem blockchain account',
+                        'default': 'steemit'
+                    },
+                    'vote_sp': {
+                        'description': 'SP minus delegated away plus delegated to',
+                        'type': 'number',
+                        'default': 100.1
+                    },
+                    'joined_at': {
+                        'description': 'account creation date',
+                        'type': 'string',
+                        'default': '2016-03-24T17:00'
+                    },
+                    'reputation': {
+                        'description': 'legacy rep score (centered at 25)',
+                        'type': 'number',
+                        'default': 100
+                    },
+                    'bad_actor': {
+                        'description': 'is account on one or more bad actor lists',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'verified': {
+                        'description': 'is account a verified account, eg, an exchange',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'context': {
+                        'description': 'relationship context',
+                        'type': 'object',
+                        'properties': {}
+                    },
+                    'context.recent_sends': {
+                        'description': 'last 30d number of xfers to this acct',
+                        'type': 'integer',
+                        'default': 100
+                    },
+                    'context.is_following': {
+                        'description': 'if ctx follows this user',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'context.is_follower': {
+                        'description': 'if ctx follows this user',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'context.is_muted': {
+                        'description': 'if ctx muted (ignored) this user',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'tags': {
+                        'description': '{abuse exchange verified none}',
+                        'type': 'array',
+                        'items': {
+                            'type': 'string',
+                            'enum': [
+                                'abuse',
+                                'exchange',
+                                'verified',
+                                'none'
+                            ]
+                        },
+                        'default': [
+                            'none'
+                        ]
+                    },
+                    'value_sp': {
+                        'description': 'effective SP value of all held tokens',
+                        'type': 'number',
+                        'default': 1000.1
+                    },
+                    'followers': {
+                        'description': 'follower count',
+                        'type': 'integer',
+                        'default': 100
+                    },
+                    'following': {
+                        'description': 'following count',
+                        'type': 'integer',
+                        'default': 100
+                    }
+                }
+            },
+            'maxItems': 10
+        },
+        'global': {
+            'description': 'all accounts',
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'name': {
+                        'type': 'string',
+                        'description': 'steem blockchain account',
+                        'default': 'steemit'
+                    },
+                    'vote_sp': {
+                        'description': 'SP minus delegated away plus delegated to',
+                        'type': 'number',
+                        'default': 100.1
+                    },
+                    'joined_at': {
+                        'description': 'account creation date',
+                        'type': 'string',
+                        'default': '2016-03-24T17:00'
+                    },
+                    'reputation': {
+                        'description': 'legacy rep score (centered at 25)',
+                        'type': 'number',
+                        'default': 100
+                    },
+                    'bad_actor': {
+                        'description': 'is account on one or more bad actor lists',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'verified': {
+                        'description': 'is account a verified account, eg, an exchange',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'context': {
+                        'description': 'relationship context',
+                        'type': 'object',
+                        'properties': {}
+                    },
+                    'context.recent_sends': {
+                        'description': 'last 30d number of xfers to this acct',
+                        'type': 'integer',
+                        'default': 100
+                    },
+                    'context.is_following': {
+                        'description': 'if ctx follows this user',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'context.is_follower': {
+                        'description': 'if ctx follows this user',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'context.is_muted': {
+                        'description': 'if ctx muted (ignored) this user',
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'tags': {
+                        'description': '{abuse exchange verified none}',
+                        'type': 'array',
+                        'items': {
+                            'type': 'string',
+                            'enum': [
+                                'abuse',
+                                'exchange',
+                                'verified',
+                                'none'
+                            ]
+                        },
+                        'default': [
+                            'none'
+                        ]
+                    },
+                    'value_sp': {
+                        'description': 'effective SP value of all held tokens',
+                        'type': 'number',
+                        'default': 1000.1
+                    },
+                    'followers': {
+                        'description': 'follower count',
+                        'type': 'integer',
+                        'default': 100
+                    },
+                    'following': {
+                        'description': 'following count',
+                        'type': 'integer',
+                        'default': 100
+                    }
+                }
+            },
+            'maxItems': 10
+        }
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'recently referenced accounts',
+    'type': 'array',
+    'items': {
+        'type': 'object',
+        'properties': {
+            'name': {
+                'type': 'string',
+                'description': 'steem blockchain account',
+                'default': 'steemit'
+            },
+            'vote_sp': {
+                'description': 'SP minus delegated away plus delegated to',
+                'type': 'number',
+                'default': 100.1
+            },
+            'joined_at': {
+                'description': 'account creation date',
+                'type': 'string',
+                'default': '2016-03-24T17:00'
+            },
+            'reputation': {
+                'description': 'legacy rep score (centered at 25)',
+                'type': 'number',
+                'default': 100
+            },
+            'bad_actor': {
+                'description': 'is account on one or more bad actor lists',
+                'type': 'boolean',
+                'default': false
+            },
+            'verified': {
+                'description': 'is account a verified account, eg, an exchange',
+                'type': 'boolean',
+                'default': false
+            },
+            'context': {
+                'description': 'relationship context',
+                'type': 'object',
+                'properties': {}
+            },
+            'context.recent_sends': {
+                'description': 'last 30d number of xfers to this acct',
+                'type': 'integer',
+                'default': 100
+            },
+            'context.is_following': {
+                'description': 'if ctx follows this user',
+                'type': 'boolean',
+                'default': false
+            },
+            'context.is_follower': {
+                'description': 'if ctx follows this user',
+                'type': 'boolean',
+                'default': false
+            },
+            'context.is_muted': {
+                'description': 'if ctx muted (ignored) this user',
+                'type': 'boolean',
+                'default': false
+            },
+            'tags': {
+                'description': '{abuse exchange verified none}',
+                'type': 'array',
+                'items': {
+                    'type': 'string',
+                    'enum': [
+                        'abuse',
+                        'exchange',
+                        'verified',
+                        'none'
+                    ]
+                },
+                'default': [
+                    'none'
+                ]
+            },
+            'value_sp': {
+                'description': 'effective SP value of all held tokens',
+                'type': 'number',
+                'default': 1000.1
+            },
+            'followers': {
+                'description': 'follower count',
+                'type': 'integer',
+                'default': 100
+            },
+            'following': {
+                'description': 'following count',
+                'type': 'integer',
+                'default': 100
+            }
+        }
+    },
+    'maxItems': 10
+}</pre>" data-html="true">
+  <td>result?.recent</td>
+  <td>array</td>
+  <td>recently referenced accounts</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'object',
+    'properties': {
+        'name': {
+            'type': 'string',
+            'description': 'steem blockchain account',
+            'default': 'steemit'
+        },
+        'vote_sp': {
+            'description': 'SP minus delegated away plus delegated to',
+            'type': 'number',
+            'default': 100.1
+        },
+        'joined_at': {
+            'description': 'account creation date',
+            'type': 'string',
+            'default': '2016-03-24T17:00'
+        },
+        'reputation': {
+            'description': 'legacy rep score (centered at 25)',
+            'type': 'number',
+            'default': 100
+        },
+        'bad_actor': {
+            'description': 'is account on one or more bad actor lists',
+            'type': 'boolean',
+            'default': false
+        },
+        'verified': {
+            'description': 'is account a verified account, eg, an exchange',
+            'type': 'boolean',
+            'default': false
+        },
+        'context': {
+            'description': 'relationship context',
+            'type': 'object',
+            'properties': {}
+        },
+        'context.recent_sends': {
+            'description': 'last 30d number of xfers to this acct',
+            'type': 'integer',
+            'default': 100
+        },
+        'context.is_following': {
+            'description': 'if ctx follows this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'context.is_follower': {
+            'description': 'if ctx follows this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'context.is_muted': {
+            'description': 'if ctx muted (ignored) this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'tags': {
+            'description': '{abuse exchange verified none}',
+            'type': 'array',
+            'items': {
+                'type': 'string',
+                'enum': [
+                    'abuse',
+                    'exchange',
+                    'verified',
+                    'none'
+                ]
+            },
+            'default': [
+                'none'
+            ]
+        },
+        'value_sp': {
+            'description': 'effective SP value of all held tokens',
+            'type': 'number',
+            'default': 1000.1
+        },
+        'followers': {
+            'description': 'follower count',
+            'type': 'integer',
+            'default': 100
+        },
+        'following': {
+            'description': 'following count',
+            'type': 'integer',
+            'default': 100
+        }
+    }
+}</pre>" data-html="true">
+  <td>result?.recent[#]</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'description': 'steem blockchain account',
+    'default': 'steemit'
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.name</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'SP minus delegated away plus delegated to',
+    'type': 'number',
+    'default': 100.1
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.vote_sp</td>
+  <td>number</td>
+  <td>SP minus delegated away plus delegated to</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'account creation date',
+    'type': 'string',
+    'default': '2016-03-24T17:00'
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.joined_at</td>
+  <td>string</td>
+  <td>account creation date</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'legacy rep score (centered at 25)',
+    'type': 'number',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.reputation</td>
+  <td>number</td>
+  <td>legacy rep score (centered at 25)</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'is account on one or more bad actor lists',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.bad_actor</td>
+  <td>boolean</td>
+  <td>is account on one or more bad actor lists</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'is account a verified account, eg, an exchange',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.verified</td>
+  <td>boolean</td>
+  <td>is account a verified account, eg, an exchange</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'relationship context',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.context</td>
+  <td>object</td>
+  <td>relationship context</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'last 30d number of xfers to this acct',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.context.recent_sends</td>
+  <td>integer</td>
+  <td>last 30d number of xfers to this acct</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx follows this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.context.is_following</td>
+  <td>boolean</td>
+  <td>if ctx follows this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx follows this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.context.is_follower</td>
+  <td>boolean</td>
+  <td>if ctx follows this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx muted (ignored) this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.context.is_muted</td>
+  <td>boolean</td>
+  <td>if ctx muted (ignored) this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '{abuse exchange verified none}',
+    'type': 'array',
+    'items': {
+        'type': 'string',
+        'enum': [
+            'abuse',
+            'exchange',
+            'verified',
+            'none'
+        ]
+    },
+    'default': [
+        'none'
+    ]
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.tags</td>
+  <td>array</td>
+  <td>{abuse exchange verified none}</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'enum': [
+        'abuse',
+        'exchange',
+        'verified',
+        'none'
+    ]
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.tags[#]</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'effective SP value of all held tokens',
+    'type': 'number',
+    'default': 1000.1
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.value_sp</td>
+  <td>number</td>
+  <td>effective SP value of all held tokens</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'follower count',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.followers</td>
+  <td>integer</td>
+  <td>follower count</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'following count',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.recent[#]?.following</td>
+  <td>integer</td>
+  <td>following count</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'friend accounts',
+    'type': 'array',
+    'items': {
+        'type': 'object',
+        'properties': {
+            'name': {
+                'type': 'string',
+                'description': 'steem blockchain account',
+                'default': 'steemit'
+            },
+            'vote_sp': {
+                'description': 'SP minus delegated away plus delegated to',
+                'type': 'number',
+                'default': 100.1
+            },
+            'joined_at': {
+                'description': 'account creation date',
+                'type': 'string',
+                'default': '2016-03-24T17:00'
+            },
+            'reputation': {
+                'description': 'legacy rep score (centered at 25)',
+                'type': 'number',
+                'default': 100
+            },
+            'bad_actor': {
+                'description': 'is account on one or more bad actor lists',
+                'type': 'boolean',
+                'default': false
+            },
+            'verified': {
+                'description': 'is account a verified account, eg, an exchange',
+                'type': 'boolean',
+                'default': false
+            },
+            'context': {
+                'description': 'relationship context',
+                'type': 'object',
+                'properties': {}
+            },
+            'context.recent_sends': {
+                'description': 'last 30d number of xfers to this acct',
+                'type': 'integer',
+                'default': 100
+            },
+            'context.is_following': {
+                'description': 'if ctx follows this user',
+                'type': 'boolean',
+                'default': false
+            },
+            'context.is_follower': {
+                'description': 'if ctx follows this user',
+                'type': 'boolean',
+                'default': false
+            },
+            'context.is_muted': {
+                'description': 'if ctx muted (ignored) this user',
+                'type': 'boolean',
+                'default': false
+            },
+            'tags': {
+                'description': '{abuse exchange verified none}',
+                'type': 'array',
+                'items': {
+                    'type': 'string',
+                    'enum': [
+                        'abuse',
+                        'exchange',
+                        'verified',
+                        'none'
+                    ]
+                },
+                'default': [
+                    'none'
+                ]
+            },
+            'value_sp': {
+                'description': 'effective SP value of all held tokens',
+                'type': 'number',
+                'default': 1000.1
+            },
+            'followers': {
+                'description': 'follower count',
+                'type': 'integer',
+                'default': 100
+            },
+            'following': {
+                'description': 'following count',
+                'type': 'integer',
+                'default': 100
+            }
+        }
+    },
+    'maxItems': 10
+}</pre>" data-html="true">
+  <td>result?.friend</td>
+  <td>array</td>
+  <td>friend accounts</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'object',
+    'properties': {
+        'name': {
+            'type': 'string',
+            'description': 'steem blockchain account',
+            'default': 'steemit'
+        },
+        'vote_sp': {
+            'description': 'SP minus delegated away plus delegated to',
+            'type': 'number',
+            'default': 100.1
+        },
+        'joined_at': {
+            'description': 'account creation date',
+            'type': 'string',
+            'default': '2016-03-24T17:00'
+        },
+        'reputation': {
+            'description': 'legacy rep score (centered at 25)',
+            'type': 'number',
+            'default': 100
+        },
+        'bad_actor': {
+            'description': 'is account on one or more bad actor lists',
+            'type': 'boolean',
+            'default': false
+        },
+        'verified': {
+            'description': 'is account a verified account, eg, an exchange',
+            'type': 'boolean',
+            'default': false
+        },
+        'context': {
+            'description': 'relationship context',
+            'type': 'object',
+            'properties': {}
+        },
+        'context.recent_sends': {
+            'description': 'last 30d number of xfers to this acct',
+            'type': 'integer',
+            'default': 100
+        },
+        'context.is_following': {
+            'description': 'if ctx follows this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'context.is_follower': {
+            'description': 'if ctx follows this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'context.is_muted': {
+            'description': 'if ctx muted (ignored) this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'tags': {
+            'description': '{abuse exchange verified none}',
+            'type': 'array',
+            'items': {
+                'type': 'string',
+                'enum': [
+                    'abuse',
+                    'exchange',
+                    'verified',
+                    'none'
+                ]
+            },
+            'default': [
+                'none'
+            ]
+        },
+        'value_sp': {
+            'description': 'effective SP value of all held tokens',
+            'type': 'number',
+            'default': 1000.1
+        },
+        'followers': {
+            'description': 'follower count',
+            'type': 'integer',
+            'default': 100
+        },
+        'following': {
+            'description': 'following count',
+            'type': 'integer',
+            'default': 100
+        }
+    }
+}</pre>" data-html="true">
+  <td>result?.friend[#]</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'description': 'steem blockchain account',
+    'default': 'steemit'
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.name</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'SP minus delegated away plus delegated to',
+    'type': 'number',
+    'default': 100.1
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.vote_sp</td>
+  <td>number</td>
+  <td>SP minus delegated away plus delegated to</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'account creation date',
+    'type': 'string',
+    'default': '2016-03-24T17:00'
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.joined_at</td>
+  <td>string</td>
+  <td>account creation date</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'legacy rep score (centered at 25)',
+    'type': 'number',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.reputation</td>
+  <td>number</td>
+  <td>legacy rep score (centered at 25)</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'is account on one or more bad actor lists',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.bad_actor</td>
+  <td>boolean</td>
+  <td>is account on one or more bad actor lists</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'is account a verified account, eg, an exchange',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.verified</td>
+  <td>boolean</td>
+  <td>is account a verified account, eg, an exchange</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'relationship context',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.context</td>
+  <td>object</td>
+  <td>relationship context</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'last 30d number of xfers to this acct',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.context.recent_sends</td>
+  <td>integer</td>
+  <td>last 30d number of xfers to this acct</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx follows this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.context.is_following</td>
+  <td>boolean</td>
+  <td>if ctx follows this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx follows this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.context.is_follower</td>
+  <td>boolean</td>
+  <td>if ctx follows this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx muted (ignored) this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.context.is_muted</td>
+  <td>boolean</td>
+  <td>if ctx muted (ignored) this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '{abuse exchange verified none}',
+    'type': 'array',
+    'items': {
+        'type': 'string',
+        'enum': [
+            'abuse',
+            'exchange',
+            'verified',
+            'none'
+        ]
+    },
+    'default': [
+        'none'
+    ]
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.tags</td>
+  <td>array</td>
+  <td>{abuse exchange verified none}</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'enum': [
+        'abuse',
+        'exchange',
+        'verified',
+        'none'
+    ]
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.tags[#]</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'effective SP value of all held tokens',
+    'type': 'number',
+    'default': 1000.1
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.value_sp</td>
+  <td>number</td>
+  <td>effective SP value of all held tokens</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'follower count',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.followers</td>
+  <td>integer</td>
+  <td>follower count</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'following count',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.friend[#]?.following</td>
+  <td>integer</td>
+  <td>following count</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'all accounts',
+    'type': 'array',
+    'items': {
+        'type': 'object',
+        'properties': {
+            'name': {
+                'type': 'string',
+                'description': 'steem blockchain account',
+                'default': 'steemit'
+            },
+            'vote_sp': {
+                'description': 'SP minus delegated away plus delegated to',
+                'type': 'number',
+                'default': 100.1
+            },
+            'joined_at': {
+                'description': 'account creation date',
+                'type': 'string',
+                'default': '2016-03-24T17:00'
+            },
+            'reputation': {
+                'description': 'legacy rep score (centered at 25)',
+                'type': 'number',
+                'default': 100
+            },
+            'bad_actor': {
+                'description': 'is account on one or more bad actor lists',
+                'type': 'boolean',
+                'default': false
+            },
+            'verified': {
+                'description': 'is account a verified account, eg, an exchange',
+                'type': 'boolean',
+                'default': false
+            },
+            'context': {
+                'description': 'relationship context',
+                'type': 'object',
+                'properties': {}
+            },
+            'context.recent_sends': {
+                'description': 'last 30d number of xfers to this acct',
+                'type': 'integer',
+                'default': 100
+            },
+            'context.is_following': {
+                'description': 'if ctx follows this user',
+                'type': 'boolean',
+                'default': false
+            },
+            'context.is_follower': {
+                'description': 'if ctx follows this user',
+                'type': 'boolean',
+                'default': false
+            },
+            'context.is_muted': {
+                'description': 'if ctx muted (ignored) this user',
+                'type': 'boolean',
+                'default': false
+            },
+            'tags': {
+                'description': '{abuse exchange verified none}',
+                'type': 'array',
+                'items': {
+                    'type': 'string',
+                    'enum': [
+                        'abuse',
+                        'exchange',
+                        'verified',
+                        'none'
+                    ]
+                },
+                'default': [
+                    'none'
+                ]
+            },
+            'value_sp': {
+                'description': 'effective SP value of all held tokens',
+                'type': 'number',
+                'default': 1000.1
+            },
+            'followers': {
+                'description': 'follower count',
+                'type': 'integer',
+                'default': 100
+            },
+            'following': {
+                'description': 'following count',
+                'type': 'integer',
+                'default': 100
+            }
+        }
+    },
+    'maxItems': 10
+}</pre>" data-html="true">
+  <td>result?.global</td>
+  <td>array</td>
+  <td>all accounts</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'object',
+    'properties': {
+        'name': {
+            'type': 'string',
+            'description': 'steem blockchain account',
+            'default': 'steemit'
+        },
+        'vote_sp': {
+            'description': 'SP minus delegated away plus delegated to',
+            'type': 'number',
+            'default': 100.1
+        },
+        'joined_at': {
+            'description': 'account creation date',
+            'type': 'string',
+            'default': '2016-03-24T17:00'
+        },
+        'reputation': {
+            'description': 'legacy rep score (centered at 25)',
+            'type': 'number',
+            'default': 100
+        },
+        'bad_actor': {
+            'description': 'is account on one or more bad actor lists',
+            'type': 'boolean',
+            'default': false
+        },
+        'verified': {
+            'description': 'is account a verified account, eg, an exchange',
+            'type': 'boolean',
+            'default': false
+        },
+        'context': {
+            'description': 'relationship context',
+            'type': 'object',
+            'properties': {}
+        },
+        'context.recent_sends': {
+            'description': 'last 30d number of xfers to this acct',
+            'type': 'integer',
+            'default': 100
+        },
+        'context.is_following': {
+            'description': 'if ctx follows this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'context.is_follower': {
+            'description': 'if ctx follows this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'context.is_muted': {
+            'description': 'if ctx muted (ignored) this user',
+            'type': 'boolean',
+            'default': false
+        },
+        'tags': {
+            'description': '{abuse exchange verified none}',
+            'type': 'array',
+            'items': {
+                'type': 'string',
+                'enum': [
+                    'abuse',
+                    'exchange',
+                    'verified',
+                    'none'
+                ]
+            },
+            'default': [
+                'none'
+            ]
+        },
+        'value_sp': {
+            'description': 'effective SP value of all held tokens',
+            'type': 'number',
+            'default': 1000.1
+        },
+        'followers': {
+            'description': 'follower count',
+            'type': 'integer',
+            'default': 100
+        },
+        'following': {
+            'description': 'following count',
+            'type': 'integer',
+            'default': 100
+        }
+    }
+}</pre>" data-html="true">
+  <td>result?.global[#]</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'description': 'steem blockchain account',
+    'default': 'steemit'
+}</pre>" data-html="true">
+  <td>result?.global[#]?.name</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'SP minus delegated away plus delegated to',
+    'type': 'number',
+    'default': 100.1
+}</pre>" data-html="true">
+  <td>result?.global[#]?.vote_sp</td>
+  <td>number</td>
+  <td>SP minus delegated away plus delegated to</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'account creation date',
+    'type': 'string',
+    'default': '2016-03-24T17:00'
+}</pre>" data-html="true">
+  <td>result?.global[#]?.joined_at</td>
+  <td>string</td>
+  <td>account creation date</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'legacy rep score (centered at 25)',
+    'type': 'number',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.global[#]?.reputation</td>
+  <td>number</td>
+  <td>legacy rep score (centered at 25)</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'is account on one or more bad actor lists',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.global[#]?.bad_actor</td>
+  <td>boolean</td>
+  <td>is account on one or more bad actor lists</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'is account a verified account, eg, an exchange',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.global[#]?.verified</td>
+  <td>boolean</td>
+  <td>is account a verified account, eg, an exchange</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'relationship context',
+    'type': 'object',
+    'properties': {}
+}</pre>" data-html="true">
+  <td>result?.global[#]?.context</td>
+  <td>object</td>
+  <td>relationship context</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'last 30d number of xfers to this acct',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.global[#]?.context.recent_sends</td>
+  <td>integer</td>
+  <td>last 30d number of xfers to this acct</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx follows this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.global[#]?.context.is_following</td>
+  <td>boolean</td>
+  <td>if ctx follows this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx follows this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.global[#]?.context.is_follower</td>
+  <td>boolean</td>
+  <td>if ctx follows this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'if ctx muted (ignored) this user',
+    'type': 'boolean',
+    'default': false
+}</pre>" data-html="true">
+  <td>result?.global[#]?.context.is_muted</td>
+  <td>boolean</td>
+  <td>if ctx muted (ignored) this user</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': '{abuse exchange verified none}',
+    'type': 'array',
+    'items': {
+        'type': 'string',
+        'enum': [
+            'abuse',
+            'exchange',
+            'verified',
+            'none'
+        ]
+    },
+    'default': [
+        'none'
+    ]
+}</pre>" data-html="true">
+  <td>result?.global[#]?.tags</td>
+  <td>array</td>
+  <td>{abuse exchange verified none}</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'string',
+    'enum': [
+        'abuse',
+        'exchange',
+        'verified',
+        'none'
+    ]
+}</pre>" data-html="true">
+  <td>result?.global[#]?.tags[#]</td>
+  <td>string</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'effective SP value of all held tokens',
+    'type': 'number',
+    'default': 1000.1
+}</pre>" data-html="true">
+  <td>result?.global[#]?.value_sp</td>
+  <td>number</td>
+  <td>effective SP value of all held tokens</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'follower count',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.global[#]?.followers</td>
+  <td>integer</td>
+  <td>follower count</td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'description': 'following count',
+    'type': 'integer',
+    'default': 100
+}</pre>" data-html="true">
+  <td>result?.global[#]?.following</td>
+  <td>integer</td>
+  <td>following count</td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="send-request-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Send request</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="form-group row">
+              <label for="send-request-url" class="col-md-2 col-sm-12 col-form-label">URL</label>
+              <div class="col-md-10 col-sm-12">
+                <input type="text" class="form-control" id="send-request-url">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="send-request-request" class="col-md-2 col-sm-12 col-form-label">Request</label>
+              <div class="col-md-10 col-sm-12">
+                <textarea class="form-control" id="send-request-request" wrap="soft"></textarea>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="url" class="col-md-2 col-sm-12 col-form-label"></label>
+              <div class="col-md-10 col-sm-12">
+                <button type="button" class="btn btn-primary btn-block" onclick="sendRequest()">Send</button>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="send-request-response" class="col-md-2 col-sm-12 col-form-label">Response</label>
+              <div class="col-md-10 col-sm-12">
+                <textarea class="form-control" id="send-request-response"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="show-example-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Show example</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="form-group row">
+              <label for="show-example-request" class="col-md-2 col-sm-12 col-form-label">Request</label>
+              <div class="col-md-10 col-sm-12">
+                <textarea class="form-control" id="show-example-request"></textarea>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="show-example-response" class="col-md-2 col-sm-12 col-form-label">Response</label>
+              <div class="col-md-10 col-sm-12">
+                <textarea class="form-control" id="show-example-response"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
