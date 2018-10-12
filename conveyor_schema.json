@@ -80,12 +80,12 @@
           "items": {
             "type": "string",
             "enum": [
-  "abuse",
-  "exchange",
-  "verified",
-  "none"
-]
-            },
+              "abuse",
+              "exchange",
+              "verified",
+              "none"
+            ]
+          },
           "default": ["none"]
         },
         "value_sp": {
@@ -122,6 +122,23 @@
     "phone": {
       "type":"string",
       "default":"+10008675309"
+    },
+    "prices": {
+      "type": "object",
+      "properties": {
+        "steem_sbd": {
+          "type": "number",
+          "default": 0.8221426365
+        },
+        "steem_usd": {
+          "type": "number",
+          "default": 0.827
+        },
+        "steem_vest": {
+          "type": "number",
+          "default": 2019.1003284361
+        }
+      }
     },
     "probability":{
       "type":"number",
@@ -536,27 +553,34 @@
       "result":{
         "type":"object",
         "properties": {
-            "recent": {
-              "description":"recently referenced accounts",
-              "type":"array",
-              "items": {"$ref":"#/definitions/account"},
-              "maxItems":10
-            },
-            "friend": {
-              "description":"friend accounts",
-              "type":"array",
-              "items": {"$ref":"#/definitions/account"},
-              "maxItems":10
-            },
-            "global": {
-              "description":"all accounts",
-              "type":"array",
-              "items": {"$ref":"#/definitions/account"},
-              "maxItems":10
-            }
+          "recent": {
+            "description":"recently referenced accounts",
+            "type":"array",
+            "items": {"$ref":"#/definitions/account"},
+            "maxItems":10
+          },
+          "friend": {
+            "description":"friend accounts",
+            "type":"array",
+            "items": {"$ref":"#/definitions/account"},
+            "maxItems":10
+          },
+          "global": {
+            "description":"all accounts",
+            "type":"array",
+            "items": {"$ref":"#/definitions/account"},
+            "maxItems":10
           }
+        }
       }
-      
+    },
+    "conveyor.get_prices": {
+      "summary":"","description":"Find the exchange rates of various tokens based on internal markets.",
+      "tags":["prices"],
+      "params":null,
+      "result":{
+        "$ref":"#/definitions/prices"
+      }
     }
   }
 }
