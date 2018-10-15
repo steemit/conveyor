@@ -23,7 +23,7 @@
     "account": {
       "type": "object",
       "properties": {
-        "name": {"$ref":"#/definitions/account_name"},
+        "account": {"$ref":"#/definitions/account_name"},
         "vote_sp": {
           "description": "SP minus delegated away plus delegated to",
           "type": "number",
@@ -39,38 +39,24 @@
           "type": "number",
           "default": 100
         },
-        "bad_actor":{
-          "description":"is account on one or more bad actor lists",
-          "type": "boolean",
-          "default": false
-        },
-        "verified":{
-          "description":"is account a verified account, eg, an exchange",
-          "type": "boolean",
-          "default": false
-        },
-        "context": {
-          "description": "relationship context",
-          "type": "object",
-          "properties":{}
-        },
-        "context.recent_sends": {
+        "context_account": {"$ref":"#/definitions/account_name"},
+        "context_recent_sends": {
           "description": "last 30d number of xfers to this acct",
           "type": "integer",
           "default": 100
         },
-        "context.is_following": {
-          "description": "if ctx follows this user",
+        "context_is_following": {
+          "description": "if context_account follows this user",
           "type": "boolean",
           "default": false
         },
-        "context.is_follower": {
-          "description": "if ctx follows this user",
+        "context_is_follower": {
+          "description": "if context_account follows this user",
           "type": "boolean",
           "default": false
         },
-        "context.is_muted": {
-          "description": "if ctx muted (ignored) this user",
+        "context_is_muted": {
+          "description": "if context_account muted (ignored) this user",
           "type": "boolean",
           "default": false
         },
@@ -90,15 +76,15 @@
         },
         "value_sp": {
           "description": "effective SP value of all held tokens",
-          "type": "number",
-          "default": 1000.1
+          "type": "string",
+          "default": "1000.1"
         },
-        "followers": {
+        "follower_count": {
           "description": "follower count",
           "type": "integer",
           "default": 100
         },
-        "following": {
+        "following_count": {
           "description": "following count",
           "type": "integer",
           "default": 100
@@ -509,14 +495,14 @@
       "params": {
         "type": "object",
         "properties": {
-          "name": {"$ref":"#/definitions/account_name"},
-          "user_context": {
+          "account": {"$ref":"#/definitions/account_name"},
+          "context_account": {
             "description": "the user performing the search",
             "type":"string",
             "default":"steemit"
           }
         },
-        "required": ["name"]
+        "required": ["account"]
       },
       "result":{
         "$ref":"#/definitions/account"}
@@ -530,8 +516,14 @@
           "account_substring": {
             "type": "string",
             "default":"ste"
+          },
+          "context_account": {
+            "description": "the user performing the search",
+            "type":"string",
+            "default":"steemit"
           }
-        }
+        },
+        "required": ["account_substring"]
       },
       "result":{
         "type":"object",

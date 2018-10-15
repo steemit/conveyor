@@ -970,33 +970,31 @@ _Authenticated: requires signature of an admin account._
 
 ### Parameters
 
-| Name                 | Type   | Description                    |
-| -------------------- | ------ | ------------------------------ |
-| params               | object |                                |
-| params.name          | string | steem blockchain account       |
-| params?.user_context | string | the user performing the search |
+| Name                    | Type   | Description                    |
+| ----------------------- | ------ | ------------------------------ |
+| params                  | object |                                |
+| params.account          | string | steem blockchain account       |
+| params?.context_account | string | the user performing the search |
 
 ### Result
 
-| Name                         | Type    | Description                                    |
-| ---------------------------- | ------- | ---------------------------------------------- |
-| result                       | object  |                                                |
-| result?.name                 | string  | steem blockchain account                       |
-| result?.vote_sp              | number  | SP minus delegated away plus delegated to      |
-| result?.joined_at            | string  | account creation date                          |
-| result?.reputation           | number  | legacy rep score (centered at 25)              |
-| result?.bad_actor            | boolean | is account on one or more bad actor lists      |
-| result?.verified             | boolean | is account a verified account, eg, an exchange |
-| result?.context              | object  | relationship context                           |
-| result?.context.recent_sends | integer | last 30d number of xfers to this acct          |
-| result?.context.is_following | boolean | if ctx follows this user                       |
-| result?.context.is_follower  | boolean | if ctx follows this user                       |
-| result?.context.is_muted     | boolean | if ctx muted (ignored) this user               |
-| result?.tags                 | array   | {abuse exchange verified none}                 |
-| result?.tags[#]              | string  |                                                |
-| result?.value_sp             | number  | effective SP value of all held tokens          |
-| result?.followers            | integer | follower count                                 |
-| result?.following            | integer | following count                                |
+| Name                         | Type    | Description                                  |
+| ---------------------------- | ------- | -------------------------------------------- |
+| result                       | object  |                                              |
+| result?.account              | string  | steem blockchain account                     |
+| result?.vote_sp              | number  | SP minus delegated away plus delegated to    |
+| result?.joined_at            | string  | account creation date                        |
+| result?.reputation           | number  | legacy rep score (centered at 25)            |
+| result?.context_account      | string  | steem blockchain account                     |
+| result?.context_recent_sends | integer | last 30d number of xfers to this acct        |
+| result?.context_is_following | boolean | if context_account follows this user         |
+| result?.context_is_follower  | boolean | if context_account follows this user         |
+| result?.context_is_muted     | boolean | if context_account muted (ignored) this user |
+| result?.tags                 | array   | {abuse exchange verified none}               |
+| result?.tags[#]              | string  |                                              |
+| result?.value_sp             | string  | effective SP value of all held tokens        |
+| result?.follower_count       | integer | follower count                               |
+| result?.following_count      | integer | following count                              |
 
 ### Examples
 
@@ -1008,8 +1006,8 @@ _Authenticated: requires signature of an admin account._
   "id": "1234567890",
   "method": "conveyor.get_account",
   "params": {
-    "name": "steemit",
-    "user_context": "steemit"
+    "account": "steemit",
+    "context_account": "steemit"
   }
 }
 ```
@@ -1021,21 +1019,19 @@ _Authenticated: requires signature of an admin account._
   "jsonrpc": "2.0",
   "id": "1234567890",
   "result": {
-    "name": "steemit",
+    "account": "steemit",
     "vote_sp": 100.1,
     "joined_at": "2016-03-24T17:00",
     "reputation": 100,
-    "bad_actor": false,
-    "verified": false,
-    "context": {},
-    "context.recent_sends": 100,
-    "context.is_following": false,
-    "context.is_follower": false,
-    "context.is_muted": false,
+    "context_account": "steemit",
+    "context_recent_sends": 100,
+    "context_is_following": false,
+    "context_is_follower": false,
+    "context_is_muted": false,
     "tags": ["none"],
-    "value_sp": 1000.1,
-    "followers": 100,
-    "following": 100
+    "value_sp": "1000.1",
+    "follower_count": 100,
+    "following_count": 100
   }
 }
 ```
@@ -1050,70 +1046,65 @@ _Authenticated: requires signature of an admin account._
 
 ### Parameters
 
-| Name                      | Type   | Description |
-| ------------------------- | ------ | ----------- |
-| params                    | object |             |
-| params?.account_substring | string |             |
+| Name                     | Type   | Description                    |
+| ------------------------ | ------ | ------------------------------ |
+| params                   | object |                                |
+| params.account_substring | string |                                |
+| params?.context_account  | string | the user performing the search |
 
 ### Result
 
-| Name                                    | Type    | Description                                    |
-| --------------------------------------- | ------- | ---------------------------------------------- |
-| result                                  | object  |                                                |
-| result?.recent                          | array   | recently referenced accounts                   |
-| result?.recent[#]                       | object  |                                                |
-| result?.recent[#]?.name                 | string  | steem blockchain account                       |
-| result?.recent[#]?.vote_sp              | number  | SP minus delegated away plus delegated to      |
-| result?.recent[#]?.joined_at            | string  | account creation date                          |
-| result?.recent[#]?.reputation           | number  | legacy rep score (centered at 25)              |
-| result?.recent[#]?.bad_actor            | boolean | is account on one or more bad actor lists      |
-| result?.recent[#]?.verified             | boolean | is account a verified account, eg, an exchange |
-| result?.recent[#]?.context              | object  | relationship context                           |
-| result?.recent[#]?.context.recent_sends | integer | last 30d number of xfers to this acct          |
-| result?.recent[#]?.context.is_following | boolean | if ctx follows this user                       |
-| result?.recent[#]?.context.is_follower  | boolean | if ctx follows this user                       |
-| result?.recent[#]?.context.is_muted     | boolean | if ctx muted (ignored) this user               |
-| result?.recent[#]?.tags                 | array   | {abuse exchange verified none}                 |
-| result?.recent[#]?.tags[#]              | string  |                                                |
-| result?.recent[#]?.value_sp             | number  | effective SP value of all held tokens          |
-| result?.recent[#]?.followers            | integer | follower count                                 |
-| result?.recent[#]?.following            | integer | following count                                |
-| result?.friend                          | array   | friend accounts                                |
-| result?.friend[#]                       | object  |                                                |
-| result?.friend[#]?.name                 | string  | steem blockchain account                       |
-| result?.friend[#]?.vote_sp              | number  | SP minus delegated away plus delegated to      |
-| result?.friend[#]?.joined_at            | string  | account creation date                          |
-| result?.friend[#]?.reputation           | number  | legacy rep score (centered at 25)              |
-| result?.friend[#]?.bad_actor            | boolean | is account on one or more bad actor lists      |
-| result?.friend[#]?.verified             | boolean | is account a verified account, eg, an exchange |
-| result?.friend[#]?.context              | object  | relationship context                           |
-| result?.friend[#]?.context.recent_sends | integer | last 30d number of xfers to this acct          |
-| result?.friend[#]?.context.is_following | boolean | if ctx follows this user                       |
-| result?.friend[#]?.context.is_follower  | boolean | if ctx follows this user                       |
-| result?.friend[#]?.context.is_muted     | boolean | if ctx muted (ignored) this user               |
-| result?.friend[#]?.tags                 | array   | {abuse exchange verified none}                 |
-| result?.friend[#]?.tags[#]              | string  |                                                |
-| result?.friend[#]?.value_sp             | number  | effective SP value of all held tokens          |
-| result?.friend[#]?.followers            | integer | follower count                                 |
-| result?.friend[#]?.following            | integer | following count                                |
-| result?.global                          | array   | all accounts                                   |
-| result?.global[#]                       | object  |                                                |
-| result?.global[#]?.name                 | string  | steem blockchain account                       |
-| result?.global[#]?.vote_sp              | number  | SP minus delegated away plus delegated to      |
-| result?.global[#]?.joined_at            | string  | account creation date                          |
-| result?.global[#]?.reputation           | number  | legacy rep score (centered at 25)              |
-| result?.global[#]?.bad_actor            | boolean | is account on one or more bad actor lists      |
-| result?.global[#]?.verified             | boolean | is account a verified account, eg, an exchange |
-| result?.global[#]?.context              | object  | relationship context                           |
-| result?.global[#]?.context.recent_sends | integer | last 30d number of xfers to this acct          |
-| result?.global[#]?.context.is_following | boolean | if ctx follows this user                       |
-| result?.global[#]?.context.is_follower  | boolean | if ctx follows this user                       |
-| result?.global[#]?.context.is_muted     | boolean | if ctx muted (ignored) this user               |
-| result?.global[#]?.tags                 | array   | {abuse exchange verified none}                 |
-| result?.global[#]?.tags[#]              | string  |                                                |
-| result?.global[#]?.value_sp             | number  | effective SP value of all held tokens          |
-| result?.global[#]?.followers            | integer | follower count                                 |
-| result?.global[#]?.following            | integer | following count                                |
+| Name                                    | Type    | Description                                  |
+| --------------------------------------- | ------- | -------------------------------------------- |
+| result                                  | object  |                                              |
+| result?.recent                          | array   | recently referenced accounts                 |
+| result?.recent[#]                       | object  |                                              |
+| result?.recent[#]?.account              | string  | steem blockchain account                     |
+| result?.recent[#]?.vote_sp              | number  | SP minus delegated away plus delegated to    |
+| result?.recent[#]?.joined_at            | string  | account creation date                        |
+| result?.recent[#]?.reputation           | number  | legacy rep score (centered at 25)            |
+| result?.recent[#]?.context_account      | string  | steem blockchain account                     |
+| result?.recent[#]?.context_recent_sends | integer | last 30d number of xfers to this acct        |
+| result?.recent[#]?.context_is_following | boolean | if context_account follows this user         |
+| result?.recent[#]?.context_is_follower  | boolean | if context_account follows this user         |
+| result?.recent[#]?.context_is_muted     | boolean | if context_account muted (ignored) this user |
+| result?.recent[#]?.tags                 | array   | {abuse exchange verified none}               |
+| result?.recent[#]?.tags[#]              | string  |                                              |
+| result?.recent[#]?.value_sp             | string  | effective SP value of all held tokens        |
+| result?.recent[#]?.follower_count       | integer | follower count                               |
+| result?.recent[#]?.following_count      | integer | following count                              |
+| result?.friend                          | array   | friend accounts                              |
+| result?.friend[#]                       | object  |                                              |
+| result?.friend[#]?.account              | string  | steem blockchain account                     |
+| result?.friend[#]?.vote_sp              | number  | SP minus delegated away plus delegated to    |
+| result?.friend[#]?.joined_at            | string  | account creation date                        |
+| result?.friend[#]?.reputation           | number  | legacy rep score (centered at 25)            |
+| result?.friend[#]?.context_account      | string  | steem blockchain account                     |
+| result?.friend[#]?.context_recent_sends | integer | last 30d number of xfers to this acct        |
+| result?.friend[#]?.context_is_following | boolean | if context_account follows this user         |
+| result?.friend[#]?.context_is_follower  | boolean | if context_account follows this user         |
+| result?.friend[#]?.context_is_muted     | boolean | if context_account muted (ignored) this user |
+| result?.friend[#]?.tags                 | array   | {abuse exchange verified none}               |
+| result?.friend[#]?.tags[#]              | string  |                                              |
+| result?.friend[#]?.value_sp             | string  | effective SP value of all held tokens        |
+| result?.friend[#]?.follower_count       | integer | follower count                               |
+| result?.friend[#]?.following_count      | integer | following count                              |
+| result?.global                          | array   | all accounts                                 |
+| result?.global[#]                       | object  |                                              |
+| result?.global[#]?.account              | string  | steem blockchain account                     |
+| result?.global[#]?.vote_sp              | number  | SP minus delegated away plus delegated to    |
+| result?.global[#]?.joined_at            | string  | account creation date                        |
+| result?.global[#]?.reputation           | number  | legacy rep score (centered at 25)            |
+| result?.global[#]?.context_account      | string  | steem blockchain account                     |
+| result?.global[#]?.context_recent_sends | integer | last 30d number of xfers to this acct        |
+| result?.global[#]?.context_is_following | boolean | if context_account follows this user         |
+| result?.global[#]?.context_is_follower  | boolean | if context_account follows this user         |
+| result?.global[#]?.context_is_muted     | boolean | if context_account muted (ignored) this user |
+| result?.global[#]?.tags                 | array   | {abuse exchange verified none}               |
+| result?.global[#]?.tags[#]              | string  |                                              |
+| result?.global[#]?.value_sp             | string  | effective SP value of all held tokens        |
+| result?.global[#]?.follower_count       | integer | follower count                               |
+| result?.global[#]?.following_count      | integer | following count                              |
 
 ### Examples
 
@@ -1125,7 +1116,8 @@ _Authenticated: requires signature of an admin account._
   "id": "1234567890",
   "method": "conveyor.autocomplete_account",
   "params": {
-    "account_substring": "ste"
+    "account_substring": "ste",
+    "context_account": "steemit"
   }
 }
 ```
@@ -1139,59 +1131,53 @@ _Authenticated: requires signature of an admin account._
   "result": {
     "recent": [
       {
-        "name": "steemit",
+        "account": "steemit",
         "vote_sp": 100.1,
         "joined_at": "2016-03-24T17:00",
         "reputation": 100,
-        "bad_actor": false,
-        "verified": false,
-        "context": {},
-        "context.recent_sends": 100,
-        "context.is_following": false,
-        "context.is_follower": false,
-        "context.is_muted": false,
+        "context_account": "steemit",
+        "context_recent_sends": 100,
+        "context_is_following": false,
+        "context_is_follower": false,
+        "context_is_muted": false,
         "tags": ["none"],
-        "value_sp": 1000.1,
-        "followers": 100,
-        "following": 100
+        "value_sp": "1000.1",
+        "follower_count": 100,
+        "following_count": 100
       }
     ],
     "friend": [
       {
-        "name": "steemit",
+        "account": "steemit",
         "vote_sp": 100.1,
         "joined_at": "2016-03-24T17:00",
         "reputation": 100,
-        "bad_actor": false,
-        "verified": false,
-        "context": {},
-        "context.recent_sends": 100,
-        "context.is_following": false,
-        "context.is_follower": false,
-        "context.is_muted": false,
+        "context_account": "steemit",
+        "context_recent_sends": 100,
+        "context_is_following": false,
+        "context_is_follower": false,
+        "context_is_muted": false,
         "tags": ["none"],
-        "value_sp": 1000.1,
-        "followers": 100,
-        "following": 100
+        "value_sp": "1000.1",
+        "follower_count": 100,
+        "following_count": 100
       }
     ],
     "global": [
       {
-        "name": "steemit",
+        "account": "steemit",
         "vote_sp": 100.1,
         "joined_at": "2016-03-24T17:00",
         "reputation": 100,
-        "bad_actor": false,
-        "verified": false,
-        "context": {},
-        "context.recent_sends": 100,
-        "context.is_following": false,
-        "context.is_follower": false,
-        "context.is_muted": false,
+        "context_account": "steemit",
+        "context_recent_sends": 100,
+        "context_is_following": false,
+        "context_is_follower": false,
+        "context_is_muted": false,
         "tags": ["none"],
-        "value_sp": 1000.1,
-        "followers": 100,
-        "following": 100
+        "value_sp": "1000.1",
+        "follower_count": 100,
+        "following_count": 100
       }
     ]
   }

@@ -2219,10 +2219,10 @@
 
       <div class="summary-container">
         <div class="float-right">
-          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22user_context%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%22bad_actor%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22verified%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22context%22%3A%20%7B%7D%2C%0A%20%20%20%20%20%20%20%20%22context.recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%22context.is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22context.is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22context.is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%22value_sp%22%3A%201000.1%2C%0A%20%20%20%20%20%20%20%20%22followers%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%22following%22%3A%20100%0A%20%20%20%20%7D%0A%7D")'>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22context_account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%22context_account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22context_recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%22context_is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22context_is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22context_is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%22value_sp%22%3A%20%221000.1%22%2C%0A%20%20%20%20%20%20%20%20%22follower_count%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%22following_count%22%3A%20100%0A%20%20%20%20%7D%0A%7D")'>
             Show Example
           </button>
-          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22user_context%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D")'>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%22context_account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D")'>
             Send Request
           </button>
         </div>
@@ -2245,19 +2245,19 @@
     <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
   'type': 'object',
   'properties': {
-    'name': {
+    'account': {
       'type': 'string',
       'description': 'steem blockchain account',
       'default': 'steemit'
     },
-    'user_context': {
+    'context_account': {
       'description': 'the user performing the search',
       'type': 'string',
       'default': 'steemit'
     }
   },
   'required': [
-    'name'
+    'account'
   ]
 }</pre>" data-html="true">
   <td>params</td>
@@ -2269,7 +2269,7 @@
   'description': 'steem blockchain account',
   'default': 'steemit'
 }</pre>" data-html="true">
-  <td>params.name</td>
+  <td>params.account</td>
   <td>string</td>
   <td>steem blockchain account</td>
 </tr>
@@ -2278,7 +2278,7 @@
   'type': 'string',
   'default': 'steemit'
 }</pre>" data-html="true">
-  <td>params?.user_context</td>
+  <td>params?.context_account</td>
   <td>string</td>
   <td>the user performing the search</td>
 </tr>
@@ -2296,7 +2296,7 @@
     <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'type': 'object',
     'properties': {
-        'name': {
+        'account': {
             'type': 'string',
             'description': 'steem blockchain account',
             'default': 'steemit'
@@ -2316,38 +2316,28 @@
             'type': 'number',
             'default': 100
         },
-        'bad_actor': {
-            'description': 'is account on one or more bad actor lists',
-            'type': 'boolean',
-            'default': false
+        'context_account': {
+            'type': 'string',
+            'description': 'steem blockchain account',
+            'default': 'steemit'
         },
-        'verified': {
-            'description': 'is account a verified account, eg, an exchange',
-            'type': 'boolean',
-            'default': false
-        },
-        'context': {
-            'description': 'relationship context',
-            'type': 'object',
-            'properties': {}
-        },
-        'context.recent_sends': {
+        'context_recent_sends': {
             'description': 'last 30d number of xfers to this acct',
             'type': 'integer',
             'default': 100
         },
-        'context.is_following': {
-            'description': 'if ctx follows this user',
+        'context_is_following': {
+            'description': 'if context_account follows this user',
             'type': 'boolean',
             'default': false
         },
-        'context.is_follower': {
-            'description': 'if ctx follows this user',
+        'context_is_follower': {
+            'description': 'if context_account follows this user',
             'type': 'boolean',
             'default': false
         },
-        'context.is_muted': {
-            'description': 'if ctx muted (ignored) this user',
+        'context_is_muted': {
+            'description': 'if context_account muted (ignored) this user',
             'type': 'boolean',
             'default': false
         },
@@ -2369,15 +2359,15 @@
         },
         'value_sp': {
             'description': 'effective SP value of all held tokens',
-            'type': 'number',
-            'default': 1000.1
+            'type': 'string',
+            'default': '1000.1'
         },
-        'followers': {
+        'follower_count': {
             'description': 'follower count',
             'type': 'integer',
             'default': 100
         },
-        'following': {
+        'following_count': {
             'description': 'following count',
             'type': 'integer',
             'default': 100
@@ -2393,7 +2383,7 @@
     'description': 'steem blockchain account',
     'default': 'steemit'
 }</pre>" data-html="true">
-  <td>result?.name</td>
+  <td>result?.account</td>
   <td>string</td>
   <td>steem blockchain account</td>
 </tr>
@@ -2425,67 +2415,49 @@
   <td>legacy rep score (centered at 25)</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'is account on one or more bad actor lists',
-    'type': 'boolean',
-    'default': false
+    'type': 'string',
+    'description': 'steem blockchain account',
+    'default': 'steemit'
 }</pre>" data-html="true">
-  <td>result?.bad_actor</td>
-  <td>boolean</td>
-  <td>is account on one or more bad actor lists</td>
-</tr>
-<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'is account a verified account, eg, an exchange',
-    'type': 'boolean',
-    'default': false
-}</pre>" data-html="true">
-  <td>result?.verified</td>
-  <td>boolean</td>
-  <td>is account a verified account, eg, an exchange</td>
-</tr>
-<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'relationship context',
-    'type': 'object',
-    'properties': {}
-}</pre>" data-html="true">
-  <td>result?.context</td>
-  <td>object</td>
-  <td>relationship context</td>
+  <td>result?.context_account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': 'last 30d number of xfers to this acct',
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.context.recent_sends</td>
+  <td>result?.context_recent_sends</td>
   <td>integer</td>
   <td>last 30d number of xfers to this acct</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx follows this user',
+    'description': 'if context_account follows this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.context.is_following</td>
+  <td>result?.context_is_following</td>
   <td>boolean</td>
-  <td>if ctx follows this user</td>
+  <td>if context_account follows this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx follows this user',
+    'description': 'if context_account follows this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.context.is_follower</td>
+  <td>result?.context_is_follower</td>
   <td>boolean</td>
-  <td>if ctx follows this user</td>
+  <td>if context_account follows this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx muted (ignored) this user',
+    'description': 'if context_account muted (ignored) this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.context.is_muted</td>
+  <td>result?.context_is_muted</td>
   <td>boolean</td>
-  <td>if ctx muted (ignored) this user</td>
+  <td>if context_account muted (ignored) this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': '{abuse exchange verified none}',
@@ -2522,11 +2494,11 @@
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': 'effective SP value of all held tokens',
-    'type': 'number',
-    'default': 1000.1
+    'type': 'string',
+    'default': '1000.1'
 }</pre>" data-html="true">
   <td>result?.value_sp</td>
-  <td>number</td>
+  <td>string</td>
   <td>effective SP value of all held tokens</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
@@ -2534,7 +2506,7 @@
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.followers</td>
+  <td>result?.follower_count</td>
   <td>integer</td>
   <td>follower count</td>
 </tr>
@@ -2543,7 +2515,7 @@
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.following</td>
+  <td>result?.following_count</td>
   <td>integer</td>
   <td>following count</td>
 </tr>
@@ -2567,10 +2539,10 @@
 
       <div class="summary-container">
         <div class="float-right">
-          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.autocomplete_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account_substring%22%3A%20%22ste%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22recent%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22bad_actor%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22verified%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context%22%3A%20%7B%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22value_sp%22%3A%201000.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22followers%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22following%22%3A%20100%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%22friend%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22bad_actor%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22verified%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context%22%3A%20%7B%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22value_sp%22%3A%201000.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22followers%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22following%22%3A%20100%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%22global%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22name%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22bad_actor%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22verified%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context%22%3A%20%7B%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context.is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22value_sp%22%3A%201000.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22followers%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22following%22%3A%20100%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%5D%0A%20%20%20%20%7D%0A%7D")'>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.autocomplete_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account_substring%22%3A%20%22ste%22%2C%0A%20%20%20%20%20%20%20%20%22context_account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22recent%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22value_sp%22%3A%20%221000.1%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22follower_count%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22following_count%22%3A%20100%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%22friend%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22value_sp%22%3A%20%221000.1%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22follower_count%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22following_count%22%3A%20100%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%22global%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vote_sp%22%3A%20100.1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22joined_at%22%3A%20%222016-03-24T17%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22reputation%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_account%22%3A%20%22steemit%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_recent_sends%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_is_following%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_is_follower%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22context_is_muted%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22tags%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22none%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22value_sp%22%3A%20%221000.1%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22follower_count%22%3A%20100%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22following_count%22%3A%20100%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%5D%0A%20%20%20%20%7D%0A%7D")'>
             Show Example
           </button>
-          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.autocomplete_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account_substring%22%3A%20%22ste%22%0A%20%20%20%20%7D%0A%7D")'>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.autocomplete_account%22%2C%0A%20%20%20%20%22params%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22account_substring%22%3A%20%22ste%22%2C%0A%20%20%20%20%20%20%20%20%22context_account%22%3A%20%22steemit%22%0A%20%20%20%20%7D%0A%7D")'>
             Send Request
           </button>
         </div>
@@ -2596,8 +2568,16 @@
     'account_substring': {
       'type': 'string',
       'default': 'ste'
+    },
+    'context_account': {
+      'description': 'the user performing the search',
+      'type': 'string',
+      'default': 'steemit'
     }
-  }
+  },
+  'required': [
+    'account_substring'
+  ]
 }</pre>" data-html="true">
   <td>params</td>
   <td>object</td>
@@ -2607,9 +2587,18 @@
   'type': 'string',
   'default': 'ste'
 }</pre>" data-html="true">
-  <td>params?.account_substring</td>
+  <td>params.account_substring</td>
   <td>string</td>
   <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+  'description': 'the user performing the search',
+  'type': 'string',
+  'default': 'steemit'
+}</pre>" data-html="true">
+  <td>params?.context_account</td>
+  <td>string</td>
+  <td>the user performing the search</td>
 </tr>
 
   </table>
@@ -2631,7 +2620,7 @@
             'items': {
                 'type': 'object',
                 'properties': {
-                    'name': {
+                    'account': {
                         'type': 'string',
                         'description': 'steem blockchain account',
                         'default': 'steemit'
@@ -2651,38 +2640,28 @@
                         'type': 'number',
                         'default': 100
                     },
-                    'bad_actor': {
-                        'description': 'is account on one or more bad actor lists',
-                        'type': 'boolean',
-                        'default': false
+                    'context_account': {
+                        'type': 'string',
+                        'description': 'steem blockchain account',
+                        'default': 'steemit'
                     },
-                    'verified': {
-                        'description': 'is account a verified account, eg, an exchange',
-                        'type': 'boolean',
-                        'default': false
-                    },
-                    'context': {
-                        'description': 'relationship context',
-                        'type': 'object',
-                        'properties': {}
-                    },
-                    'context.recent_sends': {
+                    'context_recent_sends': {
                         'description': 'last 30d number of xfers to this acct',
                         'type': 'integer',
                         'default': 100
                     },
-                    'context.is_following': {
-                        'description': 'if ctx follows this user',
+                    'context_is_following': {
+                        'description': 'if context_account follows this user',
                         'type': 'boolean',
                         'default': false
                     },
-                    'context.is_follower': {
-                        'description': 'if ctx follows this user',
+                    'context_is_follower': {
+                        'description': 'if context_account follows this user',
                         'type': 'boolean',
                         'default': false
                     },
-                    'context.is_muted': {
-                        'description': 'if ctx muted (ignored) this user',
+                    'context_is_muted': {
+                        'description': 'if context_account muted (ignored) this user',
                         'type': 'boolean',
                         'default': false
                     },
@@ -2704,15 +2683,15 @@
                     },
                     'value_sp': {
                         'description': 'effective SP value of all held tokens',
-                        'type': 'number',
-                        'default': 1000.1
+                        'type': 'string',
+                        'default': '1000.1'
                     },
-                    'followers': {
+                    'follower_count': {
                         'description': 'follower count',
                         'type': 'integer',
                         'default': 100
                     },
-                    'following': {
+                    'following_count': {
                         'description': 'following count',
                         'type': 'integer',
                         'default': 100
@@ -2727,7 +2706,7 @@
             'items': {
                 'type': 'object',
                 'properties': {
-                    'name': {
+                    'account': {
                         'type': 'string',
                         'description': 'steem blockchain account',
                         'default': 'steemit'
@@ -2747,38 +2726,28 @@
                         'type': 'number',
                         'default': 100
                     },
-                    'bad_actor': {
-                        'description': 'is account on one or more bad actor lists',
-                        'type': 'boolean',
-                        'default': false
+                    'context_account': {
+                        'type': 'string',
+                        'description': 'steem blockchain account',
+                        'default': 'steemit'
                     },
-                    'verified': {
-                        'description': 'is account a verified account, eg, an exchange',
-                        'type': 'boolean',
-                        'default': false
-                    },
-                    'context': {
-                        'description': 'relationship context',
-                        'type': 'object',
-                        'properties': {}
-                    },
-                    'context.recent_sends': {
+                    'context_recent_sends': {
                         'description': 'last 30d number of xfers to this acct',
                         'type': 'integer',
                         'default': 100
                     },
-                    'context.is_following': {
-                        'description': 'if ctx follows this user',
+                    'context_is_following': {
+                        'description': 'if context_account follows this user',
                         'type': 'boolean',
                         'default': false
                     },
-                    'context.is_follower': {
-                        'description': 'if ctx follows this user',
+                    'context_is_follower': {
+                        'description': 'if context_account follows this user',
                         'type': 'boolean',
                         'default': false
                     },
-                    'context.is_muted': {
-                        'description': 'if ctx muted (ignored) this user',
+                    'context_is_muted': {
+                        'description': 'if context_account muted (ignored) this user',
                         'type': 'boolean',
                         'default': false
                     },
@@ -2800,15 +2769,15 @@
                     },
                     'value_sp': {
                         'description': 'effective SP value of all held tokens',
-                        'type': 'number',
-                        'default': 1000.1
+                        'type': 'string',
+                        'default': '1000.1'
                     },
-                    'followers': {
+                    'follower_count': {
                         'description': 'follower count',
                         'type': 'integer',
                         'default': 100
                     },
-                    'following': {
+                    'following_count': {
                         'description': 'following count',
                         'type': 'integer',
                         'default': 100
@@ -2823,7 +2792,7 @@
             'items': {
                 'type': 'object',
                 'properties': {
-                    'name': {
+                    'account': {
                         'type': 'string',
                         'description': 'steem blockchain account',
                         'default': 'steemit'
@@ -2843,38 +2812,28 @@
                         'type': 'number',
                         'default': 100
                     },
-                    'bad_actor': {
-                        'description': 'is account on one or more bad actor lists',
-                        'type': 'boolean',
-                        'default': false
+                    'context_account': {
+                        'type': 'string',
+                        'description': 'steem blockchain account',
+                        'default': 'steemit'
                     },
-                    'verified': {
-                        'description': 'is account a verified account, eg, an exchange',
-                        'type': 'boolean',
-                        'default': false
-                    },
-                    'context': {
-                        'description': 'relationship context',
-                        'type': 'object',
-                        'properties': {}
-                    },
-                    'context.recent_sends': {
+                    'context_recent_sends': {
                         'description': 'last 30d number of xfers to this acct',
                         'type': 'integer',
                         'default': 100
                     },
-                    'context.is_following': {
-                        'description': 'if ctx follows this user',
+                    'context_is_following': {
+                        'description': 'if context_account follows this user',
                         'type': 'boolean',
                         'default': false
                     },
-                    'context.is_follower': {
-                        'description': 'if ctx follows this user',
+                    'context_is_follower': {
+                        'description': 'if context_account follows this user',
                         'type': 'boolean',
                         'default': false
                     },
-                    'context.is_muted': {
-                        'description': 'if ctx muted (ignored) this user',
+                    'context_is_muted': {
+                        'description': 'if context_account muted (ignored) this user',
                         'type': 'boolean',
                         'default': false
                     },
@@ -2896,15 +2855,15 @@
                     },
                     'value_sp': {
                         'description': 'effective SP value of all held tokens',
-                        'type': 'number',
-                        'default': 1000.1
+                        'type': 'string',
+                        'default': '1000.1'
                     },
-                    'followers': {
+                    'follower_count': {
                         'description': 'follower count',
                         'type': 'integer',
                         'default': 100
                     },
-                    'following': {
+                    'following_count': {
                         'description': 'following count',
                         'type': 'integer',
                         'default': 100
@@ -2925,7 +2884,7 @@
     'items': {
         'type': 'object',
         'properties': {
-            'name': {
+            'account': {
                 'type': 'string',
                 'description': 'steem blockchain account',
                 'default': 'steemit'
@@ -2945,38 +2904,28 @@
                 'type': 'number',
                 'default': 100
             },
-            'bad_actor': {
-                'description': 'is account on one or more bad actor lists',
-                'type': 'boolean',
-                'default': false
+            'context_account': {
+                'type': 'string',
+                'description': 'steem blockchain account',
+                'default': 'steemit'
             },
-            'verified': {
-                'description': 'is account a verified account, eg, an exchange',
-                'type': 'boolean',
-                'default': false
-            },
-            'context': {
-                'description': 'relationship context',
-                'type': 'object',
-                'properties': {}
-            },
-            'context.recent_sends': {
+            'context_recent_sends': {
                 'description': 'last 30d number of xfers to this acct',
                 'type': 'integer',
                 'default': 100
             },
-            'context.is_following': {
-                'description': 'if ctx follows this user',
+            'context_is_following': {
+                'description': 'if context_account follows this user',
                 'type': 'boolean',
                 'default': false
             },
-            'context.is_follower': {
-                'description': 'if ctx follows this user',
+            'context_is_follower': {
+                'description': 'if context_account follows this user',
                 'type': 'boolean',
                 'default': false
             },
-            'context.is_muted': {
-                'description': 'if ctx muted (ignored) this user',
+            'context_is_muted': {
+                'description': 'if context_account muted (ignored) this user',
                 'type': 'boolean',
                 'default': false
             },
@@ -2998,15 +2947,15 @@
             },
             'value_sp': {
                 'description': 'effective SP value of all held tokens',
-                'type': 'number',
-                'default': 1000.1
+                'type': 'string',
+                'default': '1000.1'
             },
-            'followers': {
+            'follower_count': {
                 'description': 'follower count',
                 'type': 'integer',
                 'default': 100
             },
-            'following': {
+            'following_count': {
                 'description': 'following count',
                 'type': 'integer',
                 'default': 100
@@ -3022,7 +2971,7 @@
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'type': 'object',
     'properties': {
-        'name': {
+        'account': {
             'type': 'string',
             'description': 'steem blockchain account',
             'default': 'steemit'
@@ -3042,38 +2991,28 @@
             'type': 'number',
             'default': 100
         },
-        'bad_actor': {
-            'description': 'is account on one or more bad actor lists',
-            'type': 'boolean',
-            'default': false
+        'context_account': {
+            'type': 'string',
+            'description': 'steem blockchain account',
+            'default': 'steemit'
         },
-        'verified': {
-            'description': 'is account a verified account, eg, an exchange',
-            'type': 'boolean',
-            'default': false
-        },
-        'context': {
-            'description': 'relationship context',
-            'type': 'object',
-            'properties': {}
-        },
-        'context.recent_sends': {
+        'context_recent_sends': {
             'description': 'last 30d number of xfers to this acct',
             'type': 'integer',
             'default': 100
         },
-        'context.is_following': {
-            'description': 'if ctx follows this user',
+        'context_is_following': {
+            'description': 'if context_account follows this user',
             'type': 'boolean',
             'default': false
         },
-        'context.is_follower': {
-            'description': 'if ctx follows this user',
+        'context_is_follower': {
+            'description': 'if context_account follows this user',
             'type': 'boolean',
             'default': false
         },
-        'context.is_muted': {
-            'description': 'if ctx muted (ignored) this user',
+        'context_is_muted': {
+            'description': 'if context_account muted (ignored) this user',
             'type': 'boolean',
             'default': false
         },
@@ -3095,15 +3034,15 @@
         },
         'value_sp': {
             'description': 'effective SP value of all held tokens',
-            'type': 'number',
-            'default': 1000.1
+            'type': 'string',
+            'default': '1000.1'
         },
-        'followers': {
+        'follower_count': {
             'description': 'follower count',
             'type': 'integer',
             'default': 100
         },
-        'following': {
+        'following_count': {
             'description': 'following count',
             'type': 'integer',
             'default': 100
@@ -3119,7 +3058,7 @@
     'description': 'steem blockchain account',
     'default': 'steemit'
 }</pre>" data-html="true">
-  <td>result?.recent[#]?.name</td>
+  <td>result?.recent[#]?.account</td>
   <td>string</td>
   <td>steem blockchain account</td>
 </tr>
@@ -3151,67 +3090,49 @@
   <td>legacy rep score (centered at 25)</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'is account on one or more bad actor lists',
-    'type': 'boolean',
-    'default': false
+    'type': 'string',
+    'description': 'steem blockchain account',
+    'default': 'steemit'
 }</pre>" data-html="true">
-  <td>result?.recent[#]?.bad_actor</td>
-  <td>boolean</td>
-  <td>is account on one or more bad actor lists</td>
-</tr>
-<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'is account a verified account, eg, an exchange',
-    'type': 'boolean',
-    'default': false
-}</pre>" data-html="true">
-  <td>result?.recent[#]?.verified</td>
-  <td>boolean</td>
-  <td>is account a verified account, eg, an exchange</td>
-</tr>
-<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'relationship context',
-    'type': 'object',
-    'properties': {}
-}</pre>" data-html="true">
-  <td>result?.recent[#]?.context</td>
-  <td>object</td>
-  <td>relationship context</td>
+  <td>result?.recent[#]?.context_account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': 'last 30d number of xfers to this acct',
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.recent[#]?.context.recent_sends</td>
+  <td>result?.recent[#]?.context_recent_sends</td>
   <td>integer</td>
   <td>last 30d number of xfers to this acct</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx follows this user',
+    'description': 'if context_account follows this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.recent[#]?.context.is_following</td>
+  <td>result?.recent[#]?.context_is_following</td>
   <td>boolean</td>
-  <td>if ctx follows this user</td>
+  <td>if context_account follows this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx follows this user',
+    'description': 'if context_account follows this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.recent[#]?.context.is_follower</td>
+  <td>result?.recent[#]?.context_is_follower</td>
   <td>boolean</td>
-  <td>if ctx follows this user</td>
+  <td>if context_account follows this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx muted (ignored) this user',
+    'description': 'if context_account muted (ignored) this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.recent[#]?.context.is_muted</td>
+  <td>result?.recent[#]?.context_is_muted</td>
   <td>boolean</td>
-  <td>if ctx muted (ignored) this user</td>
+  <td>if context_account muted (ignored) this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': '{abuse exchange verified none}',
@@ -3248,11 +3169,11 @@
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': 'effective SP value of all held tokens',
-    'type': 'number',
-    'default': 1000.1
+    'type': 'string',
+    'default': '1000.1'
 }</pre>" data-html="true">
   <td>result?.recent[#]?.value_sp</td>
-  <td>number</td>
+  <td>string</td>
   <td>effective SP value of all held tokens</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
@@ -3260,7 +3181,7 @@
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.recent[#]?.followers</td>
+  <td>result?.recent[#]?.follower_count</td>
   <td>integer</td>
   <td>follower count</td>
 </tr>
@@ -3269,7 +3190,7 @@
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.recent[#]?.following</td>
+  <td>result?.recent[#]?.following_count</td>
   <td>integer</td>
   <td>following count</td>
 </tr>
@@ -3279,7 +3200,7 @@
     'items': {
         'type': 'object',
         'properties': {
-            'name': {
+            'account': {
                 'type': 'string',
                 'description': 'steem blockchain account',
                 'default': 'steemit'
@@ -3299,38 +3220,28 @@
                 'type': 'number',
                 'default': 100
             },
-            'bad_actor': {
-                'description': 'is account on one or more bad actor lists',
-                'type': 'boolean',
-                'default': false
+            'context_account': {
+                'type': 'string',
+                'description': 'steem blockchain account',
+                'default': 'steemit'
             },
-            'verified': {
-                'description': 'is account a verified account, eg, an exchange',
-                'type': 'boolean',
-                'default': false
-            },
-            'context': {
-                'description': 'relationship context',
-                'type': 'object',
-                'properties': {}
-            },
-            'context.recent_sends': {
+            'context_recent_sends': {
                 'description': 'last 30d number of xfers to this acct',
                 'type': 'integer',
                 'default': 100
             },
-            'context.is_following': {
-                'description': 'if ctx follows this user',
+            'context_is_following': {
+                'description': 'if context_account follows this user',
                 'type': 'boolean',
                 'default': false
             },
-            'context.is_follower': {
-                'description': 'if ctx follows this user',
+            'context_is_follower': {
+                'description': 'if context_account follows this user',
                 'type': 'boolean',
                 'default': false
             },
-            'context.is_muted': {
-                'description': 'if ctx muted (ignored) this user',
+            'context_is_muted': {
+                'description': 'if context_account muted (ignored) this user',
                 'type': 'boolean',
                 'default': false
             },
@@ -3352,15 +3263,15 @@
             },
             'value_sp': {
                 'description': 'effective SP value of all held tokens',
-                'type': 'number',
-                'default': 1000.1
+                'type': 'string',
+                'default': '1000.1'
             },
-            'followers': {
+            'follower_count': {
                 'description': 'follower count',
                 'type': 'integer',
                 'default': 100
             },
-            'following': {
+            'following_count': {
                 'description': 'following count',
                 'type': 'integer',
                 'default': 100
@@ -3376,7 +3287,7 @@
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'type': 'object',
     'properties': {
-        'name': {
+        'account': {
             'type': 'string',
             'description': 'steem blockchain account',
             'default': 'steemit'
@@ -3396,38 +3307,28 @@
             'type': 'number',
             'default': 100
         },
-        'bad_actor': {
-            'description': 'is account on one or more bad actor lists',
-            'type': 'boolean',
-            'default': false
+        'context_account': {
+            'type': 'string',
+            'description': 'steem blockchain account',
+            'default': 'steemit'
         },
-        'verified': {
-            'description': 'is account a verified account, eg, an exchange',
-            'type': 'boolean',
-            'default': false
-        },
-        'context': {
-            'description': 'relationship context',
-            'type': 'object',
-            'properties': {}
-        },
-        'context.recent_sends': {
+        'context_recent_sends': {
             'description': 'last 30d number of xfers to this acct',
             'type': 'integer',
             'default': 100
         },
-        'context.is_following': {
-            'description': 'if ctx follows this user',
+        'context_is_following': {
+            'description': 'if context_account follows this user',
             'type': 'boolean',
             'default': false
         },
-        'context.is_follower': {
-            'description': 'if ctx follows this user',
+        'context_is_follower': {
+            'description': 'if context_account follows this user',
             'type': 'boolean',
             'default': false
         },
-        'context.is_muted': {
-            'description': 'if ctx muted (ignored) this user',
+        'context_is_muted': {
+            'description': 'if context_account muted (ignored) this user',
             'type': 'boolean',
             'default': false
         },
@@ -3449,15 +3350,15 @@
         },
         'value_sp': {
             'description': 'effective SP value of all held tokens',
-            'type': 'number',
-            'default': 1000.1
+            'type': 'string',
+            'default': '1000.1'
         },
-        'followers': {
+        'follower_count': {
             'description': 'follower count',
             'type': 'integer',
             'default': 100
         },
-        'following': {
+        'following_count': {
             'description': 'following count',
             'type': 'integer',
             'default': 100
@@ -3473,7 +3374,7 @@
     'description': 'steem blockchain account',
     'default': 'steemit'
 }</pre>" data-html="true">
-  <td>result?.friend[#]?.name</td>
+  <td>result?.friend[#]?.account</td>
   <td>string</td>
   <td>steem blockchain account</td>
 </tr>
@@ -3505,67 +3406,49 @@
   <td>legacy rep score (centered at 25)</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'is account on one or more bad actor lists',
-    'type': 'boolean',
-    'default': false
+    'type': 'string',
+    'description': 'steem blockchain account',
+    'default': 'steemit'
 }</pre>" data-html="true">
-  <td>result?.friend[#]?.bad_actor</td>
-  <td>boolean</td>
-  <td>is account on one or more bad actor lists</td>
-</tr>
-<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'is account a verified account, eg, an exchange',
-    'type': 'boolean',
-    'default': false
-}</pre>" data-html="true">
-  <td>result?.friend[#]?.verified</td>
-  <td>boolean</td>
-  <td>is account a verified account, eg, an exchange</td>
-</tr>
-<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'relationship context',
-    'type': 'object',
-    'properties': {}
-}</pre>" data-html="true">
-  <td>result?.friend[#]?.context</td>
-  <td>object</td>
-  <td>relationship context</td>
+  <td>result?.friend[#]?.context_account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': 'last 30d number of xfers to this acct',
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.friend[#]?.context.recent_sends</td>
+  <td>result?.friend[#]?.context_recent_sends</td>
   <td>integer</td>
   <td>last 30d number of xfers to this acct</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx follows this user',
+    'description': 'if context_account follows this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.friend[#]?.context.is_following</td>
+  <td>result?.friend[#]?.context_is_following</td>
   <td>boolean</td>
-  <td>if ctx follows this user</td>
+  <td>if context_account follows this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx follows this user',
+    'description': 'if context_account follows this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.friend[#]?.context.is_follower</td>
+  <td>result?.friend[#]?.context_is_follower</td>
   <td>boolean</td>
-  <td>if ctx follows this user</td>
+  <td>if context_account follows this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx muted (ignored) this user',
+    'description': 'if context_account muted (ignored) this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.friend[#]?.context.is_muted</td>
+  <td>result?.friend[#]?.context_is_muted</td>
   <td>boolean</td>
-  <td>if ctx muted (ignored) this user</td>
+  <td>if context_account muted (ignored) this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': '{abuse exchange verified none}',
@@ -3602,11 +3485,11 @@
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': 'effective SP value of all held tokens',
-    'type': 'number',
-    'default': 1000.1
+    'type': 'string',
+    'default': '1000.1'
 }</pre>" data-html="true">
   <td>result?.friend[#]?.value_sp</td>
-  <td>number</td>
+  <td>string</td>
   <td>effective SP value of all held tokens</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
@@ -3614,7 +3497,7 @@
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.friend[#]?.followers</td>
+  <td>result?.friend[#]?.follower_count</td>
   <td>integer</td>
   <td>follower count</td>
 </tr>
@@ -3623,7 +3506,7 @@
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.friend[#]?.following</td>
+  <td>result?.friend[#]?.following_count</td>
   <td>integer</td>
   <td>following count</td>
 </tr>
@@ -3633,7 +3516,7 @@
     'items': {
         'type': 'object',
         'properties': {
-            'name': {
+            'account': {
                 'type': 'string',
                 'description': 'steem blockchain account',
                 'default': 'steemit'
@@ -3653,38 +3536,28 @@
                 'type': 'number',
                 'default': 100
             },
-            'bad_actor': {
-                'description': 'is account on one or more bad actor lists',
-                'type': 'boolean',
-                'default': false
+            'context_account': {
+                'type': 'string',
+                'description': 'steem blockchain account',
+                'default': 'steemit'
             },
-            'verified': {
-                'description': 'is account a verified account, eg, an exchange',
-                'type': 'boolean',
-                'default': false
-            },
-            'context': {
-                'description': 'relationship context',
-                'type': 'object',
-                'properties': {}
-            },
-            'context.recent_sends': {
+            'context_recent_sends': {
                 'description': 'last 30d number of xfers to this acct',
                 'type': 'integer',
                 'default': 100
             },
-            'context.is_following': {
-                'description': 'if ctx follows this user',
+            'context_is_following': {
+                'description': 'if context_account follows this user',
                 'type': 'boolean',
                 'default': false
             },
-            'context.is_follower': {
-                'description': 'if ctx follows this user',
+            'context_is_follower': {
+                'description': 'if context_account follows this user',
                 'type': 'boolean',
                 'default': false
             },
-            'context.is_muted': {
-                'description': 'if ctx muted (ignored) this user',
+            'context_is_muted': {
+                'description': 'if context_account muted (ignored) this user',
                 'type': 'boolean',
                 'default': false
             },
@@ -3706,15 +3579,15 @@
             },
             'value_sp': {
                 'description': 'effective SP value of all held tokens',
-                'type': 'number',
-                'default': 1000.1
+                'type': 'string',
+                'default': '1000.1'
             },
-            'followers': {
+            'follower_count': {
                 'description': 'follower count',
                 'type': 'integer',
                 'default': 100
             },
-            'following': {
+            'following_count': {
                 'description': 'following count',
                 'type': 'integer',
                 'default': 100
@@ -3730,7 +3603,7 @@
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'type': 'object',
     'properties': {
-        'name': {
+        'account': {
             'type': 'string',
             'description': 'steem blockchain account',
             'default': 'steemit'
@@ -3750,38 +3623,28 @@
             'type': 'number',
             'default': 100
         },
-        'bad_actor': {
-            'description': 'is account on one or more bad actor lists',
-            'type': 'boolean',
-            'default': false
+        'context_account': {
+            'type': 'string',
+            'description': 'steem blockchain account',
+            'default': 'steemit'
         },
-        'verified': {
-            'description': 'is account a verified account, eg, an exchange',
-            'type': 'boolean',
-            'default': false
-        },
-        'context': {
-            'description': 'relationship context',
-            'type': 'object',
-            'properties': {}
-        },
-        'context.recent_sends': {
+        'context_recent_sends': {
             'description': 'last 30d number of xfers to this acct',
             'type': 'integer',
             'default': 100
         },
-        'context.is_following': {
-            'description': 'if ctx follows this user',
+        'context_is_following': {
+            'description': 'if context_account follows this user',
             'type': 'boolean',
             'default': false
         },
-        'context.is_follower': {
-            'description': 'if ctx follows this user',
+        'context_is_follower': {
+            'description': 'if context_account follows this user',
             'type': 'boolean',
             'default': false
         },
-        'context.is_muted': {
-            'description': 'if ctx muted (ignored) this user',
+        'context_is_muted': {
+            'description': 'if context_account muted (ignored) this user',
             'type': 'boolean',
             'default': false
         },
@@ -3803,15 +3666,15 @@
         },
         'value_sp': {
             'description': 'effective SP value of all held tokens',
-            'type': 'number',
-            'default': 1000.1
+            'type': 'string',
+            'default': '1000.1'
         },
-        'followers': {
+        'follower_count': {
             'description': 'follower count',
             'type': 'integer',
             'default': 100
         },
-        'following': {
+        'following_count': {
             'description': 'following count',
             'type': 'integer',
             'default': 100
@@ -3827,7 +3690,7 @@
     'description': 'steem blockchain account',
     'default': 'steemit'
 }</pre>" data-html="true">
-  <td>result?.global[#]?.name</td>
+  <td>result?.global[#]?.account</td>
   <td>string</td>
   <td>steem blockchain account</td>
 </tr>
@@ -3859,67 +3722,49 @@
   <td>legacy rep score (centered at 25)</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'is account on one or more bad actor lists',
-    'type': 'boolean',
-    'default': false
+    'type': 'string',
+    'description': 'steem blockchain account',
+    'default': 'steemit'
 }</pre>" data-html="true">
-  <td>result?.global[#]?.bad_actor</td>
-  <td>boolean</td>
-  <td>is account on one or more bad actor lists</td>
-</tr>
-<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'is account a verified account, eg, an exchange',
-    'type': 'boolean',
-    'default': false
-}</pre>" data-html="true">
-  <td>result?.global[#]?.verified</td>
-  <td>boolean</td>
-  <td>is account a verified account, eg, an exchange</td>
-</tr>
-<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'relationship context',
-    'type': 'object',
-    'properties': {}
-}</pre>" data-html="true">
-  <td>result?.global[#]?.context</td>
-  <td>object</td>
-  <td>relationship context</td>
+  <td>result?.global[#]?.context_account</td>
+  <td>string</td>
+  <td>steem blockchain account</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': 'last 30d number of xfers to this acct',
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.global[#]?.context.recent_sends</td>
+  <td>result?.global[#]?.context_recent_sends</td>
   <td>integer</td>
   <td>last 30d number of xfers to this acct</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx follows this user',
+    'description': 'if context_account follows this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.global[#]?.context.is_following</td>
+  <td>result?.global[#]?.context_is_following</td>
   <td>boolean</td>
-  <td>if ctx follows this user</td>
+  <td>if context_account follows this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx follows this user',
+    'description': 'if context_account follows this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.global[#]?.context.is_follower</td>
+  <td>result?.global[#]?.context_is_follower</td>
   <td>boolean</td>
-  <td>if ctx follows this user</td>
+  <td>if context_account follows this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
-    'description': 'if ctx muted (ignored) this user',
+    'description': 'if context_account muted (ignored) this user',
     'type': 'boolean',
     'default': false
 }</pre>" data-html="true">
-  <td>result?.global[#]?.context.is_muted</td>
+  <td>result?.global[#]?.context_is_muted</td>
   <td>boolean</td>
-  <td>if ctx muted (ignored) this user</td>
+  <td>if context_account muted (ignored) this user</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': '{abuse exchange verified none}',
@@ -3956,11 +3801,11 @@
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
     'description': 'effective SP value of all held tokens',
-    'type': 'number',
-    'default': 1000.1
+    'type': 'string',
+    'default': '1000.1'
 }</pre>" data-html="true">
   <td>result?.global[#]?.value_sp</td>
-  <td>number</td>
+  <td>string</td>
   <td>effective SP value of all held tokens</td>
 </tr>
 <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
@@ -3968,7 +3813,7 @@
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.global[#]?.followers</td>
+  <td>result?.global[#]?.follower_count</td>
   <td>integer</td>
   <td>follower count</td>
 </tr>
@@ -3977,7 +3822,7 @@
     'type': 'integer',
     'default': 100
 }</pre>" data-html="true">
-  <td>result?.global[#]?.following</td>
+  <td>result?.global[#]?.following_count</td>
   <td>integer</td>
   <td>following count</td>
 </tr>

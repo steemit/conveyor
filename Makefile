@@ -8,6 +8,24 @@ DOCS_ROOT := docs
 API_TESTS_ROOT := api-tests
 CONVEYOR_SCHEMA := conveyor_schema.json
 
+# Bad Actor / GDPR User Lists
+GDPR_LISTS := raw.githubusercontent.com/steemit/condenser/master/src/app/utils/GDPRUserList.js
+LOCAL_GDPR_LISTS := $(addprefix lists/gdpr/srcs/, $(GDPR_LISTS))
+
+BAD_ACTOR_LISTS := raw.githubusercontent.com/steemit/condenser/master/src/app/utils/DMCAUserList.js \
+    raw.githubusercontent.com/steemit/condenser/master/src/app/utils/ImageUserBlockList.js \
+    raw.githubusercontent.com/steemit/condenser/master/src/app/utils/BadActorList.js \
+    raw.githubusercontent.com/steemit/redeemer-irredeemables/master/full.txt
+
+LOCAL_BAD_ACTOR_LISTS := $(addprefix lists/bad_actors/srcs/, $(BAD_ACTOR_LISTS))
+
+EXCHANGE_LISTS := raw.githubusercontent.com/steemit/condenser/master/src/app/utils/VerifiedExchangeList.js
+LOCAL_EXCHANGE_LISTS := $(addprefix lists/exchanges/srcs/, $(EXCHANGE_LISTS))
+
+VERIFIED_LISTS :=
+LOCAL_VERIFIED_LISTS := $(addprefix lists/verified/srcs/, $(VERIFIED_LISTS))
+
+
 all: lib
 
 lib: $(SRC_FILES) node_modules tsconfig.json
@@ -63,17 +81,85 @@ distclean: clean
 .PHONY:docs
 docs: $(DOCS_ROOT)/Conveyor.html $(DOCS_ROOT)/Conveyor.md
 
-$(DOCS_ROOT)/Conveyor.html:$(CONVEYOR_SCHEMA)
-	-mkdir -p $(HTML_DOCS_ROOT)
+$(DOCS_ROOT)/Conveyor.html: $(CONVEYOR_SCHEMA)
+	-mkdir -p $(DOCS_ROOT)
 	./node_modules/.bin/jrgen --outdir $(DOCS_ROOT) docs/html $<
 
 
 $(DOCS_ROOT)/Conveyor.md: $(CONVEYOR_SCHEMA)
-	-mkdir -p $(MD_DOCS_ROOT)
+	-mkdir -p $(DOCS_ROOT)
 	./node_modules/.bin/jrgen --outdir $(DOCS_ROOT) docs/md $<
 
+.PHONY: clean-docs
+clean-docs:
+	-rm -rf $(DOCS_ROOT)/*
+
+.PHONY: update-docs
+update-docs: clean-docs docs
 
 .PHONY: api-tests
 api-tests: $(CONVEYOR_SCHEMA)
 	-mkdir -p $(API_TESTS_ROOT)
 	./node_modules/.bin/jrgen --outdir $(API_TESTS_ROOT) test/jasmine $<
+
+.PHONY: bad-actors-list
+bad-actors-list: lists/bad_actors/users.txt lists/bad_actors/users.json lists/bad_actors/users.ts
+
+.PHONY: gdpr-list
+gdpr-list: lists/gdpr/users.txt lists/gdpr/users.json lists/gdpr/users.ts
+
+.PHONY: exchanges-list
+exchanges-list: lists/exchanges/users.txt lists/exchanges/users.json lists/exchanges/users.ts
+
+.PHONY: verified-list
+exchanges-list: lists/verified/users.txt lists/verified/users.json lists/verified/users.ts
+
+
+.PHONY: user-lists
+user-lists: bad-actors-list gdpr-list exchanges-list verified-list
+
+
+
+lists/bad_actors/users.txt: $(LOCAL_BAD_ACTOR_LISTS)
+	cat $(LOCAL_BAD_ACTOR_LISTS) \
+	    | awk '{$$1=$$1};1' \
+	    | egrep --only-matching --line-regexp '^[\.a-zA-Z0-9_-]+$$' \
+	    | LC_COLLATE=C sort \
+	    | uniq > $@
+
+lists/bad_actors/srcs/%:
+	mkdir -p $(dir $@)
+	wget -O $@ https://$*
+
+lists/gdpr/users.txt: $(LOCAL_GDPR_LISTS)
+	cat $(LOCAL_GDPR_LISTS) \
+	    | awk '{$$1=$$1};1' \
+	    | egrep --only-matching --line-regexp '^[\.a-zA-Z0-9_-]+$$' \
+	    | LC_COLLATE=C sort \
+	    | uniq > $@
+
+lists/gdpr/srcs/%:
+	mkdir -p $(dir $@)
+	wget -O $@ https://$*
+
+lists/exchanges/users.txt: $(LOCAL_EXCHANGE_LISTS)
+	cat $(LOCAL_EXCHANGE_LISTS) \
+	    | awk '{$$1=$$1};1' \
+	    | egrep --only-matching --line-regexp '^[\.a-zA-Z0-9_-]+$$' \
+	    | LC_COLLATE=C sort \
+	    | uniq > $@
+
+lists/exchanges/srcs/%:
+	mkdir -p $(dir $@)
+	wget -O $@ https://$*
+
+
+lists/%.json: lists/%.txt
+	cat $< | jq -R -s -c 'split("\n")|map(select(. != ""))' > $@
+
+lists/%.ts: lists/%.json
+	cat <(echo -n "export const users: Set<string> = new Set(") $<  <(echo  ")") | prettier --parser typescript --stdin --no-semi --single-quote > $@
+
+.PHONY: clean-lists
+clean-lists:
+	-rm -rf lists/gdpr/* lists/bad_actors/* lists/exchanges/*

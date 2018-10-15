@@ -4,3 +4,7 @@ reports/
 .nyc_output/
 config/local*
 .idea/
+yarn-error.log
+.DS_Store
+test/*.js
+src/*.js

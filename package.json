@@ -11,17 +11,22 @@
   "dependencies": {
     "@steemit/koa-jsonrpc": "^1.1.2",
     "abstract-blob-store": "^3.2.0",
-    "aws-sdk": "^2.127.0",
+    "aws-sdk": "^2.326.0",
     "bunyan": "^2.0.2",
     "config": "^1.26.2",
     "koa": "^2.3.0",
     "koa-router": "^7.2.1",
+    "libstl": "^0.1.22",
+    "node-cache": "^4.2.0",
+    "open-radix-trie": "^2.3.1",
     "pg": "^7.4.3",
     "pg-hstore": "^2.3.2",
     "random-js": "^1.0.8",
     "s3-blob-store": "^3.2.0",
     "sequelize": "^4.27.0",
     "toml": "^2.3.3",
+    "trie-js": "^1.1.0",
+    "trie-prefix-tree2": "^2.0.0",
     "uuid": "^3.1.0"
   },
   "devDependencies": {
@@ -41,9 +46,18 @@
     "nsp": "^3.2.1",
     "nyc": "^12.0.2",
     "onchange": "^4.0.0",
+    "prettier": "^1.14.3",
+    "sinon": "^6.3.4",
     "sqlite3": "^4.0.0",
     "ts-node": "^6.1.0",
     "tslint": "^5.7.0",
+    "typemoq": "^2.1.0",
     "typescript": "^2.5.0"
+  },
+  "prettier": {
+    "tabWidth": 4,
+    "semi": false,
+    "singleQuote": true,
+    "arrowParens": "always"
   }
 }
