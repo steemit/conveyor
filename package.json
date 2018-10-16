@@ -13,7 +13,8 @@
     "abstract-blob-store": "^3.2.0",
     "aws-sdk": "^2.326.0",
     "bunyan": "^2.0.2",
-    "config": "^1.26.2",
+    "config": "^2.0.1",
+    "dsteem": "^0.9.0",
     "koa": "^2.3.0",
     "koa-router": "^7.2.1",
     "libstl": "^0.1.22",
@@ -49,10 +50,10 @@
     "prettier": "^1.14.3",
     "sinon": "^6.3.4",
     "sqlite3": "^4.0.0",
-    "ts-node": "^6.1.0",
+    "ts-node": "^7.0.1",
     "tslint": "^5.7.0",
-    "typemoq": "^2.1.0",
-    "typescript": "^2.5.0"
+
+   "typescript": "^3.0.1"
   },
   "prettier": {
     "tabWidth": 4,
