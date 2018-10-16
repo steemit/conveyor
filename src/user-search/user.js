@@ -49,6 +49,14 @@ class UserAccount {
     userContext(account) {
         return new UserContext(this.account, account, this.recentSendsCount(account), this.isFollowing(account), this.isFollower(account), this.isIgnored(account));
     }
+    toJSONWithContext(userContext) {
+        if (userContext !== undefined) {
+            return _.merge(this.toJSON(), userContext.toJSON());
+        }
+        else {
+            return this.toJSON();
+        }
+    }
     toJSON() {
         return {
             account: this.account,
@@ -78,10 +86,10 @@ class UserContext {
     toJSON() {
         return {
             context_account: this.context_account,
-            recent_sends: this.recent_sends,
-            is_following: this.is_following,
-            is_follower: this.is_follower,
-            is_muted: this.is_muted
+            context_recent_sends: this.recent_sends,
+            context_is_following: this.is_following,
+            context_is_follower: this.is_follower,
+            context_is_muted: this.is_muted
         };
     }
 }

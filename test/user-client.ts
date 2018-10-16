@@ -3,6 +3,7 @@ import 'mocha'
 import * as sinon from 'sinon'
 const nodecache = require('node-cache')
 import { CachingClient } from '../src/user-search/client'
+import {UserAccount} from '../src/user-search/user'
 import {
     getAccountHistoryResponse,
     getAccountsResponse,
@@ -136,9 +137,13 @@ describe('user client', function(this) {
             getIgnoredResponse
         )
     })
-    it('should load a UserAccount', async function(this) {
-        const results = await this.fakeCacheClient.loadAccount('steemit')
-        assert.deepEqual(results, expectedUserAccountJSON)
+    it('should load UserAccount as JSON', async function(this) {
+        const userAccountJSON = await this.fakeCacheClient.loadAccountJSON('steemit')
+        assert.deepEqual(userAccountJSON, expectedUserAccountJSON)
+    })
+    it('should return undefined UserContext', async function(this) {
+        const [userAccount, userContext] = await this.fakeCacheClient.loadAccount('steemit')
+        assert.deepEqual(userContext, undefined)
     })
     it('should cache a UserAccount', async function(this) {
         const results = await this.fakeCacheClient.loadAccount('steemit')
@@ -148,7 +153,14 @@ describe('user client', function(this) {
     it('should load array of UserAccounts', async function(this) {
         const accounts = ['steemit', 'steemit']
         const results = await this.fakeCacheClient.loadAccounts(accounts)
-        assert.deepEqual(results, [expectedUserAccountJSON, expectedUserAccountJSON])
+        assert.deepEqual(results[0][0].toJSON(), expectedUserAccountJSON)
+        assert.deepEqual(results[1][0].toJSON(), expectedUserAccountJSON)
+    })
+    it('should return array of UserAccounts with undefined UserContext', async function(this) {
+        const accounts = ['steemit', 'steemit']
+        const results = await this.fakeCacheClient.loadAccounts(accounts)
+        assert.deepEqual(results[0][1], undefined)
+        assert.deepEqual(results[1][1], undefined)
     })
     it('should load empty Array of UserAccounts', async function(this) {
         const accounts = []
@@ -158,7 +170,7 @@ describe('user client', function(this) {
     it('should load Set of UserAccounts', async function(this) {
         const accounts = new Set(['steemit'])
         const results = await this.fakeCacheClient.loadAccounts(accounts)
-        assert.deepEqual(results, [expectedUserAccountJSON])
+        assert.deepEqual(results[0][0].toJSON(), expectedUserAccountJSON)
     })
     it('should load empty Set of UserAccounts', async function(this) {
         const accounts = new Set()

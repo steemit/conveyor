@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const users_1 = require("../../lists/bad_actors/users");
-const users_2 = require("../../lists/exchanges/users");
-// import * as verifiedList from '../../lists/verified/users' FIXME
+const users_1 = require("../../user-data/lists/bad_actors/users");
+const users_2 = require("../../user-data/lists/exchanges/users");
+// import * as verifiedList from '../../user-data/lists/verified/users' FIXME
 var UserAccountTags;
 (function (UserAccountTags) {
     UserAccountTags[UserAccountTags["abuse"] = 0] = "abuse";

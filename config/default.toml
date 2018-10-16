@@ -18,7 +18,7 @@ admin_role = 'foo'
 # logging output, can be repeated
 [[log]]
 level = 'debug'
-out = 'stdout' # path or stdout/err
+out = 'stderr' # path or stdout/err
 
 # key value store used for drafts and user prefs
 [storage]
@@ -29,3 +29,7 @@ type = 'memory' # valid types are: memory, s3
 [database]
 dialect = 'sqlite'
 operatorsAliases = false
+
+[cacheClient]
+ttl = 600
+interval = 60

@@ -10,6 +10,7 @@ import * as Koa from 'koa'
 import * as Router from 'koa-router'
 import * as os from 'os'
 
+import {userAccountNames} from '../user-data/accounts/accounts'
 import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
 import * as tags from './tags'
@@ -17,11 +18,30 @@ import * as userData from './user-data'
 import * as userSearch from './user-search/search'
 
 import {JsonRpcAuth, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
+import {Trie} from 'trie-prefix-tree2/src'
 import {db} from './database'
 import {logger} from './logger'
+import {CachingClient} from './user-search/client'
+import {loadAccountsTrie} from './user-search/indexes'
 
 export const version = require('./version')
-export const app = new Koa()
+
+export interface Context extends Koa.Context {
+    cacheClient: any
+    userAccountTrie: Trie
+}
+
+interface KoaWhatever extends Koa {
+    context: Context
+}
+
+export const app = new Koa() as KoaWhatever
+
+const cacheClient = new CachingClient()
+const userAccountTrie = loadAccountsTrie(userAccountNames)
+
+app.context.cacheClient = cacheClient
+app.context.userAccountTrie = userAccountTrie
 
 const router = new Router()
 export const rpc = new JsonRpcAuth(config.get('rpc_node'), config.get('name'))
@@ -33,6 +53,7 @@ app.on('error', (error) => {
 
 app.use(requestLogger(logger))
 app.use(rpcLogger(logger))
+
 
 async function healthcheck(ctx: Koa.Context) {
     const ok = true

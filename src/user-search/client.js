@@ -6,6 +6,9 @@ const moment = require("moment");
 const nodecache = require('node-cache');
 const logger_1 = require("../logger");
 const user_1 = require("./user");
+const STEEMD_API_URL = 'https://api.steemit.com';
+const CACHE_CLIENT_TTL = 600; // config.get('cacheClient')['ttl'] FIXME
+const CACHE_CLIENT_CHECK_INTERVAL = 60; // config.get('cacheClient')['interval'] FIXME
 var FollowType;
 (function (FollowType) {
     FollowType[FollowType["undefined"] = 0] = "undefined";
@@ -13,7 +16,7 @@ var FollowType;
     FollowType[FollowType["ignore"] = 2] = "ignore";
 })(FollowType || (FollowType = {}));
 class CachingClient {
-    constructor(cache, cacheOptions = { stdTTL: 600, checkperiod: 60 }, client, address = 'https://api.steemit.com') {
+    constructor(cache, cacheOptions = { stdTTL: CACHE_CLIENT_TTL, checkperiod: CACHE_CLIENT_CHECK_INTERVAL }, client, address = STEEMD_API_URL) {
         this.cache = cache;
         this.cacheOptions = cacheOptions;
         this.client = client;
@@ -199,7 +202,6 @@ class CachingClient {
             userAccount = new user_1.UserAccount(extendedAccount, followCount, accountTransferTargetCount, followers, following, ignored);
             this.cache.set(userAccountKey, userAccount);
         }
-        let userAccountJSON = userAccount.toJSON();
         if (contextAccount !== undefined) {
             const userContextKey = `UserContext__${account}__${contextAccount}`;
             let userContext = this.cache.get(userContextKey);
@@ -207,16 +209,29 @@ class CachingClient {
                 userContext = userAccount.userContext(contextAccount);
                 this.cache.set(userContextKey, userContext);
             }
-            userAccountJSON = _.merge(userAccountJSON, userContext.toJSON());
+            return [userAccount, userContext];
         }
-        return userAccountJSON;
+        else {
+            return [userAccount, undefined];
+        }
+    }
+    async loadAccountJSON(account, contextAccount, days = 30) {
+        const [userAccount, userContext] = await this.loadAccount(account, contextAccount, days);
+        return userAccount.toJSONWithContext(userContext);
     }
     async loadAccounts(accounts, contextAccount, days = 30) {
         const promises = [];
         for (const account of accounts) {
             promises.push(this.loadAccount(account, contextAccount, days));
         }
-        return Promise.all(promises);
+        return await Promise.all(promises);
+    }
+    async loadAccountsJSON(accounts, contextAccount, days = 30) {
+        const userAccounts = await this.loadAccounts(accounts, contextAccount, days);
+        return _.map(userAccounts, (value) => {
+            const [userAccount, userContext] = value;
+            return userAccount.toJSONWithContext(userContext);
+        });
     }
 }
 exports.CachingClient = CachingClient;

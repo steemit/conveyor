@@ -2,9 +2,15 @@ import {Client, ExtendedAccount} from 'dsteem'
 import * as _ from 'lodash'
 import * as moment from 'moment'
 const nodecache = require( 'node-cache' )
-import { Dictionary } from "lodash"
+import * as config from 'config'
+import { Dictionary } from 'lodash'
 import {logger} from '../logger'
-import {UserAccount, UserContext} from './user'
+import {UserAccount, UserAccountJSON, UserContext, UserContextJSON} from './user'
+import {loadAccountNames} from './indexes'
+
+const STEEMD_API_URL = 'https://api.steemit.com'
+const CACHE_CLIENT_TTL = 600 // config.get('cacheClient')['ttl'] FIXME
+const CACHE_CLIENT_CHECK_INTERVAL = 60 // config.get('cacheClient')['interval'] FIXME
 enum FollowType {undefined, blog, ignore}
 
 export interface FollowCountReturn {
@@ -17,10 +23,6 @@ export interface FollowReturn {
     follower: string
     following: string
     what: string[]
-}
-
-export interface TransferTargetCountss {
-    [index: string]: number
 }
 
 export type TransferTargetCounts = Dictionary<number>
@@ -43,9 +45,9 @@ export class CachingClient {
     private readonly pageSize: number = 1000
 
     constructor(public readonly cache?: any,
-                public readonly cacheOptions = {stdTTL: 600, checkperiod: 60},
+                public readonly cacheOptions = {stdTTL: CACHE_CLIENT_TTL, checkperiod: CACHE_CLIENT_CHECK_INTERVAL},
                 private readonly client?: any,
-                public readonly address = 'https://api.steemit.com') {
+                public readonly address = STEEMD_API_URL) {
         if (cache === undefined) {
             this.cache = new nodecache(cacheOptions)
         } else {
@@ -236,7 +238,7 @@ export class CachingClient {
 
     public async loadAccount(account: string,
                              contextAccount?: string,
-                             days = 30) {
+                             days = 30): Promise<[UserAccount, UserContext | undefined]> {
         const userAccountKey = `UserAccount__${account}`
         let userAccount = this.cache.get(userAccountKey)
         if (userAccount === undefined) {
@@ -255,7 +257,7 @@ export class CachingClient {
 
             this.cache.set(userAccountKey, userAccount)
         }
-        let userAccountJSON: object = userAccount.toJSON()
+
         if (contextAccount !== undefined) {
             const userContextKey = `UserContext__${account}__${contextAccount}`
             let userContext = this.cache.get(userContextKey)
@@ -263,17 +265,30 @@ export class CachingClient {
                 userContext = userAccount.userContext(contextAccount)
                 this.cache.set(userContextKey, userContext)
             }
-            userAccountJSON = _.merge(userAccountJSON,
-                                      userContext.toJSON())
+            return [userAccount, userContext]
+        } else {
+            return [userAccount, undefined]
         }
-        return userAccountJSON
     }
 
-    public async loadAccounts(accounts: string[]|Set<string>, contextAccount?, days = 30) {
-        const promises  = []
+    public async loadAccountJSON(account: string, contextAccount?: string, days = 30): Promise<UserAccountJSON> {
+        const [userAccount, userContext] = await this.loadAccount(account, contextAccount, days)
+        return userAccount.toJSONWithContext(userContext)
+    }
+
+    public async loadAccounts(accounts: string[]|Set<string>, contextAccount?: string, days = 30) {
+        const promises: Array<Promise<[UserAccount, UserContext | undefined]>> = []
         for (const account of accounts) {
             promises.push(this.loadAccount(account, contextAccount, days))
         }
-        return Promise.all(promises)
+        return await Promise.all(promises)
+    }
+
+    public async loadAccountsJSON(accounts, contextAccount?: string, days = 30) {
+        const userAccounts = await this.loadAccounts(accounts, contextAccount, days)
+        return _.map(userAccounts, (value) => {
+            const [userAccount, userContext] = value
+            return userAccount.toJSONWithContext(userContext)
+        })
     }
 }

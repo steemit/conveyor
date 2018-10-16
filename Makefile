@@ -8,22 +8,30 @@ DOCS_ROOT := docs
 API_TESTS_ROOT := api-tests
 CONVEYOR_SCHEMA := conveyor_schema.json
 
-# Bad Actor / GDPR User Lists
+# user data and indexes
+USER_DATA_ROOT := ./user-data
+
+# user accounts
+USER_ACCTS_ROOT := $(USER_DATA_ROOT)/accounts
+USER_ACCTS_FILE := $(USER_ACCTS_ROOT)/accounts.ts
+
+# bad actor / GDPR user lists
+LISTS_ROOT := $(USER_DATA_ROOT)/lists
 GDPR_LISTS := raw.githubusercontent.com/steemit/condenser/master/src/app/utils/GDPRUserList.js
-LOCAL_GDPR_LISTS := $(addprefix lists/gdpr/srcs/, $(GDPR_LISTS))
+LOCAL_GDPR_LISTS := $(addprefix $(LISTS_ROOT)/gdpr/srcs/, $(GDPR_LISTS))
 
 BAD_ACTOR_LISTS := raw.githubusercontent.com/steemit/condenser/master/src/app/utils/DMCAUserList.js \
     raw.githubusercontent.com/steemit/condenser/master/src/app/utils/ImageUserBlockList.js \
     raw.githubusercontent.com/steemit/condenser/master/src/app/utils/BadActorList.js \
     raw.githubusercontent.com/steemit/redeemer-irredeemables/master/full.txt
 
-LOCAL_BAD_ACTOR_LISTS := $(addprefix lists/bad_actors/srcs/, $(BAD_ACTOR_LISTS))
+LOCAL_BAD_ACTOR_LISTS := $(addprefix $(LISTS_ROOT)/bad_actors/srcs/, $(BAD_ACTOR_LISTS))
 
 EXCHANGE_LISTS := raw.githubusercontent.com/steemit/condenser/master/src/app/utils/VerifiedExchangeList.js
-LOCAL_EXCHANGE_LISTS := $(addprefix lists/exchanges/srcs/, $(EXCHANGE_LISTS))
+LOCAL_EXCHANGE_LISTS := $(addprefix $(LISTS_ROOT)/exchanges/srcs/, $(EXCHANGE_LISTS))
 
 VERIFIED_LISTS :=
-LOCAL_VERIFIED_LISTS := $(addprefix lists/verified/srcs/, $(VERIFIED_LISTS))
+LOCAL_VERIFIED_LISTS := $(addprefix $(LISTS_ROOT)/verified/srcs/, $(VERIFIED_LISTS))
 
 
 all: lib
@@ -103,63 +111,71 @@ api-tests: $(CONVEYOR_SCHEMA)
 	./node_modules/.bin/jrgen --outdir $(API_TESTS_ROOT) test/jasmine $<
 
 .PHONY: bad-actors-list
-bad-actors-list: lists/bad_actors/users.txt lists/bad_actors/users.json lists/bad_actors/users.ts
+bad-actors-list: $(LISTS_ROOT)/bad_actors/users.txt $(LISTS_ROOT)/bad_actors/users.json $(LISTS_ROOT)/bad_actors/users.ts
 
 .PHONY: gdpr-list
-gdpr-list: lists/gdpr/users.txt lists/gdpr/users.json lists/gdpr/users.ts
+gdpr-list: $(LISTS_ROOT)/gdpr/users.txt $(LISTS_ROOT)/gdpr/users.json $(LISTS_ROOT)/gdpr/users.ts
 
 .PHONY: exchanges-list
-exchanges-list: lists/exchanges/users.txt lists/exchanges/users.json lists/exchanges/users.ts
+exchanges-list: $(LISTS_ROOT)/exchanges/users.txt $(LISTS_ROOT)/exchanges/users.json $(LISTS_ROOT)/exchanges/users.ts
 
 .PHONY: verified-list
-exchanges-list: lists/verified/users.txt lists/verified/users.json lists/verified/users.ts
-
+exchanges-list: $(LISTS_ROOT)/verified/users.txt $(LISTS_ROOT)/verified/users.json $(LISTS_ROOT)/verified/users.ts
 
 .PHONY: user-lists
 user-lists: bad-actors-list gdpr-list exchanges-list verified-list
 
 
-
-lists/bad_actors/users.txt: $(LOCAL_BAD_ACTOR_LISTS)
+$(LISTS_ROOT)/bad_actors/users.txt: $(LOCAL_BAD_ACTOR_LISTS)
 	cat $(LOCAL_BAD_ACTOR_LISTS) \
 	    | awk '{$$1=$$1};1' \
 	    | egrep --only-matching --line-regexp '^[\.a-zA-Z0-9_-]+$$' \
 	    | LC_COLLATE=C sort \
 	    | uniq > $@
 
-lists/bad_actors/srcs/%:
+$(LISTS_ROOT)/bad_actors/srcs/%:
 	mkdir -p $(dir $@)
 	wget -O $@ https://$*
 
-lists/gdpr/users.txt: $(LOCAL_GDPR_LISTS)
+$(LISTS_ROOT)/gdpr/users.txt: $(LOCAL_GDPR_LISTS)
 	cat $(LOCAL_GDPR_LISTS) \
 	    | awk '{$$1=$$1};1' \
 	    | egrep --only-matching --line-regexp '^[\.a-zA-Z0-9_-]+$$' \
 	    | LC_COLLATE=C sort \
 	    | uniq > $@
 
-lists/gdpr/srcs/%:
+$(LISTS_ROOT)/gdpr/srcs/%:
 	mkdir -p $(dir $@)
 	wget -O $@ https://$*
 
-lists/exchanges/users.txt: $(LOCAL_EXCHANGE_LISTS)
+$(LISTS_ROOT)/exchanges/users.txt: $(LOCAL_EXCHANGE_LISTS)
 	cat $(LOCAL_EXCHANGE_LISTS) \
 	    | awk '{$$1=$$1};1' \
 	    | egrep --only-matching --line-regexp '^[\.a-zA-Z0-9_-]+$$' \
 	    | LC_COLLATE=C sort \
 	    | uniq > $@
 
-lists/exchanges/srcs/%:
+$(LISTS_ROOT)/exchanges/srcs/%:
 	mkdir -p $(dir $@)
 	wget -O $@ https://$*
 
 
-lists/%.json: lists/%.txt
+$(LISTS_ROOT)/%.json: $(LISTS_ROOT)/%.txt
 	cat $< | jq -R -s -c 'split("\n")|map(select(. != ""))' > $@
 
-lists/%.ts: lists/%.json
+$(LISTS_ROOT)/%.ts: $(LISTS_ROOT)/%.json
 	cat <(echo -n "export const users: Set<string> = new Set(") $<  <(echo  ")") | prettier --parser typescript --stdin --no-semi --single-quote > $@
 
 .PHONY: clean-lists
 clean-lists:
-	-rm -rf lists/gdpr/* lists/bad_actors/* lists/exchanges/*
+	-rm -rf $(LISTS_ROOT)/gdpr/* $(LISTS_ROOT)/bad_actors/* $(LISTS_ROOT)/exchanges/*
+
+.PHONY: user-accounts
+user-accounts: $(USER_ACCTS_FILE)
+
+.PHONY: clean-user-accounts
+clean-user-accounts:
+	-rm $(USER_ACCTS_FILE)
+
+$(USER_ACCTS_FILE):
+	./node_modules/.bin/ts-node src/user-search/scripts/load_accounts.ts > $@

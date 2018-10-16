@@ -11,3 +11,6 @@ out = 'stdout'
 dialect = 'postgres'
 [database.dialectOptions]
 ssl = true
+[cacheClient]
+ttl = 600
+interval = 60

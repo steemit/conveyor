@@ -1,29 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const config = require("config");
-const trie_prefix_tree2_1 = require("trie-prefix-tree2");
-const users_1 = require("../../lists/gdpr/users");
+const users_1 = require("../../user-data/lists/gdpr/users");
 const indexes_1 = require("./indexes");
+const logger_1 = require("../logger");
 const ADMIN_ACCOUNT = config.get('admin_role');
-async function getAccount(client, account, context_account) {
-    // this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized') FIXME
+async function getAccount(account, contextAccount) {
+    this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized');
+    const client = this.ctx.cacheClient;
     if (users_1.users.has(account)) {
         return [];
     }
-    return await client.loadAccount(account, context_account);
+    logger_1.logger.info(`getAccount account:${account} contextAccount:${contextAccount}`);
+    return await client.loadAccountJSON(account, contextAccount);
 }
 exports.getAccount = getAccount;
-async function autocompleteAccount(client, account, account_substring) {
+async function autocompleteAccount(account, accountSubstring) {
     this.assert(this.account === ADMIN_ACCOUNT, 'Unauthorized');
+    const client = this.ctx.cacheClient;
     const userAccount = client.loadAccount(account);
-    const trie = new trie_prefix_tree2_1.Trie([]);
-    const globalAccountNames = indexes_1.matchPrefix(trie, account_substring);
+    const globalAccountNames = indexes_1.matchPrefix(this.ctx.userAccountTrie, accountSubstring);
     const friendAccountNames = new Set(globalAccountNames.filter((x) => userAccount.following.has(x)));
     const recentAccountNames = new Set(globalAccountNames.filter((x) => userAccount.recentSendAccounts().has(x)));
     return {
-        global: globalAccountNames.length < 10 ? globalAccountNames : [],
-        friends: await client.loadAccounts(friendAccountNames),
-        recent: await client.loadAccounts(recentAccountNames)
+        global: globalAccountNames.length < 10 ? await client.loadAccountsJSON(globalAccountNames) : [],
+        friends: await client.loadAccountsJSON(friendAccountNames),
+        recent: await client.loadAccountsJSON(recentAccountNames)
     };
 }
 exports.autocompleteAccount = autocompleteAccount;

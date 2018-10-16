@@ -1,24 +1,63 @@
-import { Client, ExtendedAccount } from 'dsteem'
+import * as _ from 'lodash'
 import { Trie } from 'trie-prefix-tree2'
+import {logger} from '../logger'
 
-export async function loadAccountNames(client: any): Promise<Set<string>> {
-    let lowerBoundName = ''
+export async function loadAccountNames(client: any, start: string = '', end?: string): Promise<Set<string>> {
     const limit = 1000
     const names = new Set()
     while (true) {
+        logger.debug(`loading ${limit} account names start with "${start}"`)
         const results = await client.call('condenser_api', 'lookup_accounts', [
-            lowerBoundName,
+            start,
             limit
         ])
         for (const name of results) {
             names.add(name)
         }
-        if (lowerBoundName === results[results.length - 1]) {
+        logger.debug(`added ${results.length} account names`)
+        const lastResult: string  = results[results.length - 1]
+        if (start === lastResult) {
+            logger.debug(`${start} === ${lastResult} so loading complete`)
             break
         }
-        lowerBoundName = results[results.length - 1]
+        if (results.length < limit) {
+            logger.debug(`results.length of ${results.length} <= ${limit} so loading complete`)
+            break
+        }
+        if (end !== undefined && lastResult.startsWith(end)) {
+            logger.debug(`${lastResult}.startsWith(${end}) is true  <= so loading complete`)
+            break
+        }
+        start = results[results.length - 1]
     }
     return names
+}
+
+function concatSets(set, ...iterables) {
+    for (const iterable of iterables) {
+        for (const item of iterable) {
+            set.add(item)
+        }
+    }
+}
+
+export async function loadAllAccountNames(client: any) {
+    const starts = [''].concat(Array.from('bcdefghijklmnopqrstuvwxyz'))
+    const ends = starts.slice(1)
+    const pairs = _.zip(starts, ends)
+    const promises = _.map(pairs, (pair) => {
+        const [start, end] = pair
+        logger.debug(`adding promise loadAccountNames(client,${start},${end}`)
+        return loadAccountNames(client, start, end)
+    })
+    const resultSets = await Promise.all(promises)
+    const combined = new Set()
+    concatSets(combined, ...resultSets)
+    return combined
+}
+
+export function loadAccountsTrie(accounts: Set<string>): Trie {
+    return new Trie(Array.from(accounts))
 }
 
 export async function buildAccountsTrie(client: any): Promise<Trie> {

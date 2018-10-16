@@ -34,11 +34,11 @@ export class RPC {
     constructor(port: number) {
         this.requestOpts = {port, protocol: 'http:', method: 'post'}
     }
-    async call(method: string, ...params) {
+    public async call(method: string, ...params) {
         const response = await this.send(this.buildRequest(method, ...params))
         return this.resolveResponse(response)
     }
-    async signedCall(method: string, signer: RPCSigner, ...params) {
+    public async signedCall(method: string, signer: RPCSigner, ...params) {
         const request = signRequest(this.buildRequest(method, ...params), signer.account, [signer.key])
         const response = await this.send(request)
         return this.resolveResponse(response)

@@ -3,6 +3,22 @@ import * as _ from 'lodash'
 import { FollowCountReturn, FollowReturn, TransferTargetCounts } from './client'
 import { getUserTags } from './lists'
 
+export interface UserAccountJSON {
+    account: string
+    vote_sp: number
+    joined_at: string
+    reputation: string | number
+    tags: string[]
+    value_sp: string
+    followers_count: number
+    following_count: number
+    context_account?: string
+    context_recent_sends?: number
+    context_is_following?: boolean
+    context_is_follower?: boolean
+    context_is_muted?: boolean
+}
+
 export class UserAccount {
     /* tslint:disable:variable-name */
     public readonly account: string
@@ -95,7 +111,16 @@ export class UserAccount {
         )
     }
 
-    public toJSON() {
+    public toJSONWithContext(userContext?: UserContext): UserAccountJSON {
+        if (userContext !== undefined) {
+            return _.merge(this.toJSON(),
+                    userContext.toJSON())
+        } else {
+            return this.toJSON()
+        }
+    }
+
+    public toJSON(): UserAccountJSON {
         return {
             account: this.account,
             vote_sp: this.vote_sp,
@@ -107,6 +132,14 @@ export class UserAccount {
             following_count: this.following_count
         }
     }
+}
+
+export interface UserContextJSON {
+    context_account: string
+    context_recent_sends: number
+    context_is_following: boolean
+    context_is_follower: boolean
+    context_is_muted: boolean
 }
 
 export class UserContext {
@@ -124,13 +157,13 @@ export class UserContext {
     }
     /* tslint:enable:variable-name */
 
-    public toJSON() {
+    public toJSON(): UserContextJSON {
         return {
             context_account: this.context_account,
-            recent_sends: this.recent_sends,
-            is_following: this.is_following,
-            is_follower: this.is_follower,
-            is_muted: this.is_muted
+            context_recent_sends: this.recent_sends,
+            context_is_following: this.is_following,
+            context_is_follower: this.is_follower,
+            context_is_muted: this.is_muted
         }
     }
 }
