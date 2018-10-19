@@ -13,6 +13,7 @@ import * as os from 'os'
 import {userAccountNames} from '../user-data/accounts/accounts'
 import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
+import * as price from './price'
 import * as tags from './tags'
 import * as userData from './user-data'
 import * as userSearch from './user-search/search'
@@ -67,7 +68,7 @@ router.get('/', healthcheck)
 
 app.use(router.routes())
 
-rpc.register('hello', async function(name: string) {
+rpc.register('hello', async function(name: string = 'Anonymous') {
     this.log.info('Hello %s', name)
     return `I'm sorry, ${ name }, I can't do that.`
 })
@@ -99,8 +100,12 @@ rpc.registerAuthenticated('unassign_tag', tags.unassignTag)
 rpc.registerAuthenticated('get_users_by_tags', tags.getUsersByTags)
 rpc.registerAuthenticated('get_tags_for_user', tags.getTagsForUser)
 
+
 rpc.registerAuthenticated('get_account', userSearch.getAccount)
 rpc.registerAuthenticated('autocomplete_account', userSearch.autocompleteAccount)
+
+rpc.register('get_prices', price.getPrices)
+
 
 function run() {
     const port = config.get('port')
