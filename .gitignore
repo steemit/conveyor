@@ -8,3 +8,5 @@ yarn-error.log
 .DS_Store
 test/*.js
 src/*.js
+user-data/*/*.js
+src/*/*.js
