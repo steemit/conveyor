@@ -45,6 +45,7 @@ Tagging mechanism for other services, allows defining and assigning tags to acco
 - [conveyor.get_tags_for_user](#conveyor.get_tags_for_user)
 - [conveyor.get_account](#conveyor.get_account)
 - [conveyor.autocomplete_account](#conveyor.autocomplete_account)
+- [conveyor.get_prices](#conveyor.get_prices)
 
 ---
 
@@ -1180,6 +1181,49 @@ _Authenticated: requires signature of an admin account._
         "following_count": 100
       }
     ]
+  }
+}
+```
+
+<a name="conveyor.get_prices"></a>
+
+## conveyor.get_prices
+
+### Description
+
+Find the exchange rates of various tokens based on internal markets.
+
+### Result
+
+| Name               | Type   | Description |
+| ------------------ | ------ | ----------- |
+| result             | object |             |
+| result?.steem_sbd  | number |             |
+| result?.steem_usd  | number |             |
+| result?.steem_vest | number |             |
+
+### Examples
+
+#### Request
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "1234567890",
+  "method": "conveyor.get_prices"
+}
+```
+
+#### Response
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "1234567890",
+  "result": {
+    "steem_sbd": 0.8221426365,
+    "steem_usd": 0.827,
+    "steem_vest": 2019.1003284361
   }
 }
 ```

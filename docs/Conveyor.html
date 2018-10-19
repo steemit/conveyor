@@ -220,6 +220,9 @@
 <li class="nav-item">
   <a class="nav-link" href="#conveyor_autocomplete_account">conveyor.autocomplete_account</a>
 </li>
+<li class="nav-item">
+  <a class="nav-link" href="#conveyor_get_prices">conveyor.get_prices</a>
+</li>
 
 </ul>
 
@@ -3825,6 +3828,94 @@
   <td>result?.global[#]?.following_count</td>
   <td>integer</td>
   <td>following count</td>
+</tr>
+
+  </table>
+</div> 
+    </div>
+  </div>
+</div>
+<br>
+<div class="method" id="conveyor_get_prices">
+  <div class="card">
+    <div class="card-header" data-toggle="collapse" href="#conveyor_get_prices-content">
+      <h3>conveyor.get_prices</h3>
+      <div class="float-right">
+        <span class="badge badge-primary">prices</span>
+
+      </div>
+    </div>
+    <div class="card-block collapse" id="conveyor_get_prices-content">
+
+      <div class="summary-container">
+        <div class="float-right">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showExampleModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_prices%22%0A%7D", "%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22result%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22steem_sbd%22%3A%200.8221426365%2C%0A%20%20%20%20%20%20%20%20%22steem_usd%22%3A%200.827%2C%0A%20%20%20%20%20%20%20%20%22steem_vest%22%3A%202019.1003284361%0A%20%20%20%20%7D%0A%7D")'>
+            Show Example
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick='showSendRequestModal("%7B%0A%20%20%20%20%22jsonrpc%22%3A%20%222.0%22%2C%0A%20%20%20%20%22id%22%3A%20%221234567890%22%2C%0A%20%20%20%20%22method%22%3A%20%22conveyor.get_prices%22%0A%7D")'>
+            Send Request
+          </button>
+        </div>
+        <p></p>
+      </div>
+
+      <br>
+
+      <h4>Description</h4>
+<p class="description-container">Find the exchange rates of various tokens based on internal markets.</p>
+  <br>
+<h4>Result</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+    <tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'object',
+    'properties': {
+        'steem_sbd': {
+            'type': 'number',
+            'default': 0.8221426365
+        },
+        'steem_usd': {
+            'type': 'number',
+            'default': 0.827
+        },
+        'steem_vest': {
+            'type': 'number',
+            'default': 2019.1003284361
+        }
+    }
+}</pre>" data-html="true">
+  <td>result</td>
+  <td>object</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'number',
+    'default': 0.8221426365
+}</pre>" data-html="true">
+  <td>result?.steem_sbd</td>
+  <td>number</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'number',
+    'default': 0.827
+}</pre>" data-html="true">
+  <td>result?.steem_usd</td>
+  <td>number</td>
+  <td></td>
+</tr>
+<tr tabindex="1" data-trigger="hover focus" data-toggle="popover" data-content="<pre class='schema-preview'>{
+    'type': 'number',
+    'default': 2019.1003284361
+}</pre>" data-html="true">
+  <td>result?.steem_vest</td>
+  <td>number</td>
+  <td></td>
 </tr>
 
   </table>
