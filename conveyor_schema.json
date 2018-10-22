@@ -507,7 +507,7 @@
         "items":{"type":"string"}}
     },
     "conveyor.get_account": {
-      "summary":"","description":"*Authenticated: requires signature of an admin account.*",
+      "summary":"Lookup a user by account name",
       "tags":["user"],
       "params": {
         "type": "object",
@@ -525,7 +525,7 @@
         "$ref":"#/definitions/account"}
     },
     "conveyor.autocomplete_account": {
-      "summary":"","description":"*Authenticated: requires signature of an admin account.*",
+      "summary":"Lookup users by account name prefix",
       "tags":["user"],
       "params": {
         "type": "object",

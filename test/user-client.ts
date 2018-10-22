@@ -90,14 +90,14 @@ describe('user client', function(this) {
         const results = await this.fakeCacheClient.getAccountTransferTargetCounts(
             'steemit'
         )
-        assert.deepEqual(results, { steemit: 1 })
+        assert.deepEqual(results, { steemit: 612, steemit2: 52 })
     })
     it('should cache account transfer target counts', async function(this) {
         const results = await this.fakeCacheClient.getAccountTransferTargetCounts(
             'steemit'
         )
         const key = 'accountTransferTargetCounts__steemit__30'
-        assert.deepEqual(this.fakeCacheClient.cache.get(key), {})
+        assert.deepEqual(this.fakeCacheClient.cache.get(key), { steemit: 612, steemit2: 52 })
     })
     it('should return followers', async function(this) {
         // const client = new CachingClient()

@@ -10,7 +10,8 @@ name = 'conveyor'
 num_workers = 1
 
 # steem rpc node used to verify signed requests and get price feeds
-rpc_node = 'https://testnet.steem.vc'
+# rpc_node = 'https://testnet.steem.vc'
+rpc_node = 'https://api.steemit.com'
 
 # admin role allowed to make authenticated calls
 admin_role = 'foo'

@@ -10,3 +10,5 @@ test/*.js
 src/*.js
 user-data/*/*.js
 src/*/*.js
+test/*/*.js
+user-data/*/*.js

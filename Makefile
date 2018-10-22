@@ -162,9 +162,12 @@ $(LISTS_ROOT)/exchanges/srcs/%:
 
 $(LISTS_ROOT)/%.json: $(LISTS_ROOT)/%.txt
 	cat $< | jq -R -s -c 'split("\n")|map(select(. != ""))' > $@
+	-rm $<
 
 $(LISTS_ROOT)/%.ts: $(LISTS_ROOT)/%.json
 	cat <(echo -n "export const users: Set<string> = new Set(") $<  <(echo  ")") | prettier --parser typescript --stdin --no-semi --single-quote > $@
+	-rm $<
+	-rm -rf $(LISTS_ROOT)/$(*D)/srcs
 
 .PHONY: clean-lists
 clean-lists:

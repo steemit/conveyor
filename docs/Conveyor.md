@@ -965,9 +965,7 @@ _Authenticated: requires signature of an admin account._
 
 ## conveyor.get_account
 
-### Description
-
-_Authenticated: requires signature of an admin account._
+Lookup a user by account name
 
 ### Parameters
 
@@ -1041,9 +1039,7 @@ _Authenticated: requires signature of an admin account._
 
 ## conveyor.autocomplete_account
 
-### Description
-
-_Authenticated: requires signature of an admin account._
+Lookup users by account name prefix
 
 ### Parameters
 

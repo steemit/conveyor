@@ -6,11 +6,10 @@ import * as config from 'config'
 import { Dictionary } from 'lodash'
 import {logger} from '../logger'
 import {UserAccount, UserAccountJSON, UserContext, UserContextJSON} from './user'
-import {loadAccountNames} from './indexes'
 
-const STEEMD_API_URL = 'https://api.steemit.com'
-const CACHE_CLIENT_TTL = 600 // config.get('cacheClient')['ttl'] FIXME
-const CACHE_CLIENT_CHECK_INTERVAL = 60 // config.get('cacheClient')['interval'] FIXME
+const STEEMD_API_URL: string = config.get('rpc_node')
+const CACHE_CLIENT_TTL: number = config.get('cacheClient')['ttl']
+const CACHE_CLIENT_CHECK_INTERVAL: number = config.get('cacheClient')['interval']
 enum FollowType {undefined, blog, ignore}
 
 export interface FollowCountReturn {
@@ -47,7 +46,7 @@ export class CachingClient {
     constructor(public readonly cache?: any,
                 public readonly cacheOptions = {stdTTL: CACHE_CLIENT_TTL, checkperiod: CACHE_CLIENT_CHECK_INTERVAL},
                 private readonly client?: any,
-                public readonly address = STEEMD_API_URL) {
+                public readonly address: string = STEEMD_API_URL) {
         if (cache === undefined) {
             this.cache = new nodecache(cacheOptions)
         } else {
@@ -126,14 +125,14 @@ export class CachingClient {
         let accountHistoryLength: number
         let totalPages: number = 1
         while (true) {
-            pageCount += 1
             const resultsPage = await this.call(
                 'condenser_api',
                 'get_account_history',
                 [account, pointer, this.pageSize])
+            pageCount += 1
             if (pageCount === 1) {
                 accountHistoryLength = resultsPage[resultsPage.length - 1][0]
-                pointer = accountHistoryLength
+                pointer = accountHistoryLength // adjust pointer for easy iteration
                 totalPages = Math.ceil(accountHistoryLength / this.pageSize)
             }
             yield* _.reverse(resultsPage)

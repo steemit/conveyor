@@ -132,6 +132,10 @@ export class UserAccount {
             following_count: this.following_count
         }
     }
+
+    public toString(): string {
+        return JSON.stringify(this.toJSON())
+    }
 }
 
 export interface UserContextJSON {

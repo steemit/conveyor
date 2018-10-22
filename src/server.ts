@@ -3,7 +3,6 @@
  * @author Johan Nordberg <johan@steemit.com>
  */
 
-import * as bunyan from 'bunyan'
 import * as cluster from 'cluster'
 import * as config from 'config'
 import * as Koa from 'koa'
@@ -55,7 +54,6 @@ app.on('error', (error) => {
 app.use(requestLogger(logger))
 app.use(rpcLogger(logger))
 
-
 async function healthcheck(ctx: Koa.Context) {
     const ok = true
     const date = new Date()
@@ -100,9 +98,8 @@ rpc.registerAuthenticated('unassign_tag', tags.unassignTag)
 rpc.registerAuthenticated('get_users_by_tags', tags.getUsersByTags)
 rpc.registerAuthenticated('get_tags_for_user', tags.getTagsForUser)
 
-
-rpc.registerAuthenticated('get_account', userSearch.getAccount)
-rpc.registerAuthenticated('autocomplete_account', userSearch.autocompleteAccount)
+rpc.register('get_account', userSearch.getAccount)
+rpc.register('autocomplete_account', userSearch.autocompleteAccount)
 
 rpc.register('get_prices', price.getPrices)
 

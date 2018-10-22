@@ -8,6 +8,7 @@ export function loadThenWriteAccountNames() {
     logger.info(`loading account names`)
     namesPromise.catch((err) => {
         logger.error(err)
+        throw err
     })
     namesPromise.then((res) => {
         const namesArray = JSON.stringify(Array.from(res))

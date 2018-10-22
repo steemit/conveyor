@@ -40,7 +40,14 @@ function concatSets(set, ...iterables) {
         }
     }
 }
-
+/**
+ * This method creates many async generators to parallelize the loading of
+ * account names from steemd. The `starts` and `ends` variables store the
+ * limits params supplied to each async generator, eg, one async generator
+ * loads all account names from "b" to "c".
+ * Without this otherwise, we would need to make count(accounts)/1000
+ * (currently about 1100) api calls in series.
+ */
 export async function loadAllAccountNames(client: any) {
     const starts = [''].concat(Array.from('bcdefghijklmnopqrstuvwxyz'))
     const ends = starts.slice(1)
