@@ -29,6 +29,7 @@ WORKDIR /app
 COPY --from=build-stage /app/config config
 COPY --from=build-stage /app/lib lib
 COPY --from=build-stage /app/node_modules node_modules
+COPY --from=build-stage /app/user-data user-data
 
 # setup default env
 ENV PORT 8080

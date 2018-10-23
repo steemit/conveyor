@@ -19,7 +19,7 @@ admin_role = 'foo'
 # logging output, can be repeated
 [[log]]
 level = 'debug'
-out = 'stderr' # path or stdout/err
+out = 'stdout' # path or stdout/err
 
 # key value store used for drafts and user prefs
 [storage]

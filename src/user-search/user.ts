@@ -52,7 +52,7 @@ export class UserAccount {
         this.accountTransferTargetCount = accountTransferTargetCount
         this.followers = new Set(
             _.map(followers, (value) => {
-                return _.get(value, 'follower')
+                return _.get(value, ['follower'])
             })
         )
         this.following = new Set(
@@ -62,7 +62,7 @@ export class UserAccount {
         )
         this.ignored = new Set(
             _.map(ignored, (value) => {
-                return _.get(value, 'following')
+                return _.get(value, 'follower')
             })
         )
 

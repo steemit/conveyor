@@ -1,6 +1,6 @@
-import {users as  badActorsList} from '../../user-data/lists/bad_actors/users'
-import {users as exchangesList } from '../../user-data/lists/exchanges/users'
-import {users as gdprList } from '../../user-data/lists/gdpr/users'
+export const badActorsList = require('../../user-data/lists/bad_actors/users')
+export const exchangesList = require('../../user-data/lists/exchanges/users')
+export const gdprList = require('../../user-data/lists/gdpr/users')
 
 enum UserAccountTags {
     abuse,

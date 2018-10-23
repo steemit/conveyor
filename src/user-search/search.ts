@@ -1,39 +1,79 @@
-import {JsonRpcAuthMethodContext as JCtx} from '@steemit/koa-jsonrpc'
+import {JsonRpcMethodContext as JCtx} from '@steemit/koa-jsonrpc'
 
-import {users as gdprList } from '../../user-data/lists/gdpr/users'
 import {logger} from '../logger'
 import {Context} from '../server'
 import {matchPrefix} from './indexes'
+import {gdprList} from './lists'
+import {UserAccountJSON} from './user'
 
-interface JCtx2 extends JCtx {
+interface ExtendedJCtx extends JCtx {
     ctx: Context
 }
 
-export async function getAccount(this: JCtx2,
+interface AutoCompleteResponse {
+    global: UserAccountJSON[]
+    friends: UserAccountJSON[]
+    recent: UserAccountJSON[]
+}
+
+export async function getAccount(this: any,
                                  account: string,
-                                 contextAccount: string) {
+                                 contextAccount?: string) {
     const client: any = this.ctx.cacheClient
     if (gdprList.has(account)) {
         return []
     }
-    logger.info(`getAccount account:${account} contextAccount:${contextAccount}`)
-    const userAccountJSON = await client.loadAccountJSON(account, contextAccount)
-    logger.info(`userAccountJSON: ${JSON.stringify(userAccountJSON)}`)
-    return userAccountJSON
+    return await client.loadAccountJSON(account, contextAccount)
 }
 
-export async function autocompleteAccount(this: JCtx2,
-                                          account: string,
-                                          accountSubstring: string
+export async function autocompleteAccount(this: any,
+                                          accountSubstring: string,
+                                          account: string
                                          ) {
     const client: any = this.ctx.cacheClient
-    const userAccount = client.loadAccount(account)
+    const [userAccount, userContext] = await client.loadAccount(account)
+    const recentSendAccounts = userAccount.recentSendAccounts()
+    // logger.debug(`recentSendAccounts.size:${recentSendAccounts.size}`)
     const globalAccountNames = matchPrefix(this.ctx.userAccountTrie, accountSubstring)
-    const friendAccountNames = new Set(globalAccountNames.filter((x) => userAccount.following.has(x)))
+    // logger.debug(`globalAccountNames.length:${globalAccountNames.length}`)
+    const friendAccountNames = new Set(globalAccountNames.filter((x) => userAccount.isFollowing(x)))
+    // logger.debug(`friendAccountNames.size:${friendAccountNames.size}`)
     const recentAccountNames = new Set(globalAccountNames.filter((x) => userAccount.recentSendAccounts().has(x)))
-    return JSON.stringify({
-        global: globalAccountNames.length < 10 ? await client.loadAccountsJSON(globalAccountNames) : [],
-        friends: await client.loadAccountsJSON(friendAccountNames),
-        recent: await client.loadAccountsJSON(recentAccountNames)
-    })
+    // logger.debug(`recentAccountNames.size:${recentAccountNames.size}`)
+    const response: AutoCompleteResponse = {
+            global: [],
+            friends: [],
+            recent: []
+    }
+    if (globalAccountNames.length === 0) {
+        return response
+    }
+    const accountsToLoad: Set<string> = new Set()
+    if (globalAccountNames.length < 10) {
+        globalAccountNames.forEach(function(this, item) { accountsToLoad.add(item)})
+        // logger.debug(`globalAccountNames -> accountsToLoad.size: ${accountsToLoad.size}`)
+    }
+    if (friendAccountNames.size < 10) {
+        friendAccountNames.forEach(function(this, item) { accountsToLoad.add(item)})
+        // logger.debug(`friendAccountNames -> accountsToLoad.size: ${accountsToLoad.size}`)
+    }
+    if (recentAccountNames.size < 10) {
+        recentAccountNames.forEach(function(this, item) { accountsToLoad.add(item)})
+        // logger.debug(`recentAccountNames -> accountsToLoad.size: ${accountsToLoad.size}`)
+    }
+    // logger.debug(`accountsToLoad.size: ${accountsToLoad.size}`)
+    const loadedAccounts = await client.loadAccountsJSON(accountsToLoad, account)
+    for (const userAcct of loadedAccounts) {
+        // logger.debug(`userAcct.account:${userAcct.account}`)
+        if (globalAccountNames.includes(userAcct.account) ) {
+            response.global.push(userAcct)
+        }
+        if (friendAccountNames.has(userAcct.account)) {
+            response.friends.push(userAcct)
+        }
+        if (recentAccountNames.has(userAcct.account)) {
+            response.recent.push(userAcct)
+        }
+    }
+    return response
 }

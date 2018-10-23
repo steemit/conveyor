@@ -18,7 +18,7 @@ import * as userData from './user-data'
 import * as userSearch from './user-search/search'
 
 import {JsonRpcAuth, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
-import {Trie} from 'trie-prefix-tree2/src'
+const trieLib = require('trie-prefix-tree')
 import {db} from './database'
 import {logger} from './logger'
 import {CachingClient} from './user-search/client'
@@ -28,14 +28,14 @@ export const version = require('./version')
 
 export interface Context extends Koa.Context {
     cacheClient: any
-    userAccountTrie: Trie
+    userAccountTrie: any
 }
 
-interface KoaWhatever extends Koa {
+export interface KoaAppWithCustomContext extends Koa {
     context: Context
 }
 
-export const app = new Koa() as KoaWhatever
+export const app = new Koa() as KoaAppWithCustomContext
 
 const cacheClient = new CachingClient()
 const userAccountTrie = loadAccountsTrie(userAccountNames)
@@ -71,6 +71,12 @@ rpc.register('hello', async function(name: string = 'Anonymous') {
     return `I'm sorry, ${ name }, I can't do that.`
 })
 
+rpc.register('get_account', userSearch.getAccount)
+rpc.register('autocomplete_account', userSearch.autocompleteAccount)
+
+
+rpc.register('get_prices', price.getPrices)
+
 rpc.registerAuthenticated('whoami', async function() {
     this.log.info('Whoami %s', this.account)
     return this.account
@@ -97,12 +103,6 @@ rpc.registerAuthenticated('assign_tag', tags.assignTag)
 rpc.registerAuthenticated('unassign_tag', tags.unassignTag)
 rpc.registerAuthenticated('get_users_by_tags', tags.getUsersByTags)
 rpc.registerAuthenticated('get_tags_for_user', tags.getTagsForUser)
-
-rpc.register('get_account', userSearch.getAccount)
-rpc.register('autocomplete_account', userSearch.autocompleteAccount)
-
-rpc.register('get_prices', price.getPrices)
-
 
 function run() {
     const port = config.get('port')

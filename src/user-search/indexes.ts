@@ -1,5 +1,5 @@
 import * as _ from 'lodash'
-import { Trie } from 'trie-prefix-tree2'
+const trieLib = require('trie-prefix-tree')
 import {logger} from '../logger'
 
 export async function loadAccountNames(client: any, start: string = '', end?: string): Promise<Set<string>> {
@@ -63,20 +63,20 @@ export async function loadAllAccountNames(client: any) {
     return combined
 }
 
-export function loadAccountsTrie(accounts: Set<string>): Trie {
-    return new Trie(Array.from(accounts))
+export function loadAccountsTrie(accounts: Set<string>) {
+    return trieLib(Array.from(accounts))
 }
 
-export async function buildAccountsTrie(client: any): Promise<Trie> {
+export async function buildAccountsTrie(client: any): Promise<any> {
     const names = await loadAccountNames(client)
-    return new Trie(Array.from(names))
+    return trieLib(Array.from(names))
 }
 
-export function matchPrefix(trie: Trie, prefix: string): string[] {
+export function matchPrefix(trie: any, prefix: string): string[] {
     return trie.getPrefix(prefix, false)
 }
 
-export function intersectMatches(trie: Trie, prefix: string, otherSet: Set<string>) {
+export function intersectMatches(trie: any, prefix: string, otherSet: Set<string>) {
     const matches = trie.getPrefix(prefix, false)
     return new Set(matches.filter((x) => otherSet.has(x)))
 }

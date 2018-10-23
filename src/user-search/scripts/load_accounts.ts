@@ -12,7 +12,7 @@ export function loadThenWriteAccountNames() {
     })
     namesPromise.then((res) => {
         const namesArray = JSON.stringify(Array.from(res))
-        const data = `export const userAccountNames: Set<string> = new Set(${namesArray})\n`
+        const data = `export const userAccountNames: Set = new Set(${namesArray})\n`
         process.stdout.write(data)
         logger.info(`completed loading account names`)
     })

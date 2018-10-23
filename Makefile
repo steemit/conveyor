@@ -1,4 +1,3 @@
-
 SHELL := /bin/bash
 PATH  := ./node_modules/.bin:$(PATH)
 
@@ -13,7 +12,7 @@ USER_DATA_ROOT := ./user-data
 
 # user accounts
 USER_ACCTS_ROOT := $(USER_DATA_ROOT)/accounts
-USER_ACCTS_FILE := $(USER_ACCTS_ROOT)/accounts.ts
+USER_ACCTS_FILE := $(USER_ACCTS_ROOT)/accounts.js
 
 # bad actor / GDPR user lists
 LISTS_ROOT := $(USER_DATA_ROOT)/lists
@@ -32,7 +31,6 @@ LOCAL_EXCHANGE_LISTS := $(addprefix $(LISTS_ROOT)/exchanges/srcs/, $(EXCHANGE_LI
 
 VERIFIED_LISTS :=
 LOCAL_VERIFIED_LISTS := $(addprefix $(LISTS_ROOT)/verified/srcs/, $(VERIFIED_LISTS))
-
 
 all: lib
 
@@ -60,7 +58,7 @@ coverage: node_modules reports
 test: node_modules
 	NODE_ENV=test mocha --require ts-node/register test/*.ts --grep '$(grep)'
 
-.PHONY: ci-test
+.PHONY: ci-testm
 ci-test: node_modules reports
 	nsp check
 	tslint -p tsconfig.json -c tslint.json
@@ -93,7 +91,6 @@ $(DOCS_ROOT)/Conveyor.html: $(CONVEYOR_SCHEMA)
 	-mkdir -p $(DOCS_ROOT)
 	./node_modules/.bin/jrgen --outdir $(DOCS_ROOT) docs/html $<
 
-
 $(DOCS_ROOT)/Conveyor.md: $(CONVEYOR_SCHEMA)
 	-mkdir -p $(DOCS_ROOT)
 	./node_modules/.bin/jrgen --outdir $(DOCS_ROOT) docs/md $<
@@ -111,20 +108,19 @@ api-tests: $(CONVEYOR_SCHEMA)
 	./node_modules/.bin/jrgen --outdir $(API_TESTS_ROOT) test/jasmine $<
 
 .PHONY: bad-actors-list
-bad-actors-list: $(LISTS_ROOT)/bad_actors/users.txt $(LISTS_ROOT)/bad_actors/users.json $(LISTS_ROOT)/bad_actors/users.ts
+bad-actors-list: $(LISTS_ROOT)/bad_actors/users.txt $(LISTS_ROOT)/bad_actors/users.json $(LISTS_ROOT)/bad_actors/users.js
 
 .PHONY: gdpr-list
-gdpr-list: $(LISTS_ROOT)/gdpr/users.txt $(LISTS_ROOT)/gdpr/users.json $(LISTS_ROOT)/gdpr/users.ts
+gdpr-list: $(LISTS_ROOT)/gdpr/users.txt $(LISTS_ROOT)/gdpr/users.json $(LISTS_ROOT)/gdpr/users.js
 
 .PHONY: exchanges-list
-exchanges-list: $(LISTS_ROOT)/exchanges/users.txt $(LISTS_ROOT)/exchanges/users.json $(LISTS_ROOT)/exchanges/users.ts
+exchanges-list: $(LISTS_ROOT)/exchanges/users.txt $(LISTS_ROOT)/exchanges/users.json $(LISTS_ROOT)/exchanges/users.js
 
 .PHONY: verified-list
-exchanges-list: $(LISTS_ROOT)/verified/users.txt $(LISTS_ROOT)/verified/users.json $(LISTS_ROOT)/verified/users.ts
+exchanges-list: $(LISTS_ROOT)/verified/users.txt $(LISTS_ROOT)/verified/users.json $(LISTS_ROOT)/verified/users.js
 
 .PHONY: user-lists
 user-lists: bad-actors-list gdpr-list exchanges-list verified-list
-
 
 $(LISTS_ROOT)/bad_actors/users.txt: $(LOCAL_BAD_ACTOR_LISTS)
 	cat $(LOCAL_BAD_ACTOR_LISTS) \
@@ -164,8 +160,8 @@ $(LISTS_ROOT)/%.json: $(LISTS_ROOT)/%.txt
 	cat $< | jq -R -s -c 'split("\n")|map(select(. != ""))' > $@
 	-rm $<
 
-$(LISTS_ROOT)/%.ts: $(LISTS_ROOT)/%.json
-	cat <(echo -n "export const users: Set<string> = new Set(") $<  <(echo  ")") | prettier --parser typescript --stdin --no-semi --single-quote > $@
+$(LISTS_ROOT)/%.js: $(LISTS_ROOT)/%.json
+	cat <(echo -n "module.exports = new Set(") $<  <(echo  ")") | prettier --parser typescript --stdin --no-semi --single-quote > $@
 	-rm $<
 	-rm -rf $(LISTS_ROOT)/$(*D)/srcs
 

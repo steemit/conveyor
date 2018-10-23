@@ -5,6 +5,7 @@ const nodecache = require( 'node-cache' )
 import * as config from 'config'
 import { Dictionary } from 'lodash'
 import {logger} from '../logger'
+import {gdprList} from './lists'
 import {UserAccount, UserAccountJSON, UserContext, UserContextJSON} from './user'
 
 const STEEMD_API_URL: string = config.get('rpc_node')
@@ -39,6 +40,7 @@ interface AccountHistoryItem {
 interface AccountHistoryPair {
     [index: number]: [number, AccountHistoryItem]
 }
+
 
 export class CachingClient {
     private readonly pageSize: number = 1000
@@ -237,7 +239,10 @@ export class CachingClient {
 
     public async loadAccount(account: string,
                              contextAccount?: string,
-                             days = 30): Promise<[UserAccount, UserContext | undefined]> {
+                             days = 30): Promise<[UserAccount?, UserContext?]> {
+        if (gdprList.has(account)) {
+            return [undefined, undefined]
+        }
         const userAccountKey = `UserAccount__${account}`
         let userAccount = this.cache.get(userAccountKey)
         if (userAccount === undefined) {
@@ -270,13 +275,19 @@ export class CachingClient {
         }
     }
 
-    public async loadAccountJSON(account: string, contextAccount?: string, days = 30): Promise<UserAccountJSON> {
+    public async loadAccountJSON(account: string, contextAccount?: string, days = 30): Promise<UserAccountJSON|undefined> {
         const [userAccount, userContext] = await this.loadAccount(account, contextAccount, days)
-        return userAccount.toJSONWithContext(userContext)
+        logger.info(`loadAccountJSON userAccount:${userAccount} userContext:${userContext}`)
+        if (userAccount !== undefined) {
+            const userAccountJSON =  userAccount.toJSONWithContext(userContext)
+            logger.info(`userAccountJSON:${JSON.stringify(userAccountJSON)}`)
+            return userAccountJSON
+        }
     }
 
     public async loadAccounts(accounts: string[]|Set<string>, contextAccount?: string, days = 30) {
-        const promises: Array<Promise<[UserAccount, UserContext | undefined]>> = []
+        const promises: Array<Promise<[UserAccount?, UserContext?]>> = []
+
         for (const account of accounts) {
             promises.push(this.loadAccount(account, contextAccount, days))
         }
@@ -287,7 +298,9 @@ export class CachingClient {
         const userAccounts = await this.loadAccounts(accounts, contextAccount, days)
         return _.map(userAccounts, (value) => {
             const [userAccount, userContext] = value
-            return userAccount.toJSONWithContext(userContext)
+            if (userAccount !== undefined) {
+                return userAccount.toJSONWithContext(userContext)
+            }
         })
     }
 }

@@ -15,7 +15,6 @@ port = 'DATABASE_PORT'
 username = 'DATABASE_USERNAME'
 password = 'DATABASE_PASSWORD'
 dialect = 'DATABASE_DIALECT'
-
 [cacheClient]
 ttl = 'CACHE_CLIENT_TTL'
 interval = 'CACHE_CLIENT_CHECK_INTERVAL'

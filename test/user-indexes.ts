@@ -4,7 +4,7 @@ import * as assert from 'assert'
 import 'mocha'
 import * as sinon from 'sinon'
 const nodecache = require( 'node-cache' )
-import { Trie } from 'trie-prefix-tree2'
+const trieLib = require('trie-prefix-tree')
 import { CachingClient } from '../src/user-search/client'
 import {
     getAccountHistoryResponse,
@@ -57,7 +57,7 @@ describe('user indexes', function(this) {
     })
     it('should return the account names trie', async function(this) {
         const results = await buildAccountsTrie(this.fakeCacheClient)
-        const expected = new Trie(Array.from(new Set(lookupAccountsResponse)))
-        assert.deepEqual(results, expected)
+        const expected = trieLib(Array.from(new Set(lookupAccountsResponse)))
+        assert.deepEqual(results.tree(), expected.tree())
     })
 })

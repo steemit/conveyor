@@ -138,10 +138,20 @@ describe('user client', function(this) {
         )
     })
     it('should load UserAccount as JSON', async function(this) {
-        const userAccountJSON = await this.fakeCacheClient.loadAccountJSON('steemit')
+        const userContextAccount = undefined
+        const userAccountJSON = await this.fakeCacheClient.loadAccountJSON('steemit', userContextAccount)
         assert.deepEqual(userAccountJSON, expectedUserAccountJSON)
     })
     it('should return undefined UserContext', async function(this) {
+        const userContextAccount = undefined
+        const [userAccount, userContext] = await this.fakeCacheClient.loadAccount('steemit', userContextAccount)
+        assert.deepEqual(userContext, undefined)
+    })
+    it('should load UserAccount as JSON without userContext', async function(this) {
+        const userAccountJSON = await this.fakeCacheClient.loadAccountJSON('steemit')
+        assert.deepEqual(userAccountJSON, expectedUserAccountJSON)
+    })
+    it('should return undefined UserContext without userContext', async function(this) {
         const [userAccount, userContext] = await this.fakeCacheClient.loadAccount('steemit')
         assert.deepEqual(userContext, undefined)
     })
@@ -156,7 +166,7 @@ describe('user client', function(this) {
         assert.deepEqual(results[0][0].toJSON(), expectedUserAccountJSON)
         assert.deepEqual(results[1][0].toJSON(), expectedUserAccountJSON)
     })
-    it('should return array of UserAccounts with undefined UserContext', async function(this) {
+    it('should return array of UserAccounts wit undefined UserContext', async function(this) {
         const accounts = ['steemit', 'steemit']
         const results = await this.fakeCacheClient.loadAccounts(accounts)
         assert.deepEqual(results[0][1], undefined)
