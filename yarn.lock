@@ -599,6 +599,10 @@ brorand@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/brorand/-/brorand-1.1.0.tgz#12c25efe40a45e3c323eb8675a0a0ce57b22371f"
 
+browser-process-hrtime@^0.1.2:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/browser-process-hrtime/-/browser-process-hrtime-0.1.3.tgz#616f00faef1df7ec1b5bf9cfe2bdc3170f26c7b4"
+
 browser-stdout@1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/browser-stdout/-/browser-stdout-1.3.1.tgz#baa559ee14ced73452229bad7326467c61fabd60"
@@ -1284,6 +1288,13 @@ execa@^0.7.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
+exectimer@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/exectimer/-/exectimer-2.2.0.tgz#c65fb300978b6a65fcea8bdf07ed9cb0a61001fb"
+  dependencies:
+    browser-process-hrtime "^0.1.2"
+    co "^4.6.0"
+
 exeunt@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/exeunt/-/exeunt-1.1.0.tgz#af72db6f94b3cb75e921aee375d513049843d284"
@@ -1811,6 +1822,10 @@ inquirer@^3.3.0:
     string-width "^2.1.0"
     strip-ansi "^4.0.0"
     through "^2.3.6"
+
+interval-promise@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/interval-promise/-/interval-promise-1.3.0.tgz#26fc4fbcd18605162d0dd012c2cc5657c4f8bc22"
 
 invariant@^2.2.0:
   version "2.2.4"

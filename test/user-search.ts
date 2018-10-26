@@ -5,15 +5,13 @@ const nodecache = require('node-cache')
 import {KoaAppWithCustomContext} from '../src/server'
 import { CachingClient } from '../src/user-search/client'
 
-// import {UserAccount} from '../src/user-search/user'
 
-// import {userAccountNames} from '../user-data/accounts/accounts'
 import {JsonRpcAuth, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
 import * as config from 'config'
 import * as Koa from 'koa'
 import * as Router from 'koa-router'
 import {logger} from '../src/logger'
-import {loadAccountsTrie} from '../src/user-search/indexes'
+import {AccountNameTrie} from '../src/user-search/indexes'
 import * as userSearch from '../src/user-search/search'
 import {
     getAccountHistoryResponse,
@@ -124,25 +122,32 @@ describe('user search functions', function() {
         const jsonRPCResponse = JSON.parse(response.text)
         const result = jsonRPCResponse.result
         assert.deepEqual(result, expectedUserAccountJSON)
-
     })
     it('should return account suggestions', async function() {
         const app = createApp(this.fakeCacheClient)
-        const acctNames = new Set(['steemit','steemit2','aaronburt'])
-        app.context.userAccountTrie = loadAccountsTrie(acctNames)
+        const acctNames = new Set(['steemit', 'steemit2', 'aaronburt'])
+        app.context.cacheClient = this.fakeCacheClient
+        app.context.userAccountTrie = new AccountNameTrie(acctNames, this.fakeCachingClient, 100000, true)
         const response = await request(app.callback()).post('/')
             .set('Content-Type', 'application/json')
             .send({id: 1,
                       jsonrpc: '2.0',
                       method: 'conveyor.autocomplete_account',
                       params: {accountSubstring: 'steemi', account: 'steemit'}})
+
         const jsonRPCResponse = JSON.parse(response.text)
         const result = jsonRPCResponse.result
         const expected = {
-            global: [expectedUserAccountJSONWithContext, expectedUserAccountJSONWithContext],
+            global: [],
             friends: [],
-            recent: [expectedUserAccountJSONWithContext, expectedUserAccountJSONWithContext]
+            recent: [expectedUserAccountJSONWithContext]
         }
-        assert.deepEqual(result, expected)
+        try {
+            assert.deepEqual(result['global'], [])
+            assert.deepEqual(result['friends'], [])
+            assert.deepEqual(result['recent'][0], expectedUserAccountJSONWithContext)
+        } finally {
+            app.context.userAccountTrie.stopRefreshing()
+        }
     })
 })

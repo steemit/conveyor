@@ -29,12 +29,13 @@ export class UserAccount {
     public readonly value_sp: string
     public readonly followers_count: number
     public readonly following_count: number
+    public readonly followers: Set<string>
+    public readonly following: Set<string>
     /* tslint:enable:variable-name */
     private readonly extendedAccount: ExtendedAccount
     private readonly followCount: FollowCountReturn
     private readonly accountTransferTargetCount: TransferTargetCounts
-    private readonly followers: Set<string>
-    private readonly following: Set<string>
+
     private readonly ignored: Set<string>
 
     constructor(

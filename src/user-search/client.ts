@@ -19,6 +19,8 @@ export interface FollowCountReturn {
     following_count: number
 }
 
+export type TTL = number | null | undefined
+
 export interface FollowReturn {
     follower: string
     following: string
@@ -82,7 +84,7 @@ export class CachingClient {
             ])
             const lastResult = results[results.length - 1]
             yield* results
-            logger.info(`p:${pageCount} start:${start} last:${lastResult} length:${results.length}`)
+            logger.debug(`p:${pageCount} start:${start} last:${lastResult} length:${results.length}`)
             if (start === lastResult  || results.length < this.pageSize) {
                 break
             }
@@ -160,11 +162,11 @@ export class CachingClient {
         }
     }
 
-    public async getAccountTransferTargetCounts(account: string, days = 30): Promise<TransferTargetCounts> {
+    public async getAccountTransferTargetCounts(account: string, days = 30,  ttl?: TTL): Promise<TransferTargetCounts> {
         const key = `accountTransferTargetCounts__${account}__${days}`
         const cachedResult = this.cache.get(key)
         if (cachedResult !== undefined) {
-            logger.info(`hit ${key}`)
+            logger.debug(`hit ${key}`)
             return cachedResult
         } else {
             const accounts: string[] = []
@@ -175,7 +177,7 @@ export class CachingClient {
             }
             const counts = _.countBy(accounts)
             this.cache.set(key, counts)
-            logger.info(`set ${key}`)
+            logger.debug(`set ${key}`)
             return counts
         }
     }
@@ -196,20 +198,32 @@ export class CachingClient {
                                  ])
     }
 
-    public async call(api: string, method: string, params?: any, ttl?: number) {
+    public async call(api: string, method: string, params?: any, ttl?: TTL) {
         const key = `call__${api}__${method}__${params}`
         const cachedResult = this.cache.get(key)
         if (cachedResult !== undefined) {
-            logger.info(`hit ${key}`)
+            logger.debug(`hit ${key}`)
             return cachedResult
         } else {
             const result = await this.client.call(api, method, params)
-            if (ttl !== undefined) {
-                this.cache.set(key, result, ttl)
-                logger.info(`set ttl:${ttl} ${key}`)
-            } else {
-                this.cache.set(key, result)
-                logger.info(`set ttl:${ttl} ${key}`)
+
+            switch (ttl) {
+                // use default ttl if ttl === undefined
+                case undefined: {
+                    this.cache.set(key, result)
+                    logger.debug(`set ttl:${this.cacheOptions.stdTTL} ${key}`)
+                    break
+                }
+                // don't cache if ttl === null
+                case null: {
+                    break
+                }
+                // ttl must be number so use it as ttl
+                default: {
+                    this.cache.set(key, result, ttl)
+                    logger.debug(`set ttl:${ttl} ${key}`)
+                    break
+                }
             }
             return result
         }
@@ -218,7 +232,7 @@ export class CachingClient {
     public cacheUserAccount(userAccount: UserAccount) {
         const key = `UserAccount_${userAccount.account}`
         this.cache.set(key, userAccount)
-        logger.info(`set ${key}`)
+        logger.debug(`set ${key}`)
     }
 
     public loadUserAccount(account: string) {
@@ -229,7 +243,7 @@ export class CachingClient {
     public cacheUserContext(userContext: UserContext) {
         const key = `UserContext__${userContext.account}__${userContext.context_account}`
         this.cache.set(key, userContext)
-        logger.info(`set ${key}`)
+        logger.debug(`set ${key}`)
     }
 
     public loadUserContext(account: string, contextAccount: string) {
@@ -277,10 +291,10 @@ export class CachingClient {
 
     public async loadAccountJSON(account: string, contextAccount?: string, days = 30): Promise<UserAccountJSON|undefined> {
         const [userAccount, userContext] = await this.loadAccount(account, contextAccount, days)
-        logger.info(`loadAccountJSON userAccount:${userAccount} userContext:${userContext}`)
+        logger.debug(`loadAccountJSON userAccount:${userAccount} userContext:${userContext}`)
         if (userAccount !== undefined) {
             const userAccountJSON =  userAccount.toJSONWithContext(userContext)
-            logger.info(`userAccountJSON:${JSON.stringify(userAccountJSON)}`)
+            logger.debug(`userAccountJSON:${JSON.stringify(userAccountJSON)}`)
             return userAccountJSON
         }
     }

@@ -1,6 +1,11 @@
+import * as config from 'config'
 import * as _ from 'lodash'
+const interval = require('interval-promise')
 const trieLib = require('trie-prefix-tree')
 import {logger} from '../logger'
+import {CachingClient} from './client'
+
+const REFRESH_INTERVAL: number = config.get('accounts_refresh_interval')
 
 export async function loadAccountNames(client: any, start: string = '', end?: string): Promise<Set<string>> {
     const limit = 1000
@@ -33,13 +38,7 @@ export async function loadAccountNames(client: any, start: string = '', end?: st
     return names
 }
 
-function concatSets(set, ...iterables) {
-    for (const iterable of iterables) {
-        for (const item of iterable) {
-            set.add(item)
-        }
-    }
-}
+
 /**
  * This method creates many async generators to parallelize the loading of
  * account names from steemd. The `starts` and `ends` variables store the
@@ -67,16 +66,93 @@ export function loadAccountsTrie(accounts: Set<string>) {
     return trieLib(Array.from(accounts))
 }
 
-export async function buildAccountsTrie(client: any): Promise<any> {
-    const names = await loadAccountNames(client)
-    return trieLib(Array.from(names))
+export class AccountNameTrie {
+    public readonly trie: any
+    public stopRefreshLoop: boolean
+    public readonly refreshInterval: number
+    public timerId: any
+    private client: CachingClient
+
+
+
+    constructor(initialAccounts: Set<string>,
+                client: CachingClient,
+                refreshInterval: number = REFRESH_INTERVAL) {
+        this.client = client
+        this.refreshInterval = refreshInterval
+        this.trie = loadAccountsTrie(initialAccounts)
+        this.stopRefreshLoop = true
+    }
+
+    public stopRefreshing() {
+        this.stopRefreshLoop = true
+        clearTimeout(this.timerId)
+        logger.debug('stopped refresh loop')
+    }
+
+    public startRefreshing() {
+        this.stopRefreshLoop = false
+        this.refresh()
+    }
+
+    public matchPrefix(prefix: string) {
+        return this.trie.getPrefix(prefix, false)
+    }
+
+    public refresh() {
+        if (this.stopRefreshLoop) {
+            logger.info('refresh called while stopRefreshLoop === true, returning')
+            return
+        }
+        logger.info(`scheduled refresh cycle in ${this.refreshInterval / 1000}s`)
+        this.timerId = setInterval(() => {
+            logger.info('starting refresh')
+            this.updateTrie().then(() => {
+                // schedule the next one unless it shouldn't
+                if ( !this.stopRefreshLoop) {
+                    logger.info('scheduling next refresh cycle')
+                }
+            }, (err) => {
+                logger.error(`Failed to update trie: ${err}`)
+            })
+        }, this.refreshInterval)
+    }
+
+    public async updateTrie() {
+        const limit = 1000
+        let start = ''
+        while (!this.stopRefreshLoop) {
+            const results = await this.client.call('condenser_api', 'lookup_accounts', [
+                start,
+                limit
+            ], null)
+            for (const account of results) {
+                this.trie.addWord(account)
+            }
+            logger.debug(`added ${results.length} account names`)
+            const lastResult: string  = results[results.length - 1]
+            if (start === lastResult) {
+                logger.debug(`${start} === ${lastResult} so loading complete`)
+                break
+            }
+            if (results.length < limit) {
+                logger.debug(`results.length of ${results.length} <= ${limit} so loading complete`)
+                break
+            }
+            start = results[results.length - 1]
+        }
+    }
+
 }
 
-export function matchPrefix(trie: any, prefix: string): string[] {
-    return trie.getPrefix(prefix, false)
+function sleep(ms) {
+    return new Promise((resolve) => {setTimeout(resolve, ms)})
 }
 
-export function intersectMatches(trie: any, prefix: string, otherSet: Set<string>) {
-    const matches = trie.getPrefix(prefix, false)
-    return new Set(matches.filter((x) => otherSet.has(x)))
+function concatSets(set, ...iterables) {
+    for (const iterable of iterables) {
+        for (const item of iterable) {
+            set.add(item)
+        }
+    }
 }

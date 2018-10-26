@@ -9,7 +9,7 @@ import * as Koa from 'koa'
 import * as Router from 'koa-router'
 import * as os from 'os'
 
-import {userAccountNames} from '../user-data/accounts/accounts'
+const userAccountNames = require('../user-data/accounts/accounts')
 import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
 import * as price from './price'
@@ -18,11 +18,11 @@ import * as userData from './user-data'
 import * as userSearch from './user-search/search'
 
 import {JsonRpcAuth, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
-const trieLib = require('trie-prefix-tree')
 import {db} from './database'
 import {logger} from './logger'
 import {CachingClient} from './user-search/client'
-import {loadAccountsTrie} from './user-search/indexes'
+import {AccountNameTrie} from './user-search/indexes'
+
 
 export const version = require('./version')
 
@@ -38,7 +38,7 @@ export interface KoaAppWithCustomContext extends Koa {
 export const app = new Koa() as KoaAppWithCustomContext
 
 const cacheClient = new CachingClient()
-const userAccountTrie = loadAccountsTrie(userAccountNames)
+const userAccountTrie = new AccountNameTrie(userAccountNames, cacheClient, config.get('accounts_refresh_interval'))
 
 app.context.cacheClient = cacheClient
 app.context.userAccountTrie = userAccountTrie
@@ -106,8 +106,14 @@ rpc.registerAuthenticated('get_tags_for_user', tags.getTagsForUser)
 
 function run() {
     const port = config.get('port')
-    app.listen(port, () => {
+    const server = app.listen(port, () => {
         logger.info('running on port %d', port)
+    })
+    app.context.userAccountTrie.startRefreshing()
+    logger.info('registering server on close listener')
+    server.on('close', () => {
+        logger.fatal('on "app.close" stopping accounts refresh loop')
+        app.context.userAccountTrie.stopRefreshing()
     })
 }
 

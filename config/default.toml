@@ -16,6 +16,9 @@ rpc_node = 'https://api.steemit.com'
 # admin role allowed to make authenticated calls
 admin_role = 'foo'
 
+# interval between loading of account names for autocomplete trie
+accounts_refresh_interval = 600000 # 10 Min
+
 # logging output, can be repeated
 [[log]]
 level = 'debug'
@@ -34,3 +37,4 @@ operatorsAliases = false
 [cacheClient]
 ttl = 600
 interval = 60
+
