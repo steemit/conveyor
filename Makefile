@@ -58,16 +58,11 @@ coverage: node_modules reports
 test: node_modules
 	NODE_ENV=test mocha --require ts-node/register test/*.ts --grep '$(grep)'
 
-.PHONY: ci-testm
+.PHONY: ci-test
 ci-test: node_modules reports
 	nsp check
 	tslint -p tsconfig.json -c tslint.json
-	NODE_ENV=test nyc -r lcov -e .ts -i ts-node/register \
-		--report-dir reports/coverage \
-		mocha --require ts-node/register \
-		--reporter mocha-junit-reporter \
-		--reporter-options mochaFile=./reports/unit-tests/junit.xml \
-		test/*.ts
+	NODE_ENV=test mocha --require ts-node/register test/*.ts --grep '$(grep)'
 
 .PHONY: lint
 lint: node_modules
