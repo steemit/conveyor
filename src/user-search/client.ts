@@ -1,17 +1,23 @@
-import {Client, ExtendedAccount} from 'dsteem'
+import { Client, ExtendedAccount } from 'dsteem'
 import * as _ from 'lodash'
 import * as moment from 'moment'
-const nodecache = require( 'node-cache' )
+const nodecache = require('node-cache')
 import * as config from 'config'
 import { Dictionary } from 'lodash'
-import {logger} from '../logger'
-import {gdprList} from './lists'
-import {UserAccount, UserAccountJSON, UserContext, UserContextJSON} from './user'
+import { logger } from '../logger'
+import { gdprList } from './lists'
+import { UserAccount, UserAccountJSON, UserContext } from './user'
 
 const STEEMD_API_URL: string = config.get('rpc_node')
 const CACHE_CLIENT_TTL: number = config.get('cacheClient')['ttl']
-const CACHE_CLIENT_CHECK_INTERVAL: number = config.get('cacheClient')['interval']
-enum FollowType {undefined, blog, ignore}
+const CACHE_CLIENT_CHECK_INTERVAL: number = config.get('cacheClient')[
+    'interval'
+]
+enum FollowType {
+    undefined,
+    blog,
+    ignore
+}
 
 export interface FollowCountReturn {
     account: string
@@ -43,14 +49,18 @@ interface AccountHistoryPair {
     [index: number]: [number, AccountHistoryItem]
 }
 
-
 export class CachingClient {
     private readonly pageSize: number = 1000
 
-    constructor(public readonly cache?: any,
-                public readonly cacheOptions = {stdTTL: CACHE_CLIENT_TTL, checkperiod: CACHE_CLIENT_CHECK_INTERVAL},
-                private readonly client?: any,
-                public readonly address: string = STEEMD_API_URL) {
+    constructor(
+        public readonly cache?: any,
+        public readonly cacheOptions = {
+            stdTTL: CACHE_CLIENT_TTL,
+            checkperiod: CACHE_CLIENT_CHECK_INTERVAL
+        },
+        private readonly client?: any,
+        public readonly address: string = STEEMD_API_URL
+    ) {
         if (cache === undefined) {
             this.cache = new nodecache(cacheOptions)
         } else {
@@ -64,7 +74,9 @@ export class CachingClient {
     }
 
     public async getExtendedAccount(account: string): Promise<ExtendedAccount> {
-        const [result] = await this.call('condenser_api', 'get_accounts', [[account]])
+        const [result] = await this.call('condenser_api', 'get_accounts', [
+            [account]
+        ])
         return result
     }
 
@@ -72,7 +84,12 @@ export class CachingClient {
         return await this.call('condenser_api', 'get_follow_count', [account])
     }
 
-    public async* followGen(method: string, account: string, followType: FollowType, start = '') {
+    public async *followGen(
+        method: string,
+        account: string,
+        followType: FollowType,
+        start = ''
+    ) {
         let pageCount = 0
         while (true) {
             pageCount += 1
@@ -84,8 +101,12 @@ export class CachingClient {
             ])
             const lastResult = results[results.length - 1]
             yield* results
-            logger.debug(`p:${pageCount} start:${start} last:${lastResult} length:${results.length}`)
-            if (start === lastResult  || results.length < this.pageSize) {
+            logger.debug(
+                `p:${pageCount} start:${start} last:${lastResult} length:${
+                    results.length
+                }`
+            )
+            if (start === lastResult || results.length < this.pageSize) {
                 break
             }
             if (method === 'get_followers') {
@@ -96,34 +117,58 @@ export class CachingClient {
         }
     }
 
-    public async getFollowers(account: string, start = 0, limit = 1000): Promise<FollowReturn[]> {
+    public async getFollowers(
+        account: string,
+        start = 0,
+        limit = 1000
+    ): Promise<FollowReturn[]> {
         const followType = FollowType.blog
         const followers: any[] = []
-        for await (const results of this.followGen('get_followers', account, followType )) {
+        for await (const results of this.followGen(
+            'get_followers',
+            account,
+            followType
+        )) {
             followers.push(results)
         }
         return followers
     }
 
-    public async getIgnored(account: string, start = 0, limit = 1000): Promise<FollowReturn[]> {
+    public async getIgnored(
+        account: string,
+        start = 0,
+        limit = 1000
+    ): Promise<FollowReturn[]> {
         const followType = FollowType.ignore
         const followers: any[] = []
-        for await (const results of this.followGen('get_followers', account, followType )) {
+        for await (const results of this.followGen(
+            'get_followers',
+            account,
+            followType
+        )) {
             followers.push(results)
         }
         return followers
     }
 
-    public async getFollowing(account: string, start = 0, limit = 1000): Promise<FollowReturn[]> {
+    public async getFollowing(
+        account: string,
+        start = 0,
+        limit = 1000
+    ): Promise<FollowReturn[]> {
         const followType = FollowType.blog
         const followers: any[] = []
-        for await (const results of this.followGen('get_following', account, followType )) {
+        for await (const results of this.followGen(
+            'get_following',
+            account,
+            followType
+        )) {
             followers.push(results)
         }
         return followers
     }
 
-    public async* accountHistoryGenerator(account: string) {
+    public async *accountHistoryGenerator(account: string) {
         let pointer: number = -1
         let pageCount = 0
         let accountHistoryLength: number
@@ -132,7 +177,8 @@ export class CachingClient {
             const resultsPage = await this.call(
                 'condenser_api',
                 'get_account_history',
-                [account, pointer, this.pageSize])
+                [account, pointer, this.pageSize]
+            )
             pageCount += 1
             if (pageCount === 1) {
                 accountHistoryLength = resultsPage[resultsPage.length - 1][0]
@@ -151,7 +197,7 @@ export class CachingClient {
         }
     }
 
-    public async* accountHistoryNewerThanGenerator(account: string, days = 30) {
+    public async *accountHistoryNewerThanGenerator(account: string, days = 30) {
         const maxAge = moment.utc().subtract(days, 'days')
         for await (const result of this.accountHistoryGenerator(account)) {
             if (moment.utc(_.get(result, [1, 'timestamp'])).isAfter(maxAge)) {
@@ -162,7 +208,11 @@ export class CachingClient {
         }
     }
 
-    public async getAccountTransferTargetCounts(account: string, days = 30,  ttl?: TTL): Promise<TransferTargetCounts> {
+    public async getAccountTransferTargetCounts(
+        account: string,
+        days = 30,
+        ttl?: TTL
+    ): Promise<TransferTargetCounts> {
         const key = `accountTransferTargetCounts__${account}__${days}`
         const cachedResult = this.cache.get(key)
         if (cachedResult !== undefined) {
@@ -170,7 +220,10 @@ export class CachingClient {
             return cachedResult
         } else {
             const accounts: string[] = []
-            for await (const item of this.accountHistoryNewerThanGenerator(account, days)) {
+            for await (const item of this.accountHistoryNewerThanGenerator(
+                account,
+                days
+            )) {
                 if (_.get(item, [1, 'op', 0]) === 'transfer') {
                     accounts.push(_.get(item, [1, 'op', 1, 'to']))
                 }
@@ -182,20 +235,27 @@ export class CachingClient {
         }
     }
 
-    public async loadAccountInfo(account: string, days = 30): Promise<[ExtendedAccount,
-        FollowCountReturn,
-        TransferTargetCounts,
-        FollowReturn[],
-        FollowReturn[],
-        FollowReturn[]]> {
+    public async loadAccountInfo(
+        account: string,
+        days = 30
+    ): Promise<
+        [
+            ExtendedAccount,
+            FollowCountReturn,
+            TransferTargetCounts,
+            FollowReturn[],
+            FollowReturn[],
+            FollowReturn[]
+        ]
+    > {
         return await Promise.all([
-                                     this.getExtendedAccount(account),
-                                     this.getFollowCount(account),
-                                     this.getAccountTransferTargetCounts(account, days),
-                                     this.getFollowers(account),
-                                     this.getFollowing(account),
-                                     this.getIgnored(account)
-                                 ])
+            this.getExtendedAccount(account),
+            this.getFollowCount(account),
+            this.getAccountTransferTargetCounts(account, days),
+            this.getFollowers(account),
+            this.getFollowing(account),
+            this.getIgnored(account)
+        ])
     }
 
     public async call(api: string, method: string, params?: any, ttl?: TTL) {
@@ -241,7 +301,9 @@ export class CachingClient {
     }
 
     public cacheUserContext(userContext: UserContext) {
-        const key = `UserContext__${userContext.account}__${userContext.context_account}`
+        const key = `UserContext__${userContext.account}__${
+            userContext.context_account
+        }`
         this.cache.set(key, userContext)
         logger.debug(`set ${key}`)
     }
@@ -251,27 +313,33 @@ export class CachingClient {
         return this.cache.get(key)
     }
 
-    public async loadAccount(account: string,
-                             contextAccount?: string,
-                             days = 30): Promise<[UserAccount?, UserContext?]> {
+    public async loadAccount(
+        account: string,
+        contextAccount?: string,
+        days = 30
+    ): Promise<[UserAccount?, UserContext?]> {
         if (gdprList.has(account)) {
             return [undefined, undefined]
         }
         const userAccountKey = `UserAccount__${account}`
         let userAccount = this.cache.get(userAccountKey)
         if (userAccount === undefined) {
-            const [extendedAccount,
+            const [
+                extendedAccount,
                 followCount,
                 accountTransferTargetCount,
                 followers,
                 following,
-                ignored] = await this.loadAccountInfo(account, days)
-            userAccount = new UserAccount(extendedAccount,
-                                          followCount,
-                                          accountTransferTargetCount,
-                                          followers,
-                                          following,
-                                          ignored)
+                ignored
+            ] = await this.loadAccountInfo(account, days)
+            userAccount = new UserAccount(
+                extendedAccount,
+                followCount,
+                accountTransferTargetCount,
+                followers,
+                following,
+                ignored
+            )
 
             this.cache.set(userAccountKey, userAccount)
         }
@@ -289,17 +357,31 @@ export class CachingClient {
         }
     }
 
-    public async loadAccountJSON(account: string, contextAccount?: string, days = 30): Promise<UserAccountJSON|undefined> {
-        const [userAccount, userContext] = await this.loadAccount(account, contextAccount, days)
-        logger.debug(`loadAccountJSON userAccount:${userAccount} userContext:${userContext}`)
+    public async loadAccountJSON(
+        account: string,
+        contextAccount?: string,
+        days = 30
+    ): Promise<UserAccountJSON | undefined> {
+        const [userAccount, userContext] = await this.loadAccount(
+            account,
+            contextAccount,
+            days
+        )
+        logger.debug(
+            `loadAccountJSON userAccount:${userAccount} userContext:${userContext}`
+        )
         if (userAccount !== undefined) {
-            const userAccountJSON =  userAccount.toJSONWithContext(userContext)
+            const userAccountJSON = userAccount.toJSONWithContext(userContext)
             logger.debug(`userAccountJSON:${JSON.stringify(userAccountJSON)}`)
             return userAccountJSON
         }
     }
 
-    public async loadAccounts(accounts: string[]|Set<string>, contextAccount?: string, days = 30) {
+    public async loadAccounts(
+        accounts: string[] | Set<string>,
+        contextAccount?: string,
+        days = 30
+    ) {
         const promises: Array<Promise<[UserAccount?, UserContext?]>> = []
 
         for (const account of accounts) {
@@ -308,8 +390,16 @@ export class CachingClient {
         return await Promise.all(promises)
     }
 
-    public async loadAccountsJSON(accounts, contextAccount?: string, days = 30) {
-        const userAccounts = await this.loadAccounts(accounts, contextAccount, days)
+    public async loadAccountsJSON(
+        accounts,
+        contextAccount?: string,
+        days = 30
+    ) {
+        const userAccounts = await this.loadAccounts(
+            accounts,
+            contextAccount,
+            days
+        )
         return _.map(userAccounts, (value) => {
             const [userAccount, userContext] = value
             if (userAccount !== undefined) {

@@ -1,7 +1,6 @@
-import {logger} from '../../logger'
-import {CachingClient} from '../client'
-import {loadAllAccountNames} from '../indexes'
-
+import { logger } from '../../logger'
+import { CachingClient } from '../client'
+import { loadAllAccountNames } from '../indexes'
 
 export function loadThenWriteAccountNames() {
     const client = new CachingClient()

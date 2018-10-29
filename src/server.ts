@@ -17,12 +17,11 @@ import * as tags from './tags'
 import * as userData from './user-data'
 import * as userSearch from './user-search/search'
 
-import {JsonRpcAuth, requestLogger, rpcLogger} from '@steemit/koa-jsonrpc'
-import {db} from './database'
-import {logger} from './logger'
-import {CachingClient} from './user-search/client'
-import {AccountNameTrie} from './user-search/indexes'
-
+import { JsonRpcAuth, requestLogger, rpcLogger } from '@steemit/koa-jsonrpc'
+import { db } from './database'
+import { logger } from './logger'
+import { CachingClient } from './user-search/client'
+import { AccountNameTrie } from './user-search/indexes'
 
 export const version = require('./version')
 
@@ -38,7 +37,11 @@ export interface KoaAppWithCustomContext extends Koa {
 export const app = new Koa() as KoaAppWithCustomContext
 
 const cacheClient = new CachingClient()
-const userAccountTrie = new AccountNameTrie(userAccountNames, cacheClient, config.get('accounts_refresh_interval'))
+const userAccountTrie = new AccountNameTrie(
+    userAccountNames,
+    cacheClient,
+    config.get('accounts_refresh_interval')
+)
 
 app.context.cacheClient = cacheClient
 app.context.userAccountTrie = userAccountTrie
@@ -57,7 +60,7 @@ app.use(rpcLogger(logger))
 async function healthcheck(ctx: Koa.Context) {
     const ok = true
     const date = new Date()
-    ctx.body = {ok, version, date}
+    ctx.body = { ok, version, date }
 }
 
 router.post('/', rpc.middleware)
@@ -68,12 +71,11 @@ app.use(router.routes())
 
 rpc.register('hello', async function(name: string = 'Anonymous') {
     this.log.info('Hello %s', name)
-    return `I'm sorry, ${ name }, I can't do that.`
+    return `I'm sorry, ${name}, I can't do that.`
 })
 
 rpc.register('get_account', userSearch.getAccount)
 rpc.register('autocomplete_account', userSearch.autocompleteAccount)
-
 
 rpc.register('get_prices', price.getPrices)
 
@@ -89,8 +91,14 @@ rpc.registerAuthenticated('remove_draft', drafts.remove)
 rpc.registerAuthenticated('get_feature_flag', featureFlags.getFlag)
 rpc.registerAuthenticated('set_feature_flag', featureFlags.setFlag)
 rpc.registerAuthenticated('get_feature_flags', featureFlags.getFlags)
-rpc.registerAuthenticated('set_feature_flag_probability', featureFlags.setProbability)
-rpc.registerAuthenticated('get_feature_flag_probabilities', featureFlags.getProbabilities)
+rpc.registerAuthenticated(
+    'set_feature_flag_probability',
+    featureFlags.setProbability
+)
+rpc.registerAuthenticated(
+    'get_feature_flag_probabilities',
+    featureFlags.getProbabilities
+)
 
 rpc.registerAuthenticated('get_user_data', userData.getUserData)
 rpc.registerAuthenticated('set_user_data', userData.setUserData)
