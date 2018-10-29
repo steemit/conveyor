@@ -127,7 +127,7 @@ describe('user search functions', function() {
         const app = createApp(this.fakeCacheClient)
         const acctNames = new Set(['steemit', 'steemit2', 'aaronburt'])
         app.context.cacheClient = this.fakeCacheClient
-        app.context.userAccountTrie = new AccountNameTrie(acctNames, this.fakeCachingClient, 100000, true)
+        app.context.userAccountTrie = new AccountNameTrie(acctNames, this.fakeCachingClient, 100000)
         const response = await request(app.callback()).post('/')
             .set('Content-Type', 'application/json')
             .send({id: 1,
