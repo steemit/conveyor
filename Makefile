@@ -79,6 +79,15 @@ clean:
 distclean: clean
 	rm -rf node_modules/
 
+.PHONY: docker-build
+docker-build: distclean
+	find src test -iname '*.js' -delete
+	docker build -t steemit/conveyor:latest .
+
+.PHONY: docker-run
+docker-run:
+	docker run -it -e S3_BUCKET=junk -p 8080:8080 steemit/conveyor:latest
+
 .PHONY:docs
 docs: $(DOCS_ROOT)/Conveyor.html $(DOCS_ROOT)/Conveyor.md
 

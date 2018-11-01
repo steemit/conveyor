@@ -1,6 +1,5 @@
 import * as config from 'config'
 import * as _ from 'lodash'
-const interval = require('interval-promise')
 const trieLib = require('trie-prefix-tree')
 import { logger } from '../logger'
 import { CachingClient } from './client'
