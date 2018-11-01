@@ -4,6 +4,11 @@ conveyor
 
 Steemit API
 
+Additional docs may be found here:
+- [docs/Conveyor.md](./docs/Conveyor.md)
+- [docs/Conveyor.html](./docs/Conveyor.html)
+- [user-data/README.md](./user-data/README.md)
+
 
 Feature flags
 -------------
