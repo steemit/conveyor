@@ -140,6 +140,23 @@
         }
       }
     },
+    "summarized_url": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "default": "a description of the content found at the given url"
+        },
+        "image": {
+          "type": "string",
+          "default": "http://url/of/image.jpg"
+        },
+        "title": {
+          "type": "string",
+          "default": "a title pulled from the given url"
+        }
+      }
+    },
     "probability":{
       "type":"number",
       "min":0,
@@ -580,6 +597,14 @@
       "params":null,
       "result":{
         "$ref":"#/definitions/prices"
+      }
+    },
+    "conveyor.summarize_url": {
+      "summary":"","description":"Get summary data from a link",
+      "tags":["tbd"],
+      "params":null,
+      "result":{
+        "$ref":"#/definitions/summarized_url"
       }
     }
   }
