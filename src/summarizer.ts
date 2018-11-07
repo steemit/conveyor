@@ -14,6 +14,7 @@ import { badDomains, badUrls } from './blacklist'
 
 interface SummarizedUrl {
     description?: string
+    favicon?: string
     image?: string
     title?: string
 }
@@ -66,6 +67,7 @@ export async function summarizeUrl(this: JCtx, urlStr: string): Promise<Summariz
 
         const res = {
             description: unfluffed.description,
+            favicon: unfluffed.favicon,
             image: unfluffed.image,
             title: unfluffed.title,
         }

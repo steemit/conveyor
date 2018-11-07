@@ -147,6 +147,10 @@
           "type": "string",
           "default": "a description of the content found at the given url"
         },
+        "favicon": {
+          "type": "string",
+          "default": "http://url/of/FAVICON.ICO"
+        },
         "image": {
           "type": "string",
           "default": "http://url/of/image.jpg"
