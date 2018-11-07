@@ -143,6 +143,10 @@
     "summarized_url": {
       "type": "object",
       "properties": {
+        "blacklisted": {
+          "type": "boolean",
+          "default": false
+        },
         "description": {
           "type": "string",
           "default": "a description of the content found at the given url"
