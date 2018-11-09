@@ -613,7 +613,13 @@
       "params":null,
       "result":{
         "$ref":"#/definitions/summarized_url"
-      }
+      },
+      "errors":[
+        {
+          "description": "URL cannot be fetched for some reason",
+          "code": 400
+        }
+      ]
     }
   }
 }

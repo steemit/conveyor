@@ -39,7 +39,7 @@ export async function summarizeUrl(this: JCtx, urlStr: string): Promise<Summariz
     }
 
     // Is domain blacklisted?
-    for (let badDomain of badDomains) {
+    for (const badDomain of badDomains) {
         if (parsedUrl.host.endsWith(badDomain)) {
             blacklisted = true
             break
@@ -49,7 +49,7 @@ export async function summarizeUrl(this: JCtx, urlStr: string): Promise<Summariz
     // Is url blacklisted?
     if (!blacklisted) {
       const urlLessProtocol = `${parsedUrl.host}${parsedUrl.pathname}`
-      for (let badUrl of badUrls) {
+      for (const badUrl of badUrls) {
           if (urlLessProtocol.startsWith(badUrl)) {
               blacklisted = true
               break
