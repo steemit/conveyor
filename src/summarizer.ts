@@ -17,7 +17,14 @@ interface SummarizedUrl {
     description?: string
     favicon?: string
     image?: string
+    videos?: SummarizedUrlVideo[]
     title?: string
+}
+
+interface SummarizedUrlVideo {
+  src: string
+  height: number
+  width: number
 }
 
 // Set up in-memory cache for our responses
@@ -76,6 +83,11 @@ export async function summarizeUrl(this: JCtx, urlStr: string): Promise<Summariz
             description: unfluffed.description,
             favicon: unfluffed.favicon,
             image: unfluffed.image,
+            videos: unfluffed.videos.map((video) => ({
+              src: video.src,
+              height: video.height ? parseInt(video.height, 10) : null,
+              width: video.width ? parseInt(video.width, 10) : null,
+            })),
             title: unfluffed.title,
         }
 

@@ -159,9 +159,32 @@
           "type": "string",
           "default": "http://url/of/image.jpg"
         },
+        "videos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/summarized_url_video"
+          }
+        },
         "title": {
           "type": "string",
           "default": "a title pulled from the given url"
+        }
+      }
+    },
+    "summarized_url_video": {
+      "type": "object",
+      "properties": {
+        "src": {
+          "type": "string",
+          "default": "video source"
+        },
+        "height": {
+          "type": "number",
+          "default": "height dimension of video"
+        },
+        "width":{
+          "type": "number",
+          "default": "width dimension of video"
         }
       }
     },
