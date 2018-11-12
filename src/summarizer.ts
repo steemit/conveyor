@@ -71,7 +71,7 @@ export async function summarizeUrl(this: JCtx, urlStr: string): Promise<Summariz
     } else {
         let urlData
         try {
-            urlData = await got(urlStr, { timeout: 1000 })
+            urlData = await got(urlStr, { timeout: 2000 })
         } catch (e) {
             throw new JsonRpcError(400, 'Cannot fetch URL')
         }
