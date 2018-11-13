@@ -4,5 +4,5 @@ export const badDomains = [
 
 export const badUrls = [
   'bad.url/leave/out/protocol',
-  'https://www.google.com',
+  'www.google.com',
 ]
