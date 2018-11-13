@@ -13,6 +13,7 @@ import * as os from 'os'
 import * as drafts from './drafts'
 import * as featureFlags from './feature-flags'
 import * as price from './price'
+import * as summarizer from './summarizer'
 import * as tags from './tags'
 import * as userData from './user-data'
 
@@ -79,6 +80,8 @@ rpc.registerAuthenticated('get_users_by_tags', tags.getUsersByTags)
 rpc.registerAuthenticated('get_tags_for_user', tags.getTagsForUser)
 
 rpc.register('get_prices', price.getPrices)
+
+rpc.register('summarize_url', summarizer.summarizeUrl)
 
 function run() {
     const port = config.get('port')
