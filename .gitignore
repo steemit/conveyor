@@ -4,3 +4,10 @@ reports/
 .nyc_output/
 config/local*
 .idea/
+yarn-error.log
+.DS_Store
+test/*.js
+src/*.js
+src/*/*.js
+test/*/*.js
+test/steemd_respones/*.js

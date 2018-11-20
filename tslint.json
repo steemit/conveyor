@@ -12,6 +12,7 @@
     "quotemark": [true, "single", "avoid-escape"],
     "semicolon": [true, "never"],
     "trailing-comma": [true, "never"],
-    "triple-equals": [true, "allow-undefined-check"]
+    "triple-equals": [true, "allow-undefined-check"],
+    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"]
   }
 }

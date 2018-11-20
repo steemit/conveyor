@@ -10,10 +10,14 @@ name = 'conveyor'
 num_workers = 1
 
 # steem rpc node used to verify signed requests and get price feeds
-rpc_node = 'https://testnet.steem.vc'
+# rpc_node = 'https://testnet.steem.vc'
+rpc_node = 'https://api.steemit.com'
 
 # admin role allowed to make authenticated calls
 admin_role = 'foo'
+
+# interval between loading of account names for autocomplete trie
+accounts_refresh_interval = 600000 # 10 Min
 
 # logging output, can be repeated
 [[log]]
@@ -29,3 +33,8 @@ type = 'memory' # valid types are: memory, s3
 [database]
 dialect = 'sqlite'
 operatorsAliases = false
+
+[cacheClient]
+ttl = 600
+interval = 60
+
