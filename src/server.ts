@@ -113,8 +113,6 @@ rpc.registerAuthenticated('unassign_tag', tags.unassignTag)
 rpc.registerAuthenticated('get_users_by_tags', tags.getUsersByTags)
 rpc.registerAuthenticated('get_tags_for_user', tags.getTagsForUser)
 
-rpc.register('get_prices', price.getPrices)
-
 rpc.register('summarize_url', summarizer.summarizeUrl)
 
 function run() {
