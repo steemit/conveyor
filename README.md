@@ -2,7 +2,7 @@
 conveyor
 ========
 
-Steemit API
+Knowledgr API
 
 Additional docs may be found here:
 - [docs/Conveyor.md](./docs/Conveyor.md)

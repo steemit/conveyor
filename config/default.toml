@@ -1,7 +1,7 @@
 # conveyor default configuration, override in your config/local-development.toml
 
 # port to listen on
-port = 8090
+port = 8093
 
 # application name used for logging and service namespace
 name = 'conveyor'
@@ -11,7 +11,7 @@ num_workers = 1
 
 # steem rpc node used to verify signed requests and get price feeds
 # rpc_node = 'https://testnet.steem.vc'
-rpc_node = 'https://api.steemit.com'
+rpc_node = 'http://localhost:8091'
 
 # admin role allowed to make authenticated calls
 admin_role = 'foo'

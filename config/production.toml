@@ -1,6 +1,6 @@
 num_workers = 0
 port = 8080
-rpc_node = 'https://api.steemit.com'
+rpc_node = 'https://api.knowledgr.com'
 admin_role = 'steem'
 accounts_refresh_interval = 600000 # 10 Min
 [storage]
