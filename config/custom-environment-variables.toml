@@ -19,3 +19,6 @@ dialect = 'DATABASE_DIALECT'
 ttl = 'CACHE_CLIENT_TTL'
 interval = 'CACHE_CLIENT_CHECK_INTERVAL'
 accounts_refresh_intercal = 'ACCOUNTS_REFRESH_INTERVAL'
+
+[accountHistory]
+pageSize = 'ACCOUNT_HISTORY_PAGE_SIZE'

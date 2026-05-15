@@ -13,6 +13,9 @@ const CACHE_CLIENT_TTL: number = config.get('cacheClient')['ttl']
 const CACHE_CLIENT_CHECK_INTERVAL: number = config.get('cacheClient')[
     'interval'
 ]
+const ACCOUNT_HISTORY_PAGE_SIZE: number = config.has('accountHistory.pageSize')
+    ? config.get('accountHistory')['pageSize']
+    : 100
 enum FollowType {
     undefined,
     blog,
@@ -50,7 +53,7 @@ interface AccountHistoryPair {
 }
 
 export class CachingClient {
-    private readonly pageSize: number = 1000
+    private readonly pageSize: number = ACCOUNT_HISTORY_PAGE_SIZE
 
     constructor(
         public readonly cache?: any,

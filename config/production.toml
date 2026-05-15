@@ -15,3 +15,6 @@ ssl = true
 [cacheClient]
 ttl = 600
 interval = 60
+
+[accountHistory]
+pageSize = 100
