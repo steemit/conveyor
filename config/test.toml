@@ -1,0 +1,6 @@
+accounts_refresh_interval = 600000 # 10 Min
+[storage]
+type = 'memory'
+[[log]]
+level = 'fatal'
+out = 'stdout'

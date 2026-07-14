@@ -1,0 +1,40 @@
+# conveyor default configuration, override in your config/local-development.toml
+
+# port to listen on
+port = 8090
+
+# application name used for logging and service namespace
+name = 'conveyor'
+
+# number of worker processes to spawn, 0 = autodetect
+num_workers = 1
+
+# steem rpc node used to verify signed requests and get price feeds
+# rpc_node = 'https://testnet.steem.vc'
+rpc_node = 'https://api.steemit.com'
+
+# admin role allowed to make authenticated calls
+admin_role = 'foo'
+
+# interval between loading of account names for autocomplete trie
+accounts_refresh_interval = 600000 # 10 Min
+
+# logging output, can be repeated
+[[log]]
+level = 'debug'
+out = 'stdout' # path or stdout/err
+
+# key value store used for drafts and user prefs
+[storage]
+type = 'memory' # valid types are: memory, s3
+# s3_bucket = 'mybucket'
+
+# relational database used for user emails, phone numbers etc
+[database]
+dialect = 'sqlite'
+operatorsAliases = false
+
+[cacheClient]
+ttl = 600
+interval = 60
+
