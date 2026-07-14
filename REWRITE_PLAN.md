@@ -13,9 +13,11 @@
 
 > 本仓库（含所有远程分支）不存在 Go 版本，本计划为全新实现。steemgosdk/steemutil 位于 `/home/ety001/workspace/steemgosdk`、`/home/ety001/workspace/steemutil`，作为本地 `replace` 依赖引入。
 
-> **前置依赖**：本计划依赖 steemutil / steemgosdk 的若干改造。详见两份独立计划文档：
-> - `/home/ety001/workspace/steemutil/STEEMUTIL_TODO.md`（U1 验证函数、U2 签名格式转换、U3 注释修正、U4 链上结构体）
-> - `/home/ety001/workspace/steemgosdk/STEEMGOSDK_TODO.md`（G1 验证封装、G2 链查询封装、G3 价格算术）
+> **前置依赖（已交付）**：steemutil v0.0.24–v0.0.25、steemgosdk v0.0.23 已按两份独立计划文档完成。详见：
+> - `/home/ety001/workspace/steemutil/STEEMUTIL_TODO.md`（U1 `rpc.VerifySignedRpc`、U3 注释修正、U4 链上结构体 + 价格算术）→ 已落盘为 v0.0.24 / v0.0.25
+> - `/home/ety001/workspace/steemgosdk/STEEMGOSDK_TODO.md`（G1 `VerifySignedRequest`、G2 链查询封装、G3 价格算术）→ 已落盘为 v0.0.23
+>
+> **勘误（原 U2「签名字节布局转换」已撤销）**：初稿及 steemutil TODO 曾要求 `DsteemSigToBtcec` 转换 dsteem `{31,32}` ↔ btcec `{4,5}`。实际验证：btcec `SignCompact`/`RecoverCompact` 的压缩键基值为 27，压缩位 +4，故 recoveryId 字节 = `27+4+recovery = 31+recovery ∈ {31,32}`，**与 dsteem 格式字节级一致，无需任何转换胶水**。最终只加了一个格式守卫 `wif.ValidateCompactSignature`。原 U2 转换函数从未实现、也不需要。
 
 ## 2. 技术选型
 
@@ -64,7 +66,7 @@ server/{server.go,registry.go}        # Gin 装配 + 21 方法注册
 user-data/                            # accounts.js→accounts.json；各列表→.json
 ```
 
-> 注：紧凑签名格式转换（dsteem ↔ btcec）在 steemutil 侧实现（U2），conveyor 直接调用，不再单列文件。
+> 注：签名字节布局无需转换——btcec 压缩签名与 dsteem 格式字节级一致（详见顶部勘误）。conveyor 直接调用 steemutil `rpc.Validate` + `VerifySignedRpc`。
 
 ## 4. 逐子系统移植
 
@@ -72,18 +74,16 @@ user-data/                            # accounts.js→accounts.json；各列表�
 
 **信封处理**（对齐 koa-jsonrpc）：仅 `POST /`；非 POST→405+InvalidRequest(-32600)；解析失败→400+ParseError(-32700)；空数组 batch→400+InvalidRequest；batch 用 goroutine 并发；notification（无 id 且无 error）不回响应；错误 `{code,message,data?}`，message 沿用 `"<顶层>: <cause>"`。
 
-**`__signed` 验证** 🔧**直接复用 steemutil，不自研 crypto**：
-1. `rpc.Validate(&signedReq, myVerifyFunc)` —— 已含解包、60s 时效、`hashMessage`、nonce 校验、params 解码（依赖 steemutil U1/U2/U3）。
-2. 自写 `myVerifyFunc(message, signatures, account)` 取代占位 `DefaultVerifyFunc`：经 `condenser_api.get_accounts` 取账户；校验 posting 恰好 1 个 key_auth、`weight_threshold ≤ key 权重`、signatures 恰好 1 个，**只校验 posting**。
-   - 🔧`pubKey.FromStr(posting.key_auths[0])` 复用现成 WIF 解码（STM 前缀+base58+ripemd160[0:4]），与 dsteem 等价（steemutil 已有）。
-   - 🔧`recovered, _ := wif.RecoverPublicKeyFromSignature(message, sigBytes)` 复用现成恢复（steemutil 已有）。
-   - 🔧`bytes.Equal(pubKey.ToByte(), recovered.ToByte())`。
-   - 🔧签名 hex→bytes 后，先经 `wif.DsteemSigToBtcec` 转换字节布局（steemutil U2），再传给 RecoverPublicKeyFromSignature。
-3. 🔧**steemgosdk 侧**：若 G1（`API.VerifySignedRequest`）已交付，conveyor 可直接调用，省去自写 verifyFunc。
+**`__signed` 验证** 🔧**直接复用已交付的 steemutil + steemgosdk，不自研 crypto**：
+1. 🔧**优先**：直接调用 steemgosdk `API.VerifySignedRequest(&signedReq)`（G1，已交付）。它内部用 `condenser_api.get_accounts` 取账户、喂给 steemutil `rpc.VerifySignedRpc`，完成「单 posting key + 单签名 + threshold」校验，返回 `(params, account, error)`。conveyor 无需自写 verifyFunc。
+2. 若需绕过 G1 自行编排：`rpc.Validate(&signedReq, myVerifyFunc)`（已含解包、60s 时效、`hashMessage`、nonce 校验、params 解码），`myVerifyFunc` 直接转发给 `rpc.VerifySignedRpc(msg, sigs, acct, fetcher)`。
+3. 🔧**签名格式无需转换**：hex→bytes 后直接传给 `wif.RecoverPublicKeyFromSignature`。btcec 压缩签名字节与 dsteem 格式字节级一致（详见顶部勘误），无需 `DsteemSigToBtcec` 胶水。steemutil 已加 `wif.ValidateCompactSignature` 做格式守卫。
+   - `pubKey.FromStr(posting.key_auths[0])` 复用现成 WIF 解码（STM 前缀+base58+ripemd160[0:4]），与 dsteem 等价。
+   - `bytes.Equal(pubKey.ToByte(), recovered.ToByte())`。
 
 > 🔧修正初稿：`hashMessage` 的 nonce 进**第一轮**（`SHA256(K ‖ SHA256(ts‖acct‖method‖params‖nonce8))`），与 JS 一致。steemutil `auth.go` 的代码本身正确（仅注释写错，U3 会修正）。直接调 `rpc.hashMessage` 即正确，勿按文字描述手写。
 
-> 🔧补充说明：steemgosdk 只有**签名端**封装（`API.SignedCall`），**无验证端封装**。验证端由 steemutil 的 `rpc.Validate`+`VerifySignedRpc` 提供，steemgosdk 的 G1 是对这二者的再封装（便利方法）。
+> 🔧补充说明（已更新）：steemgosdk v0.0.23 已新增**验证端**封装 `API.VerifySignedRequest`（G1），conveyor 直接调用即可。其底层是 steemutil `rpc.Validate` + `rpc.VerifySignedRpc`。
 
 ### 4.2 Drafts（blob store）
 `list/save/remove`，key=`${name}_${account}_drafts.json`；缺 uuid 用 `google/uuid` v4；remove 找不到抛 `JsonRpcError(100,...)`。
@@ -110,8 +110,9 @@ user-data/                            # accounts.js→accounts.json；各列表�
 ### 4.5 Tags（GORM Tag/UserTag）
 6 方法仅 admin。`assign_tag` 重复幂等跳过；FK 失败→420；`unassign_tag` 软删除；`get_users_by_tags` 取交集；`get_tags_for_user` audit 返全部否则返活跃 tag。tag 名 `/^[a-z0-9_]+$/`。
 
-### 4.6 Prices（steemgosdk）
-并行 `get_order_book[1]`、`get_feed_history`、`GetDynamicGlobalProperties()`。🔧`Price.convert` 是纯 float64 左结合 `amount*quote/base`（勿重排避免 ULP 差异）；`Asset.fromString`=`ParseFloat` 等价。价格算术可复用 steemgosdk G3。
+### 4.6 Prices（steemgosdk + steemutil int64）
+并行 `get_order_book[1]`、`get_feed_history`、`GetDynamicGlobalProperties()`。🔧价格算术**不复刻 dsteem 的 float64**——直接调用 steemutil v0.0.25 的 `protocol/api.ComputePrices`（`Asset{Amount int64, Symbol}`，内部用 `math/big.Int` 复刻 steemd C++ 的 128 位交叉乘除）。这比 TS 的 float64 更精确，是与共识语义对齐的正确实现。
+> ⚠️**注意**：Go 版 `get_prices` 输出的 `steem_sbd/steem_usd/steem_vest` 数值可能与 TS 版（dsteem float64）在末尾小数位有细微差异。schema 中三字段均为 `type: number`，差异属"更精确但非 bit-identical"，通常可接受；若 condenser 有严格相等断言需留意。
 
 ### 4.7 Summarizer（HTTP+LRU）
 解析 URL→黑名单→LRU(10000,1h)→抓取(2s)→go-readability+goquery。失败→400。
@@ -127,8 +128,8 @@ viper 加载 default/production/test.toml + 环境变量；🔧修正拼写 `acc
 
 ## 6. 🔧兼容性清单（验收必过）
 1. ✅ `hashMessage` nonce 在第一轮（直接调 steemutil，U3 修正注释）
-2. ✅ 🔧 compact sig 转换：dsteem(recovery+31) ↔ btcec(recoveryId,压缩+4)（steemutil U2）
-3. ✅ 🔧 复用 steemutil RecoverPublicKeyFromSignature
+2. ✅ 🔧 签名格式**无需转换**：btcec 压缩签名 == dsteem 格式（字节级一致，详见顶部勘误）
+3. ✅ 🔧 复用 steemutil RecoverPublicKeyFromSignature + `VerifySignedRpc`
 4. ✅ 🔧 复用 PublicKey.ToStr/FromStr
 5. ✅ 仅单一 posting key + threshold
 6. ✅ 60s 时效
@@ -136,10 +137,10 @@ viper 加载 default/production/test.toml + 环境变量；🔧修正拼写 `acc
 8. ✅ JSON-RPC 错误码 -32xxx + 400/401/404/420
 9. ✅ batch 并发 + notification 过滤
 10. ✅ GORM 表结构含 unique/软删除/FK
-11. ✅ Price float64 同序
+11. ✅ 🔧 Price 用 steemutil int64/math.big（`ComputePrices`），复刻 steemd 共识语义；⚠️与 TS float64 末位可能有细微差异
 
 ## 7. 里程碑
-M0 脚手架 → M1 鉴权（依赖 steemutil U1/U2/U3、steemgosdk G1，含签名 round-trip golden test）→ M2 存储+DB → M3 drafts/feature-flags(53位MT19937+random-js golden)/user-data/tags → M4 区块链+prices（依赖 steemgosdk G2/G3）→ M5 user-search（依赖 steemgosdk G2）→ M6 summarizer → M7 测试+Docker。
+M0 脚手架 → M1 鉴权（依赖 steemutil v0.0.24 `VerifySignedRpc`、steemgosdk v0.0.23 G1 `VerifySignedRequest`，含签名 round-trip golden test）→ M2 存储+DB → M3 drafts/feature-flags(53位MT19937+random-js golden)/user-data/tags → M4 区块链+prices（依赖 steemutil v0.0.25 `ComputePrices`、steemgosdk G2）→ M5 user-search（依赖 steemgosdk G2）→ M6 summarizer → M7 测试+Docker。
 
 ## 8. 测试策略
 🔧先 `yarn install` 落盘 random-js golden；单元(MT19937 对账、真实签名→Go 恢复 round-trip、WIF 编解码、GORM、黑名单)；集成(mock `api.Call` 用 `test/steemd_responses/` fixture)；参考现有 24 个 mocha 用例移植。
