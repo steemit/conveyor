@@ -1,0 +1,21 @@
+port = 'PORT'
+num_workers = 'NUM_WORKERS'
+rpc_node = 'RPC_NODE'
+admin_role = 'ADMIN_ROLE'
+[log]
+__name = 'LOG_STREAMS'
+__format = 'json'
+[storage]
+type = 'STORAGE_TYPE'
+s3_bucket = 'S3_BUCKET'
+[database]
+database = 'DATABASE_NAME'
+host = 'DATABASE_HOST'
+port = 'DATABASE_PORT'
+username = 'DATABASE_USERNAME'
+password = 'DATABASE_PASSWORD'
+dialect = 'DATABASE_DIALECT'
+[cacheClient]
+ttl = 'CACHE_CLIENT_TTL'
+interval = 'CACHE_CLIENT_CHECK_INTERVAL'
+accounts_refresh_intercal = 'ACCOUNTS_REFRESH_INTERVAL'

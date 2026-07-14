@@ -1,0 +1,27 @@
+node_modules/
+lib/
+reports/
+.nyc_output/
+config/local*
+.idea/
+yarn-error.log
+.DS_Store
+test/*.js
+src/*.js
+src/*/*.js
+test/*/*.js
+test/steemd_respones/*.js
+
+# Go build artifacts
+/conveyor
+/bin/
+*.exe
+*.test
+*.out
+
+# Go workspace
+vendor/
+
+# Editor/OS
+.vscode/
+*.swp
