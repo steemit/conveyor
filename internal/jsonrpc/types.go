@@ -127,6 +127,12 @@ func parseID(raw json.RawMessage) (id ID, present bool, err error) {
 	if len(raw) == 0 {
 		return ID{kind: idNull}, false, nil
 	}
+	// Check for explicit JSON null first — Go's json.Unmarshal treats null as
+	// "leave unchanged" for string/float targets, so checking null last would
+	// misparse id:null as an empty-string id.
+	if string(raw) == "null" {
+		return ID{kind: idNull}, true, nil
+	}
 	// Try string.
 	var s string
 	if e := json.Unmarshal(raw, &s); e == nil {
@@ -139,12 +145,6 @@ func parseID(raw json.RawMessage) (id ID, present bool, err error) {
 			return ID{kind: idNull}, true, fmt.Errorf("invalid id")
 		}
 		return ID{kind: idNumber, num: int64(f)}, true, nil
-	}
-	// Try null.
-	var n json.RawMessage
-	n = raw
-	if string(n) == "null" {
-		return ID{kind: idNull}, true, nil
 	}
 	return ID{kind: idNull}, true, fmt.Errorf("invalid id")
 }

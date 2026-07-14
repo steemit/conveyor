@@ -184,6 +184,36 @@ func TestBatch_AllNotifications_EmptyResult(t *testing.T) {
 	}
 }
 
+// TestBatch_IDNullSuccessFiltered verifies that a request with id:null that
+// succeeds is filtered out of batch responses (matching koa-jsonrpc
+// isValidResponse), while id:null that errors is kept.
+func TestBatch_IDNullSuccessFiltered(t *testing.T) {
+	s := NewServer()
+	s.Register("ok", func(ctx *Context, req *Request) (any, error) { return "data", nil })
+	s.Register("boom", func(ctx *Context, req *Request) (any, error) {
+		return nil, NewError(500, nil, "x")
+	})
+	items := []json.RawMessage{
+		// id:null + success -> filtered out by isValidResponse.
+		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "id": nil, "method": "ok"}),
+		// id:null + error -> kept (error responses are always valid).
+		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "id": nil, "method": "boom"}),
+		// normal id + success -> kept.
+		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "id": 1, "method": "ok"}),
+	}
+	responses := s.handleBatch(context.Background(), items, testLog())
+	if len(responses) != 2 {
+		t.Fatalf("expected 2 responses (id:null success filtered), got %d", len(responses))
+	}
+	// First kept response is the id:null error, second is id:1 success.
+	if responses[0].Error == nil {
+		t.Fatalf("expected first response to be the error")
+	}
+	if responses[1].Result != "data" {
+		t.Fatalf("expected second response result 'data', got %v", responses[1].Result)
+	}
+}
+
 func TestRegister_DuplicatePanics(t *testing.T) {
 	s := NewServer()
 	s.Register("x", func(ctx *Context, req *Request) (any, error) { return nil, nil })

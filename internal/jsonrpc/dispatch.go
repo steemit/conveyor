@@ -43,7 +43,7 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 		if isNotification {
 			return nil
 		}
-		return &Response{JSONRPC: "2.0", ID: id, Error: ErrMethodNotFound(id)}
+		return &Response{JSONRPC: "2.0", ID: id, Error: ErrMethodNotFound()}
 	}
 
 	req := &Request{ID: id, Method: raw.Method, Params: raw.Params}
@@ -99,12 +99,27 @@ func (s *Server) handleBatch(ctx context.Context, items []json.RawMessage, baseL
 	}
 	wg.Wait()
 
-	// Filter out nil (notifications) in place, preserving order.
+	// Filter responses in place, preserving order. koa-jsonrpc's isValidResponse
+	// drops a response when it is a notification (no id) AND has no error.
+	// Concretely: nil responses (notifications) are dropped, and responses with
+	// id:null but successful (no error) are also dropped — only id:null responses
+	// that carry an error are kept.
 	out := responses[:0]
 	for _, r := range responses {
-		if r != nil {
-			out = append(out, r)
+		if r == nil {
+			continue
 		}
+		if !isValidResponse(r) {
+			continue
+		}
+		out = append(out, r)
 	}
 	return out
+}
+
+// isValidResponse mirrors koa-jsonrpc's isValidResponse: a response is valid
+// (should be sent to the client) if it has a non-null id, OR it carries an
+// error. A notification (no id / null id) with no error is dropped.
+func isValidResponse(r *Response) bool {
+	return r.ID.kind != idNull || r.Error != nil
 }

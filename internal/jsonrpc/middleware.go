@@ -11,21 +11,16 @@ import (
 
 // Handler returns a gin.HandlerFunc that serves JSON-RPC 2.0 over POST /.
 // Behavior mirrors @steemit/koa-jsonrpc's middleware:
-//   - non-POST -> 405 + InvalidRequest
 //   - body parse failure -> 400 + ParseError
 //   - empty array -> 400 + InvalidRequest
 //   - batch -> 200, concurrent handling, notifications filtered out
 //   - single notification -> 200 with empty body
+//
+// Note: method routing (POST vs GET) is handled by the Gin router — this
+// handler is only registered on POST /. The original koa-jsonrpc had an
+// internal 405 check; we rely on Gin's routing instead.
 func (s *Server) Handler(log zerolog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.Request.Method != http.MethodPost {
-			respondError(c, http.StatusMethodNotAllowed, &Response{
-				JSONRPC: "2.0", ID: ID{kind: idNull},
-				Error: ErrInvalidRequest(nil).withMessage("Method Not Allowed"),
-			})
-			return
-		}
-
 		body, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			respondError(c, http.StatusBadRequest, &Response{

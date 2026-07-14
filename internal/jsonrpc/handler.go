@@ -1,6 +1,8 @@
 package jsonrpc
 
 import (
+	"strconv"
+
 	"github.com/rs/zerolog"
 )
 
@@ -48,39 +50,13 @@ func fmtSprint(v any) string {
 	case string:
 		return x
 	case int:
-		return intToStr(int64(x))
+		return strconv.FormatInt(int64(x), 10)
 	case int64:
-		return intToStr(x)
+		return strconv.FormatInt(x, 10)
 	case bool:
-		if x {
-			return "true"
-		}
-		return "false"
+		return strconv.FormatBool(x)
 	case nil:
 		return ""
 	}
 	return ""
-}
-
-func intToStr(i int64) string {
-	if i == 0 {
-		return "0"
-	}
-	neg := false
-	if i < 0 {
-		neg = true
-		i = -i
-	}
-	var buf [20]byte
-	pos := len(buf)
-	for i > 0 {
-		pos--
-		buf[pos] = byte('0' + i%10)
-		i /= 10
-	}
-	if neg {
-		pos--
-		buf[pos] = '-'
-	}
-	return string(buf[pos:])
 }

@@ -37,18 +37,12 @@ type App struct {
 func New(cfg *config.Config) (*App, error) {
 	log := applog.New(cfg.Name, cfg.Log)
 
-	gin.SetMode(gin.ReleaseMode)
-	engine := gin.New()
-	engine.Use(gin.Recovery())
+	a := &App{cfg: cfg, log: log}
 
-	// OpenTelemetry server-span middleware (only if enabled).
-	if cfg.Telemetry.Enabled {
-		engine.Use(otelgin.Middleware(cfg.Telemetry.ServiceName))
-	}
-
-	a := &App{cfg: cfg, log: log, engine: engine}
-
-	// Set up telemetry (non-fatal on error).
+	// Set up telemetry first (non-fatal on error). Only register the otelgin
+	// middleware if Setup actually succeeded, otherwise every request would
+	// produce span-export errors.
+	telemetryOK := false
 	if cfg.Telemetry.Enabled {
 		shutdown, err := telemetry.Setup(
 			cfg.Telemetry.ServiceName,
@@ -59,10 +53,20 @@ func New(cfg *config.Config) (*App, error) {
 			log.Error().Err(err).Msg("Failed to initialize OpenTelemetry")
 		} else {
 			a.shutdowns = append(a.shutdowns, shutdown)
+			telemetryOK = true
 		}
 	} else {
 		log.Info().Msg("OpenTelemetry disabled by configuration")
 	}
+
+	gin.SetMode(gin.ReleaseMode)
+	engine := gin.New()
+	engine.Use(gin.Recovery())
+
+	if telemetryOK {
+		engine.Use(otelgin.Middleware(cfg.Telemetry.ServiceName))
+	}
+	a.engine = engine
 
 	// Healthcheck routes.
 	engine.GET("/", healthcheck)

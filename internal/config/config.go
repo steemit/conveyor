@@ -63,6 +63,11 @@ func Load() (*Config, error) {
 		}
 	}
 
+	// Core defaults (also present in default.toml, but set explicitly so the
+	// service still boots if that file is missing or partially overridden).
+	v.SetDefault("port", "8090")
+	v.SetDefault("name", "conveyor")
+
 	// Telemetry defaults.
 	v.SetDefault("telemetry.enabled", true)
 	v.SetDefault("telemetry.service_name", "conveyor")

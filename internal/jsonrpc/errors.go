@@ -50,7 +50,7 @@ func ErrInvalidRequest(cause error) *Error {
 	return NewError(InvalidRequest, cause, "Invalid Request")
 }
 
-func ErrMethodNotFound(id ID) *Error {
+func ErrMethodNotFound() *Error {
 	return &Error{Code: MethodNotFound, Message: "Method not found"}
 }
 
