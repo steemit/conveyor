@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	steemgosdk "github.com/steemit/steemgosdk"
 	"github.com/steemit/steemgosdk/api"
 	"github.com/steemit/steemutil/rpc"
 
@@ -65,8 +64,3 @@ func (a *conveyorAuthenticator) Authenticate(ctx context.Context, method string,
 
 // Compile-time assertion that conveyorAuthenticator satisfies the interface.
 var _ jsonrpc.Authenticator = (*conveyorAuthenticator)(nil)
-
-// Ensure the steemgosdk import is used (the alias is referenced in
-// newAuthenticator via api.NewAPI, but the top-level package is kept for
-// potential future use of steemgosdk.GetClient).
-var _ = steemgosdk.GetClient

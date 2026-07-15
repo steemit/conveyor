@@ -52,7 +52,6 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 	spanCtx, span := telemetry.StartSpan(ctx, "conveyor.process_request",
 		oteltrace.WithSpanKind(oteltrace.SpanKindInternal))
 	defer span.End()
-	_ = spanCtx // child spans within the handler will use this in later milestones
 	span.SetAttributes(
 		attribute.String("rpc.method", raw.Method),
 		attribute.String("rpc.id", id.String()),
@@ -63,7 +62,7 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 	// Authenticated methods: verify __signed before invoking the handler.
 	if entry.auth {
 		if s.auth == nil {
-			e := ErrInternalError(nil).withMessage("auth not configured")
+			e := &Error{Code: InternalError, Message: "auth not configured"}
 			if isNotification {
 				return nil
 			}
@@ -72,7 +71,7 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 		if !hasSignedWrapper(req.Params) {
 			// koa-jsonrpc's resolveParams rejects a non-__signed params object
 			// for authenticated methods with InvalidParams (-32602).
-			e := ErrInvalidParams(nil).withMessage("Invalid params: __signed required")
+			e := &Error{Code: InvalidParams, Message: "Invalid params: __signed required"}
 			if isNotification {
 				return nil
 			}
