@@ -74,6 +74,7 @@ func New(cfg *config.Config) (*App, error) {
 
 	// JSON-RPC endpoint.
 	rpc := jsonrpc.NewServer()
+	rpc.SetAuthenticator(newAuthenticator(cfg.RpcNode))
 	engine.POST("/", rpc.Handler(log))
 	a.registerMethods(rpc)
 
@@ -84,10 +85,11 @@ func New(cfg *config.Config) (*App, error) {
 	return a, nil
 }
 
-// registerMethods registers M0's public methods. Future milestones add
-// authenticated methods here.
+// registerMethods registers conveyor's RPC methods. Public methods use
+// Register; authenticated methods use RegisterAuthenticated.
 func (a *App) registerMethods(rpc *jsonrpc.Server) {
 	rpc.Register("hello", hello)
+	rpc.RegisterAuthenticated("whoami", whoami)
 }
 
 // hello is the M0 smoke-test method, mirroring the original TS hello.
@@ -102,6 +104,14 @@ func hello(ctx *jsonrpc.Context, req *jsonrpc.Request) (any, error) {
 	}
 	ctx.Log.Info().Str("name", name).Msg("hello")
 	return fmt.Sprintf("I'm sorry, %s, I can't do that.", name), nil
+}
+
+// whoami is the M1 authenticated smoke-test method, mirroring the original TS
+// whoami. Returns the authenticated account name from the verified __signed
+// request.
+func whoami(ctx *jsonrpc.Context, req *jsonrpc.Request) (any, error) {
+	ctx.Log.Info().Str("account", ctx.Account).Msg("whoami")
+	return ctx.Account, nil
 }
 
 // Run starts the HTTP server and blocks until a termination signal is

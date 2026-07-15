@@ -12,10 +12,12 @@ import (
 
 // Config is the parsed application configuration.
 type Config struct {
-	Port      string        `mapstructure:"port"`
-	Name      string        `mapstructure:"name"`
-	NumWorkers int          `mapstructure:"num_workers"`
-	Log       []LogStream   `mapstructure:"log"`
+	Port      string          `mapstructure:"port"`
+	Name      string          `mapstructure:"name"`
+	NumWorkers int            `mapstructure:"num_workers"`
+	RpcNode   string          `mapstructure:"rpc_node"`
+	AdminRole string          `mapstructure:"admin_role"`
+	Log       []LogStream     `mapstructure:"log"`
 	Telemetry TelemetryConfig `mapstructure:"telemetry"`
 }
 
@@ -67,6 +69,8 @@ func Load() (*Config, error) {
 	// service still boots if that file is missing or partially overridden).
 	v.SetDefault("port", "8090")
 	v.SetDefault("name", "conveyor")
+	v.SetDefault("rpc_node", "https://api.steemit.com")
+	v.SetDefault("admin_role", "foo")
 
 	// Telemetry defaults.
 	v.SetDefault("telemetry.enabled", true)
@@ -78,6 +82,8 @@ func Load() (*Config, error) {
 	bindEnv(v, "port", "PORT")
 	bindEnv(v, "name", "NAME")
 	bindEnv(v, "num_workers", "NUM_WORKERS")
+	bindEnv(v, "rpc_node", "RPC_NODE")
+	bindEnv(v, "admin_role", "ADMIN_ROLE")
 	bindEnv(v, "telemetry.enabled", "CONVEYOR_TELEMETRY_ENABLED")
 	bindEnv(v, "telemetry.service_name", "CONVEYOR_TELEMETRY_SERVICE_NAME")
 	bindEnv(v, "telemetry.otlp_endpoint", "CONVEYOR_TELEMETRY_OTLP_ENDPOINT")
