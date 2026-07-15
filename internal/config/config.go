@@ -19,6 +19,8 @@ type Config struct {
 	AdminRole string          `mapstructure:"admin_role"`
 	Log       []LogStream     `mapstructure:"log"`
 	Telemetry TelemetryConfig `mapstructure:"telemetry"`
+	Storage   StorageConfig   `mapstructure:"storage"`
+	Database  DatabaseConfig  `mapstructure:"database"`
 }
 
 // LogStream describes a single logging output stream.
@@ -32,6 +34,22 @@ type TelemetryConfig struct {
 	Enabled     bool   `mapstructure:"enabled"`
 	ServiceName string `mapstructure:"service_name"`
 	Endpoint    string `mapstructure:"otlp_endpoint"` // host:port, e.g. localhost:4318
+}
+
+// StorageConfig configures the blob store used for drafts and feature-flags.
+type StorageConfig struct {
+	Type     string `mapstructure:"type"`      // memory | s3
+	S3Bucket string `mapstructure:"s3_bucket"` // required when type=s3
+}
+
+// DatabaseConfig configures the relational database (user data, tags).
+type DatabaseConfig struct {
+	Dialect  string `mapstructure:"dialect"`  // sqlite | postgres
+	Name     string `mapstructure:"database"` // postgres dbname
+	Host     string `mapstructure:"host"`
+	Port     string `mapstructure:"port"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }
 
 // Load reads config/default.toml, then the environment-specific file based on
@@ -84,6 +102,14 @@ func Load() (*Config, error) {
 	bindEnv(v, "num_workers", "NUM_WORKERS")
 	bindEnv(v, "rpc_node", "RPC_NODE")
 	bindEnv(v, "admin_role", "ADMIN_ROLE")
+	bindEnv(v, "storage.type", "STORAGE_TYPE")
+	bindEnv(v, "storage.s3_bucket", "S3_BUCKET")
+	bindEnv(v, "database.database", "DATABASE_NAME")
+	bindEnv(v, "database.host", "DATABASE_HOST")
+	bindEnv(v, "database.port", "DATABASE_PORT")
+	bindEnv(v, "database.username", "DATABASE_USERNAME")
+	bindEnv(v, "database.password", "DATABASE_PASSWORD")
+	bindEnv(v, "database.dialect", "DATABASE_DIALECT")
 	bindEnv(v, "telemetry.enabled", "CONVEYOR_TELEMETRY_ENABLED")
 	bindEnv(v, "telemetry.service_name", "CONVEYOR_TELEMETRY_SERVICE_NAME")
 	bindEnv(v, "telemetry.otlp_endpoint", "CONVEYOR_TELEMETRY_OTLP_ENDPOINT")
