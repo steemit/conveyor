@@ -38,7 +38,7 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 
 	logCtx := baseLog.With().Str("method", raw.Method).Str("id", id.String()).Logger()
 
-	handler, ok := s.methods[raw.Method]
+	entry, ok := s.methods[raw.Method]
 	if !ok {
 		if isNotification {
 			return nil
@@ -59,6 +59,38 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 	)
 
 	hctx := &Context{Log: logCtx}
+
+	// Authenticated methods: verify __signed before invoking the handler.
+	if entry.auth {
+		if s.auth == nil {
+			e := ErrInternalError(nil).withMessage("auth not configured")
+			if isNotification {
+				return nil
+			}
+			return &Response{JSONRPC: "2.0", ID: id, Error: e}
+		}
+		if !hasSignedWrapper(req.Params) {
+			// koa-jsonrpc's resolveParams rejects a non-__signed params object
+			// for authenticated methods with InvalidParams (-32602).
+			e := ErrInvalidParams(nil).withMessage("Invalid params: __signed required")
+			if isNotification {
+				return nil
+			}
+			return &Response{JSONRPC: "2.0", ID: id, Error: e}
+		}
+		decoded, account, authErr := s.auth.Authenticate(spanCtx, req.Method, req.Params)
+		if authErr != nil {
+			telemetry.RecordSpanError(span, authErr)
+			if isNotification {
+				return nil
+			}
+			return &Response{JSONRPC: "2.0", ID: id, Error: authErr}
+		}
+		req.Params = decoded
+		hctx.Account = account
+	}
+
+	handler := entry.handler
 	result, err := handler(hctx, req)
 	if err != nil {
 		e, ok := err.(*Error)
