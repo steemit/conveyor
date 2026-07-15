@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"sync"
 )
 
@@ -32,7 +33,7 @@ func (m *MemoryStore) Read(ctx context.Context, key string) ([]byte, error) {
 
 func (m *MemoryStore) SafeRead(ctx context.Context, key string) ([]byte, error) {
 	b, err := m.Read(ctx, key)
-	if err == ErrNotFound {
+	if errors.Is(err, ErrNotFound) {
 		return nil, nil
 	}
 	return b, err

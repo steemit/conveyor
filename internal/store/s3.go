@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
@@ -26,7 +26,7 @@ func NewS3Store(ctx context.Context, bucket string) (*S3Store, error) {
 	if bucket == "" {
 		return nil, errors.New("s3 bucket is required")
 	}
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := awsconfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("load aws config: %w", err)
 	}
@@ -60,7 +60,7 @@ func (s *S3Store) Read(ctx context.Context, key string) ([]byte, error) {
 
 func (s *S3Store) SafeRead(ctx context.Context, key string) ([]byte, error) {
 	b, err := s.Read(ctx, key)
-	if err == ErrNotFound {
+	if errors.Is(err, ErrNotFound) {
 		return nil, nil
 	}
 	return b, err
