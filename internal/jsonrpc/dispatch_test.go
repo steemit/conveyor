@@ -25,7 +25,7 @@ func mustMarshal(t *testing.T, v any) json.RawMessage {
 // dispatchSingle is a test helper that parses a raw JSON object and dispatches it.
 func dispatchSingle(t *testing.T, s *Server, raw string) *Response {
 	t.Helper()
-	resp := s.dispatch(context.Background(), json.RawMessage(raw), testLog())
+	resp := s.dispatch(context.Background(), json.RawMessage(raw), testLog(), "")
 	return resp
 }
 
@@ -164,7 +164,7 @@ func TestBatch_Concurrent(t *testing.T) {
 		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "method": "echo", "params": map[string]any{"v": 99}}), // notification
 		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "id": 3, "method": "ghost"}),
 	}
-	responses := s.handleBatch(context.Background(), items, testLog())
+	responses := s.handleBatch(context.Background(), items, testLog(), "")
 	// Notification filtered out; 3 responses remain.
 	if len(responses) != 3 {
 		t.Fatalf("expected 3 responses (notification filtered), got %d", len(responses))
@@ -178,7 +178,7 @@ func TestBatch_AllNotifications_EmptyResult(t *testing.T) {
 		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "method": "fire"}),
 		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "method": "fire"}),
 	}
-	responses := s.handleBatch(context.Background(), items, testLog())
+	responses := s.handleBatch(context.Background(), items, testLog(), "")
 	if len(responses) != 0 {
 		t.Fatalf("expected 0 responses, got %d", len(responses))
 	}
@@ -201,7 +201,7 @@ func TestBatch_IDNullSuccessFiltered(t *testing.T) {
 		// normal id + success -> kept.
 		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "id": 1, "method": "ok"}),
 	}
-	responses := s.handleBatch(context.Background(), items, testLog())
+	responses := s.handleBatch(context.Background(), items, testLog(), "")
 	if len(responses) != 2 {
 		t.Fatalf("expected 2 responses (id:null success filtered), got %d", len(responses))
 	}
