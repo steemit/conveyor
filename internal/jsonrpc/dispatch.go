@@ -14,7 +14,7 @@ import (
 
 // dispatch processes a single parsed request object and returns its response
 // (or nil if it is a notification that should not be answered).
-func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zerolog.Logger) *Response {
+func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zerolog.Logger, clientIP string) *Response {
 	// Parse the raw envelope.
 	var raw rawRequest
 	if err := json.Unmarshal(data, &raw); err != nil {
@@ -46,8 +46,6 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 		return &Response{JSONRPC: "2.0", ID: id, Error: ErrMethodNotFound()}
 	}
 
-	req := &Request{ID: id, Method: raw.Method, Params: raw.Params}
-
 	// Open an internal span for the method dispatch.
 	spanCtx, span := telemetry.StartSpan(ctx, "conveyor.process_request",
 		oteltrace.WithSpanKind(oteltrace.SpanKindInternal))
@@ -57,7 +55,8 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 		attribute.String("rpc.id", id.String()),
 	)
 
-	hctx := &Context{Log: logCtx}
+	req := &Request{ID: id, Method: raw.Method, Params: raw.Params, Ctx: spanCtx}
+	hctx := &Context{Log: logCtx, IP: clientIP}
 
 	// Authenticated methods: verify __signed before invoking the handler.
 	if entry.auth {
@@ -114,7 +113,7 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 
 // handleBatch processes a batch of requests concurrently, returning the
 // responses for non-notification requests (possibly empty).
-func (s *Server) handleBatch(ctx context.Context, items []json.RawMessage, baseLog zerolog.Logger) []*Response {
+func (s *Server) handleBatch(ctx context.Context, items []json.RawMessage, baseLog zerolog.Logger, clientIP string) []*Response {
 	spanCtx, span := telemetry.StartSpan(ctx, "conveyor.process_batch",
 		oteltrace.WithSpanKind(oteltrace.SpanKindInternal))
 	defer span.End()
@@ -125,7 +124,7 @@ func (s *Server) handleBatch(ctx context.Context, items []json.RawMessage, baseL
 		wg.Add(1)
 		go func(idx int, d json.RawMessage) {
 			defer wg.Done()
-			responses[idx] = s.dispatch(spanCtx, d, baseLog)
+			responses[idx] = s.dispatch(spanCtx, d, baseLog, clientIP)
 		}(i, item)
 	}
 	wg.Wait()

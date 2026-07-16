@@ -7,10 +7,11 @@ import (
 )
 
 // Context is passed to each RPC handler. It carries the authenticated account
-// (empty for public methods; populated by the auth layer in M1), a logger, and
-// helper assertion methods mirroring koa-jsonrpc's rpcAssert.
+// (empty for public methods; populated by the auth layer in M1), the client IP,
+// a logger, and helper assertion methods mirroring koa-jsonrpc's rpcAssert.
 type Context struct {
 	Account string
+	IP      string
 	Log     zerolog.Logger
 }
 

@@ -42,6 +42,7 @@ func (s *Server) Handler(log zerolog.Logger) gin.HandlerFunc {
 		}
 
 		ctx := c.Request.Context()
+		clientIP := c.ClientIP()
 
 		if trimmed[0] == '[' {
 			var items []json.RawMessage
@@ -59,7 +60,7 @@ func (s *Server) Handler(log zerolog.Logger) gin.HandlerFunc {
 				})
 				return
 			}
-			responses := s.handleBatch(ctx, items, log)
+			responses := s.handleBatch(ctx, items, log, clientIP)
 			writeBatch(c, responses)
 			return
 		}
@@ -75,7 +76,7 @@ func (s *Server) Handler(log zerolog.Logger) gin.HandlerFunc {
 			})
 			return
 		}
-		resp := s.dispatch(ctx, single, log)
+		resp := s.dispatch(ctx, single, log, clientIP)
 		if resp == nil {
 			// Notification: empty body, 200.
 			c.Status(http.StatusOK)

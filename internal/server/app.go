@@ -15,11 +15,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"gorm.io/gorm"
 
 	"github.com/steemit/conveyor/internal/config"
+	"github.com/steemit/conveyor/internal/drafts"
 	applog "github.com/steemit/conveyor/internal/log"
+	"github.com/steemit/conveyor/internal/featureflags"
 	"github.com/steemit/conveyor/internal/jsonrpc"
+	"github.com/steemit/conveyor/internal/models"
+	"github.com/steemit/conveyor/internal/store"
+	"github.com/steemit/conveyor/internal/tags"
 	"github.com/steemit/conveyor/internal/telemetry"
+	"github.com/steemit/conveyor/internal/userdata"
 )
 
 // App holds the configured HTTP server and its dependencies.
@@ -76,7 +83,19 @@ func New(cfg *config.Config) (*App, error) {
 	rpc := jsonrpc.NewServer()
 	rpc.SetAuthenticator(newAuthenticator(cfg.RpcNode))
 	engine.POST("/", rpc.Handler(log))
-	a.registerMethods(rpc)
+
+	// Initialize BlobStore (drafts, feature-flags) and database (user-data, tags).
+	ctx := context.Background()
+	blobStore, err := store.NewStore(ctx, cfg.Storage)
+	if err != nil {
+		return nil, fmt.Errorf("init blob store: %w", err)
+	}
+	db, err := models.NewDB(cfg.Database)
+	if err != nil {
+		return nil, fmt.Errorf("init database: %w", err)
+	}
+
+	a.registerMethods(rpc, blobStore, db)
 
 	a.httpSrv = &http.Server{
 		Addr:    ":" + cfg.Port,
@@ -85,11 +104,24 @@ func New(cfg *config.Config) (*App, error) {
 	return a, nil
 }
 
-// registerMethods registers conveyor's RPC methods. Public methods use
-// Register; authenticated methods use RegisterAuthenticated.
-func (a *App) registerMethods(rpc *jsonrpc.Server) {
-	rpc.Register("hello", hello)
-	rpc.RegisterAuthenticated("whoami", whoami)
+// registerMethods registers conveyor's RPC methods with the "conveyor."
+// namespace prefix (matching the TS JsonRpcAuth namespace and the schema).
+func (a *App) registerMethods(rpc *jsonrpc.Server, blobStore store.BlobStore, db *gorm.DB) {
+	// Public methods.
+	rpc.Register("conveyor.hello", hello)
+	rpc.RegisterAuthenticated("conveyor.whoami", whoami)
+
+	// Drafts (BlobStore).
+	drafts.New(blobStore, a.cfg.Name).Register(rpc)
+
+	// Feature flags (BlobStore + MT19937).
+	featureflags.New(blobStore, a.cfg.Name, a.cfg.AdminRole).Register(rpc)
+
+	// User data (GORM).
+	userdata.New(db, a.cfg.AdminRole).Register(rpc)
+
+	// Tags (GORM).
+	tags.New(db, a.cfg.AdminRole).Register(rpc)
 }
 
 // hello is the M0 smoke-test method, mirroring the original TS hello.

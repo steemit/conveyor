@@ -4,6 +4,7 @@
 package jsonrpc
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -78,6 +79,7 @@ type Request struct {
 	ID     ID
 	Method string
 	Params json.RawMessage // may be empty if omitted
+	Ctx    context.Context // the HTTP request context (for store/db calls)
 }
 
 // HasParams reports whether the request included a params field.
