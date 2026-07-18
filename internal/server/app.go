@@ -110,8 +110,10 @@ func New(cfg *config.Config) (*App, error) {
 func (a *App) registerMethods(rpc *jsonrpc.Server, blobStore store.BlobStore, db *gorm.DB) {
 	// Public methods.
 	rpc.Register("conveyor.hello", hello)
-	rpc.Register("conveyor.get_prices", prices.New(a.cfg.RpcNode).GetPrices)
 	rpc.RegisterAuthenticated("conveyor.whoami", whoami)
+
+	// Prices (steemgosdk).
+	prices.New(a.cfg.RpcNode).Register(rpc)
 
 	// Drafts (BlobStore).
 	drafts.New(blobStore, a.cfg.Name).Register(rpc)

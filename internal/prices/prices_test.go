@@ -13,8 +13,7 @@ import (
 // reasonable values. This tests the core math without needing a live steemd.
 func TestComputePrices_Conversion(t *testing.T) {
 	// Fixture: 1 ask + 1 bid (matching TS limit=1).
-	// Ask: someone selling STEEM for SBD at 1:0.5 (base=5.000 SBD, quote=10.000 STEEM)
-	// Bid: someone buying STEEM with SBD at the same ratio.
+	// Both at 0.500 SBD per 1.000 STEEM.
 	ob := &protocolapi.OrderBook{
 		Asks: []protocolapi.Order{
 			{OrderPrice: protocolapi.OrderPrice{Base: "0.500 SBD", Quote: "1.000 STEEM"}},
