@@ -23,6 +23,7 @@ import (
 	"github.com/steemit/conveyor/internal/featureflags"
 	"github.com/steemit/conveyor/internal/jsonrpc"
 	"github.com/steemit/conveyor/internal/models"
+	"github.com/steemit/conveyor/internal/prices"
 	"github.com/steemit/conveyor/internal/store"
 	"github.com/steemit/conveyor/internal/tags"
 	"github.com/steemit/conveyor/internal/telemetry"
@@ -110,6 +111,9 @@ func (a *App) registerMethods(rpc *jsonrpc.Server, blobStore store.BlobStore, db
 	// Public methods.
 	rpc.Register("conveyor.hello", hello)
 	rpc.RegisterAuthenticated("conveyor.whoami", whoami)
+
+	// Prices (steemgosdk).
+	prices.New(a.cfg.RpcNode).Register(rpc)
 
 	// Drafts (BlobStore).
 	drafts.New(blobStore, a.cfg.Name).Register(rpc)
