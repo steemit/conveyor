@@ -5,11 +5,9 @@
 package summarizer
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -60,8 +58,21 @@ func New() *Summarizer {
 		cache: c,
 		client: &http.Client{
 			Timeout: fetchTimeout,
+			// Many sites block the default Go User-Agent; set a descriptive one.
+			Transport: &userAgentTransport{base: http.DefaultTransport},
 		},
 	}
+}
+
+// userAgentTransport wraps an http.RoundTripper to inject a User-Agent header
+// on every request.
+type userAgentTransport struct{ base http.RoundTripper }
+
+func (t *userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Clone to avoid mutating the caller's request (which may be reused).
+	clone := req.Clone(req.Context())
+	clone.Header.Set("User-Agent", "conveyor/1.0 (+https://github.com/steemit/conveyor)")
+	return t.base.RoundTrip(clone)
 }
 
 // Register registers the conveyor.summarize_url method (public, no auth).
@@ -89,11 +100,7 @@ func (s *Summarizer) SummarizeUrl(ctx *jsonrpc.Context, req *jsonrpc.Request) (a
 
 	// Parse URL.
 	parsed, err := url.Parse(urlStr)
-	if err != nil || parsed.Host == "" || parsed.Path == "" && !strings.Contains(parsed.Host, ".") {
-		return nil, jsonrpc.NewError(400, nil, "Cannot parse URL")
-	}
-	// TS also asserts pathname is a string (always true in Go, but check host).
-	if parsed.Host == "" {
+	if err != nil || parsed.Host == "" {
 		return nil, jsonrpc.NewError(400, nil, "Cannot parse URL")
 	}
 
@@ -158,7 +165,8 @@ func (s *Summarizer) SummarizeUrl(ctx *jsonrpc.Context, req *jsonrpc.Request) (a
 // getMetaContent finds a <meta> tag by attribute key/value and returns its
 // content attribute. e.g. getMetaContent(doc, "name", "description").
 func getMetaContent(doc *goquery.Document, key, value string) string {
-	val, _ := doc.Find(fmt.Sprintf("meta[%s=%q]", key, value)).Attr("content")
+	selector := "meta[" + key + "=\"" + value + "\"]"
+	val, _ := doc.Find(selector).Attr("content")
 	return val
 }
 
