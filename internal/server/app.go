@@ -108,6 +108,11 @@ func New(cfg *config.Config) (*App, error) {
 	}
 	usClient := usersearch.NewCachingClient(cfg.RpcNode, cacheTTL, cacheCleanup)
 	accountNames := usersearch.LoadAccountNames("user-data/accounts/accounts.js")
+	if len(accountNames) == 0 {
+		log.Warn().Msg("no account names loaded (user-data/accounts/accounts.js missing or empty); autocomplete will be limited until refresh populates the trie — run 'make user-accounts' to generate")
+	} else {
+		log.Info().Int("count", len(accountNames)).Msg("loaded account names for autocomplete trie")
+	}
 	refreshInterval := time.Duration(cfg.AccountsRefreshInterval) * time.Millisecond
 	if refreshInterval == 0 {
 		refreshInterval = 600000 * time.Millisecond

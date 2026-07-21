@@ -1,7 +1,6 @@
 package usersearch
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -31,7 +30,7 @@ func NewCachingClient(rpcNode string, ttl, cleanupInterval time.Duration) *Cachi
 
 // --- Steemd fetch primitives ---
 
-func (c *CachingClient) getExtendedAccount(ctx context.Context, account string) (*protocolapi.ExtendedAccount, error) {
+func (c *CachingClient) getExtendedAccount(account string) (*protocolapi.ExtendedAccount, error) {
 	accts, err := c.api.GetAccounts([]string{account})
 	if err != nil {
 		return nil, err
@@ -42,7 +41,7 @@ func (c *CachingClient) getExtendedAccount(ctx context.Context, account string) 
 	return accts[0], nil
 }
 
-func (c *CachingClient) getFollowCount(ctx context.Context, account string) (*protocolapi.FollowCountReturn, error) {
+func (c *CachingClient) getFollowCount(account string) (*protocolapi.FollowCountReturn, error) {
 	return c.api.GetFollowCount(account)
 }
 
@@ -90,36 +89,52 @@ func (c *CachingClient) getFollowing(account string) ([]*protocolapi.FollowRetur
 	return all, nil
 }
 
-// getAccountTransferTargetCounts walks account history (last 30 days) and
+// getAccountTransferTargetCounts walks account history (last `days` days) and
 // counts transfer recipients, mirroring TS getAccountTransferTargetCounts.
+// Pagination follows the TS pattern: first call with from=-1 gets the newest
+// page; the last entry's index tells us the total length; subsequent pages
+// use absolute indices (totalLength, totalLength-pageSize, ...) walking
+// backward toward older entries.
 func (c *CachingClient) getAccountTransferTargetCounts(account string, days int) (map[string]int, error) {
 	counts := make(map[string]int)
 	cutoff := time.Now().UTC().Add(-time.Duration(days) * 24 * time.Hour)
 
-	pointer := int64(-1)
-	totalPages := 1
-	pageNum := 0
+	// First page: from=-1 fetches the most recent entries.
+	history, err := c.api.GetAccountHistory(account, -1, pageSize)
+	if err != nil {
+		return nil, err
+	}
+	if len(history) == 0 {
+		return counts, nil
+	}
 
-	for pageNum < totalPages {
-		history, err := c.api.GetAccountHistory(account, pointer, pageSize)
-		if err != nil {
-			return nil, err
-		}
-		if len(history) == 0 {
-			break
-		}
+	// Determine total history length from the last entry's index.
+	lastIdx := history[len(history)-1].Index
+	totalPages := int(lastIdx/pageSize) + 1
 
-		// On first page, determine total length from the last entry's index.
+	// Process pages from newest to oldest.
+	for pageNum := 0; pageNum < totalPages; pageNum++ {
+		var page []*steemapi.AccountHistoryEntry
 		if pageNum == 0 {
-			lastIdx := history[len(history)-1].Index
-			totalPages = int(lastIdx/pageSize) + 1
+			page = history // reuse first-page result
+		} else {
+			// Compute the absolute index for this page (walk backward).
+			pointer := lastIdx - int64(pageNum*pageSize)
+			if pointer < 0 {
+				pointer = 0
+			}
+			page, err = c.api.GetAccountHistory(account, pointer, pageSize)
+			if err != nil {
+				return nil, err
+			}
+			if len(page) == 0 {
+				break
+			}
 		}
 
-		// Walk newest-first (history is returned oldest-first per page, but
-		// the overall set spans from pointer downward).
-		for i := len(history) - 1; i >= 0; i-- {
-			entry := history[i]
-			// Check timestamp cutoff.
+		// Walk entries newest-first within the page.
+		for i := len(page) - 1; i >= 0; i-- {
+			entry := page[i]
 			ts, err := time.Parse("2006-01-02T15:04:05", entry.Timestamp)
 			if err != nil {
 				continue
@@ -127,22 +142,12 @@ func (c *CachingClient) getAccountTransferTargetCounts(account string, days int)
 			if ts.Before(cutoff) {
 				return counts, nil // older than cutoff, done
 			}
-			// Count transfer operations.
 			if entry.Op.Type == "transfer" {
 				to, _ := entry.Op.Payload["to"].(string)
 				if to != "" {
 					counts[to]++
 				}
 			}
-		}
-
-		pageNum++
-		if pageNum >= totalPages {
-			break
-		}
-		pointer -= pageSize
-		if pointer < pageSize {
-			pointer = pageSize
 		}
 	}
 
@@ -160,33 +165,25 @@ func (c *CachingClient) loadAccountInfo(account string, days int) (*UserAccount,
 		followers []*protocolapi.FollowReturn
 		following []*protocolapi.FollowReturn
 		ignored   []*protocolapi.FollowReturn
-		err       error
 	}
 
 	var r result
+	var extErr, fcErr, transferErr, followersErr, followingErr, ignoredErr error
 	var wg sync.WaitGroup
 	wg.Add(6)
 
 	go func() {
 		defer wg.Done()
-		r.ext, r.err = c.getExtendedAccount(context.Background(), account)
-		if r.err != nil {
-			return
-		}
+		r.ext, extErr = c.getExtendedAccount(account)
 	}()
 	go func() {
 		defer wg.Done()
-		r.fc, r.err = c.getFollowCount(context.Background(), account)
+		r.fc, fcErr = c.getFollowCount(account)
 	}()
-
-	// Transfer targets (may set r.err, but the others run independently).
-	var transferErr error
 	go func() {
 		defer wg.Done()
 		r.transfers, transferErr = c.getAccountTransferTargetCounts(account, days)
 	}()
-
-	var followersErr, followingErr, ignoredErr error
 	go func() {
 		defer wg.Done()
 		r.followers, followersErr = c.getFollowers(account, "blog")
@@ -202,21 +199,11 @@ func (c *CachingClient) loadAccountInfo(account string, days int) (*UserAccount,
 
 	wg.Wait()
 
-	// Check errors.
-	if r.err != nil {
-		return nil, r.err
-	}
-	if transferErr != nil {
-		return nil, transferErr
-	}
-	if followersErr != nil {
-		return nil, followersErr
-	}
-	if followingErr != nil {
-		return nil, followingErr
-	}
-	if ignoredErr != nil {
-		return nil, ignoredErr
+	// Check errors — each goroutine writes its own error variable (no data race).
+	for _, err := range []error{extErr, fcErr, transferErr, followersErr, followingErr, ignoredErr} {
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return NewUserAccount(r.ext, r.fc, r.transfers, r.followers, r.following, r.ignored), nil

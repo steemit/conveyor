@@ -170,12 +170,15 @@ func LoadAllAccountNames(api *steemapi.API) []string {
 
 	for i, start := range starts {
 		wg.Add(1)
+		end := ""
+		if i < len(ends) {
+			end = ends[i]
+		}
 		go func(idx int, s, e string) {
 			defer wg.Done()
 			names, err := loadAccountNamesShard(api, s, e)
 			results[idx] = shardResult{names: names, err: err}
-		}(i, start, "")
-		_ = ends // ends bounds checking is done inside loadAccountNamesShard
+		}(i, start, end)
 	}
 	wg.Wait()
 
