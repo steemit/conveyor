@@ -21,6 +21,8 @@ type Config struct {
 	Telemetry TelemetryConfig `mapstructure:"telemetry"`
 	Storage   StorageConfig   `mapstructure:"storage"`
 	Database  DatabaseConfig  `mapstructure:"database"`
+	AccountsRefreshInterval int              `mapstructure:"accounts_refresh_interval"`
+	CacheClient             CacheClientConfig `mapstructure:"cacheClient"`
 }
 
 // LogStream describes a single logging output stream.
@@ -50,6 +52,12 @@ type DatabaseConfig struct {
 	Port     string `mapstructure:"port"`
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
+}
+
+// CacheClientConfig configures the user-search CachingClient TTL.
+type CacheClientConfig struct {
+	TTL      int `mapstructure:"ttl"`      // seconds (default 600)
+	Interval int `mapstructure:"interval"` // cache cleanup interval seconds (default 60)
 }
 
 // Load reads config/default.toml, then the environment-specific file based on
@@ -89,6 +97,9 @@ func Load() (*Config, error) {
 	v.SetDefault("name", "conveyor")
 	v.SetDefault("rpc_node", "https://api.steemit.com")
 	v.SetDefault("admin_role", "foo")
+	v.SetDefault("accounts_refresh_interval", 600000)
+	v.SetDefault("cacheClient.ttl", 600)
+	v.SetDefault("cacheClient.interval", 60)
 
 	// Telemetry defaults.
 	v.SetDefault("telemetry.enabled", true)

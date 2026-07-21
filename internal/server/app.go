@@ -28,6 +28,7 @@ import (
 	"github.com/steemit/conveyor/internal/tags"
 	"github.com/steemit/conveyor/internal/telemetry"
 	"github.com/steemit/conveyor/internal/userdata"
+	"github.com/steemit/conveyor/internal/usersearch"
 )
 
 // App holds the configured HTTP server and its dependencies.
@@ -96,7 +97,31 @@ func New(cfg *config.Config) (*App, error) {
 		return nil, fmt.Errorf("init database: %w", err)
 	}
 
-	a.registerMethods(rpc, blobStore, db)
+	// Initialize user-search CachingClient + AccountNameTrie.
+	cacheTTL := time.Duration(cfg.CacheClient.TTL) * time.Second
+	cacheCleanup := time.Duration(cfg.CacheClient.Interval) * time.Second
+	if cacheTTL == 0 {
+		cacheTTL = 600 * time.Second
+	}
+	if cacheCleanup == 0 {
+		cacheCleanup = 60 * time.Second
+	}
+	usClient := usersearch.NewCachingClient(cfg.RpcNode, cacheTTL, cacheCleanup)
+	accountNames := usersearch.LoadAccountNames("user-data/accounts/accounts.js")
+	if len(accountNames) == 0 {
+		log.Warn().Msg("no account names loaded (user-data/accounts/accounts.js missing or empty); autocomplete will be limited until refresh populates the trie — run 'make user-accounts' to generate")
+	} else {
+		log.Info().Int("count", len(accountNames)).Msg("loaded account names for autocomplete trie")
+	}
+	refreshInterval := time.Duration(cfg.AccountsRefreshInterval) * time.Millisecond
+	if refreshInterval == 0 {
+		refreshInterval = 600000 * time.Millisecond
+	}
+	trie := usersearch.NewAccountNameTrie(accountNames, usClient, refreshInterval)
+	trie.StartRefreshing()
+	a.shutdowns = append(a.shutdowns, trie.StopRefreshing)
+
+	a.registerMethods(rpc, blobStore, db, usClient, trie)
 
 	a.httpSrv = &http.Server{
 		Addr:    ":" + cfg.Port,
@@ -107,7 +132,7 @@ func New(cfg *config.Config) (*App, error) {
 
 // registerMethods registers conveyor's RPC methods with the "conveyor."
 // namespace prefix (matching the TS JsonRpcAuth namespace and the schema).
-func (a *App) registerMethods(rpc *jsonrpc.Server, blobStore store.BlobStore, db *gorm.DB) {
+func (a *App) registerMethods(rpc *jsonrpc.Server, blobStore store.BlobStore, db *gorm.DB, usClient *usersearch.CachingClient, trie *usersearch.AccountNameTrie) {
 	// Public methods.
 	rpc.Register("conveyor.hello", hello)
 	rpc.RegisterAuthenticated("conveyor.whoami", whoami)
@@ -126,6 +151,9 @@ func (a *App) registerMethods(rpc *jsonrpc.Server, blobStore store.BlobStore, db
 
 	// Tags (GORM).
 	tags.New(db, a.cfg.AdminRole).Register(rpc)
+
+	// User search (steemgosdk + trie).
+	usersearch.New(usClient, trie).Register(rpc)
 }
 
 // hello is the M0 smoke-test method, mirroring the original TS hello.
