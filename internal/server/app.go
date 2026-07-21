@@ -25,6 +25,7 @@ import (
 	"github.com/steemit/conveyor/internal/models"
 	"github.com/steemit/conveyor/internal/prices"
 	"github.com/steemit/conveyor/internal/store"
+	"github.com/steemit/conveyor/internal/summarizer"
 	"github.com/steemit/conveyor/internal/tags"
 	"github.com/steemit/conveyor/internal/telemetry"
 	"github.com/steemit/conveyor/internal/userdata"
@@ -154,6 +155,9 @@ func (a *App) registerMethods(rpc *jsonrpc.Server, blobStore store.BlobStore, db
 
 	// User search (steemgosdk + trie).
 	usersearch.New(usClient, trie).Register(rpc)
+
+	// Summarizer (HTTP fetch + metadata extraction).
+	summarizer.New().Register(rpc)
 }
 
 // hello is the M0 smoke-test method, mirroring the original TS hello.
