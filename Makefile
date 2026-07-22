@@ -22,7 +22,7 @@ devserver:
 	go run ./cmd/conveyor
 
 docker-build:
-	docker build -t steemit/conveyor:latest .
+	docker build --build-arg VERSION=$(VERSION) -t steemit/conveyor:latest .
 
 docker-run:
 	docker run -it -p 8080:8080 steemit/conveyor:latest

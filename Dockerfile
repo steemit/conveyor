@@ -1,7 +1,11 @@
 # Build stage — CGO_ENABLED=1 because mattn/go-sqlite3 requires it.
 FROM golang:1.24-alpine AS builder
 
-RUN apk add --no-cache git gcc musl-dev ca-certificates tzdata
+# Version is passed via build-arg (avoids needing .git in the build context,
+# which .dockerignore excludes). Set with: docker build --build-arg VERSION=$(git rev-parse --short HEAD)
+ARG VERSION=dev
+
+RUN apk add --no-cache gcc musl-dev ca-certificates tzdata
 
 WORKDIR /app
 
@@ -14,7 +18,7 @@ COPY . .
 
 # Build with version injection via -ldflags
 RUN CGO_ENABLED=1 GOOS=linux go build \
-    -ldflags "-X github.com/steemit/conveyor/internal/server.Version=$(git rev-parse --short HEAD 2>/dev/null || echo dev)" \
+    -ldflags "-X github.com/steemit/conveyor/internal/server.Version=${VERSION}" \
     -o conveyor ./cmd/conveyor
 
 # --- Runtime stage ---
