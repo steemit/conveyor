@@ -1,39 +1,46 @@
-FROM node:10-alpine as build-stage
+# Build stage — CGO_ENABLED=1 because mattn/go-sqlite3 requires it.
+FROM golang:1.24-alpine AS builder
+
+# Version is passed via build-arg (avoids needing .git in the build context,
+# which .dockerignore excludes). Set with: docker build --build-arg VERSION=$(git rev-parse --short HEAD)
+ARG VERSION=dev
+
+RUN apk add --no-cache gcc musl-dev ca-certificates tzdata
 
 WORKDIR /app
 
-# install build dependencies
-RUN apk add --no-cache \
-    bash \
-    build-base \
-    git \
-    make \
-    python
+# Cache dependency download
+COPY go.mod go.sum ./
+RUN go mod download
 
-# install application dependencies
-COPY package.json yarn.lock ./
-RUN JOBS=max yarn install --non-interactive --frozen-lockfile
-
-# copy in application source
+# Copy source
 COPY . .
 
-# run tests and compile sources
-RUN make lib ci-test
+# Build with version injection via -ldflags
+RUN CGO_ENABLED=1 GOOS=linux go build \
+    -ldflags "-X github.com/steemit/conveyor/internal/server.Version=${VERSION}" \
+    -o conveyor ./cmd/conveyor
 
-# prune modules
-RUN yarn install --non-interactive --frozen-lockfile --production
+# --- Runtime stage ---
+FROM alpine:3.20
 
-# copy built application to runtime image
-FROM node:10-alpine
+RUN apk add --no-cache ca-certificates tzdata sqlite-libs
+
 WORKDIR /app
-COPY --from=build-stage /app/config config
-COPY --from=build-stage /app/lib lib
-COPY --from=build-stage /app/node_modules node_modules
-COPY --from=build-stage /app/user-data user-data
 
-# setup default env
-ENV PORT 8080
-ENV NODE_ENV production
+# Binary
+COPY --from=builder /app/conveyor .
 
-# app entrypoint
-CMD [ "node", "lib/server.js" ]
+# Runtime assets: TOML configs + account lists
+COPY --from=builder /app/config config
+COPY --from=builder /app/user-data user-data
+
+EXPOSE 8080
+
+ENV PORT=8080
+ENV NODE_ENV=production
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget -q --spider http://localhost:8080/ || exit 1
+
+CMD ["./conveyor"]
