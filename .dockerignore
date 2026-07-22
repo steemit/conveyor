@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Development files
+.vscode/
+.idea/
+*.log
+
+# Go test files (not needed in production image)
+*_test.go
+
+# Build artifacts
+bin/
+
+# TS legacy (not used in Go version)
+src/
+test/
+tsconfig.json
+tslint.json
+package.json
+yarn.lock
+node_modules/
+lib/
+reports/
+.nyc_output/
+
+# ZCode agent workspace
+.zcode/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
