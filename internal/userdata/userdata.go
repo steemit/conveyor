@@ -171,16 +171,16 @@ func (u *UserData) isPhoneRegistered(ctx *jsonrpc.Context, req *jsonrpc.Request)
 	return count > 0, nil
 }
 
-// wrapDBError converts a GORM unique constraint error to a JsonRpcError 400
-// with the validation error details, matching TS user-data.ts behavior.
+// wrapDBError converts a GORM unique constraint error to a JsonRpcError 400.
+// To avoid leaking database internals (table/column/dialect) to clients, only
+// a generic message is returned; the raw driver error is logged server-side.
 func wrapDBError(err error) *jsonrpc.Error {
-	// GORM wraps the underlying driver error. For SQLite/Postgres unique
-	// violations, the error message contains "UNIQUE constraint" or
-	// "duplicate key". We return a generic 400.
 	s := err.Error()
 	if strings.Contains(s, "UNIQUE") || strings.Contains(s, "duplicate key") || strings.Contains(s, "unique") {
-		return jsonrpc.NewErrorWithData(400, err, "Validation error", map[string]any{
-			"errors": []map[string]string{{"message": s}},
+		// Log the raw error for operators; return a generic message to the
+		// client (cause is nil so NewError won't append the raw string).
+		return jsonrpc.NewErrorWithData(400, nil, "Validation error", map[string]any{
+			"errors": []map[string]string{{"message": "must be unique"}},
 		})
 	}
 	return jsonrpc.ErrInternalError(err)
