@@ -1,6 +1,8 @@
 package userdata
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/steemit/conveyor/internal/jsonrpc"
@@ -89,6 +91,17 @@ func TestSetUserData_UniqueEmailConflict(t *testing.T) {
 	_, err := u.setUserData(adminCtx(), &jsonrpc.Request{Params: []byte(`{"account":"bob","userData":{"email":"shared@example.com"}}`)})
 	if err == nil {
 		t.Fatal("expected unique constraint error")
+	}
+	// Must be a 400.
+	rpcErr, ok := err.(*jsonrpc.Error)
+	if !ok || rpcErr.Code != 400 {
+		t.Fatalf("expected 400, got %v", err)
+	}
+	// The raw driver error (table/column/dialect detail) must NOT leak to the
+	// client — only a generic "must be unique" message is acceptable.
+	serialized, _ := json.Marshal(rpcErr)
+	if strings.Contains(string(serialized), "UNIQUE") || strings.Contains(string(serialized), "duplicate key") {
+		t.Fatalf("raw DB error leaked to client: %s", serialized)
 	}
 }
 

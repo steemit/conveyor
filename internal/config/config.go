@@ -23,6 +23,12 @@ type Config struct {
 	Database  DatabaseConfig  `mapstructure:"database"`
 	AccountsRefreshInterval int              `mapstructure:"accounts_refresh_interval"`
 	CacheClient             CacheClientConfig `mapstructure:"cacheClient"`
+	// TrustedProxies is the list of trusted proxy IPs/CIDRs (the direct
+	// upstream, e.g. openresty) whose X-Forwarded-For is honored when deriving
+	// the client IP. Empty (default) trusts NO proxy — only the TCP peer is
+	// used — which is the safe default. Configure via TRUSTED_PROXIES (comma
+	// separated) in production behind a reverse proxy.
+	TrustedProxies []string `mapstructure:"trusted_proxies"`
 }
 
 // LogStream describes a single logging output stream.
@@ -124,10 +130,22 @@ func Load() (*Config, error) {
 	bindEnv(v, "telemetry.enabled", "CONVEYOR_TELEMETRY_ENABLED")
 	bindEnv(v, "telemetry.service_name", "CONVEYOR_TELEMETRY_SERVICE_NAME")
 	bindEnv(v, "telemetry.otlp_endpoint", "CONVEYOR_TELEMETRY_OTLP_ENDPOINT")
+	bindEnv(v, "trusted_proxies", "TRUSTED_PROXIES")
 
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("unmarshal config: %w", err)
+	}
+	// viper binds a comma-separated env var as a single string; split it into
+	// a slice so []string unmarshals cleanly.
+	if raw := strings.TrimSpace(os.Getenv("TRUSTED_PROXIES")); raw != "" {
+		parts := strings.Split(raw, ",")
+		cfg.TrustedProxies = make([]string, 0, len(parts))
+		for _, p := range parts {
+			if t := strings.TrimSpace(p); t != "" {
+				cfg.TrustedProxies = append(cfg.TrustedProxies, t)
+			}
+		}
 	}
 	return &cfg, nil
 }

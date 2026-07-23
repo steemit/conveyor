@@ -73,6 +73,14 @@ func New(cfg *config.Config) (*App, error) {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 
+	// Trusted proxies: only the configured direct upstream (e.g. openresty) is
+	// trusted to set X-Forwarded-For. Empty = trust no proxy (use TCP peer
+	// only), which is the safe default and prevents client-IP spoofing. This
+	// matters because ctx.IP feeds the audit memo in tags.assign_tag.
+	if err := engine.SetTrustedProxies(cfg.TrustedProxies); err != nil {
+		return nil, fmt.Errorf("set trusted proxies: %w", err)
+	}
+
 	if telemetryOK {
 		engine.Use(otelgin.Middleware(cfg.Telemetry.ServiceName))
 	}

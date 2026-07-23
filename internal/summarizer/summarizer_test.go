@@ -21,41 +21,7 @@ func newTestSummarizer() *Summarizer {
 	})
 }
 
-func TestIsBlacklisted_Domain(t *testing.T) {
-	if !isBlacklisted("evil.bad.domain", "/path") {
-		t.Error("expected bad.domain suffix to be blacklisted")
-	}
-	if isBlacklisted("good.com", "/path") {
-		t.Error("good.com should not be blacklisted")
-	}
-}
-
-func TestIsBlacklisted_URL(t *testing.T) {
-	if !isBlacklisted("www.google.com", "/search") {
-		t.Error("expected www.google.com to be blacklisted")
-	}
-	if !isBlacklisted("bad.url", "/leave/out/protocol") {
-		t.Error("expected bad.url prefix to be blacklisted")
-	}
-	if isBlacklisted("good.com", "/path") {
-		t.Error("good.com/path should not be blacklisted")
-	}
-}
-
-func TestSuffixMatch(t *testing.T) {
-	if !suffixMatch("sub.bad.domain", "bad.domain") {
-		t.Error("expected suffix match")
-	}
-	if suffixMatch("bad.dom", "bad.domain") {
-		t.Error("should not match — host shorter than domain")
-	}
-	if suffixMatch("goodbad.domain", "bad.domain") {
-		// This actually should match — "goodbad.domain" ends with "bad.domain".
-		// TS uses endsWith which would also match here. This is correct behavior.
-	}
-}
-
-func TestSummarizeUrl_BlacklistedDomain_StillFetched(t *testing.T) {
+func TestSummarizeUrl_BasicFetch(t *testing.T) {
 	// Serve a test HTML page.
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
@@ -70,9 +36,12 @@ func TestSummarizeUrl_BlacklistedDomain_StillFetched(t *testing.T) {
 		t.Fatal(err)
 	}
 	res := result.(summarizedURL)
-	// The test server URL won't be blacklisted, just verify it works.
 	if res.Title != "Test" {
 		t.Errorf("expected title 'Test', got '%s'", res.Title)
+	}
+	// blacklisted is always false now (placeholder blacklist removed).
+	if res.Blacklisted {
+		t.Error("expected blacklisted=false")
 	}
 }
 

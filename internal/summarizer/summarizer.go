@@ -133,9 +133,6 @@ func (s *Summarizer) SummarizeUrl(ctx *jsonrpc.Context, req *jsonrpc.Request) (a
 		return nil, jsonrpc.NewError(400, nil, "Cannot parse URL")
 	}
 
-	// Blacklist check.
-	blacklisted := isBlacklisted(parsed.Host, parsed.Path)
-
 	// Cache check (with TTL).
 	if cached, ok := s.cache.Get(urlStr); ok {
 		if time.Since(cached.storedAt) < cacheTTL {
@@ -162,7 +159,11 @@ func (s *Summarizer) SummarizeUrl(ctx *jsonrpc.Context, req *jsonrpc.Request) (a
 	}
 
 	result := summarizedURL{
-		Blacklisted: blacklisted,
+		// Blacklisted is retained in the schema/struct for consumer
+		// compatibility but is always false — the placeholder blacklist
+		// (badDomains/badUrls) has been removed as dead code; it was never
+		// populated with real data in either the TS or Go versions.
+		Blacklisted: false,
 		Title:       doc.Find("title").First().Text(),
 		Description: getMetaContent(doc, "name", "description"),
 		Favicon:     getFavicon(doc),
