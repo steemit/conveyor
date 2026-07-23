@@ -25,3 +25,6 @@ vendor/
 # Editor/OS
 .vscode/
 *.swp
+
+# Environment secrets
+.env

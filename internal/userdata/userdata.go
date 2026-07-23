@@ -86,17 +86,26 @@ func (u *UserData) setUserData(ctx *jsonrpc.Context, req *jsonrpc.Request) (any,
 		return nil, e
 	}
 
-	// Extract and validate email/phone.
+	// Extract and validate email/phone. Guard the type assertions: a non-string
+	// value (e.g. {"email": 123}) must yield a clean 400, not a panic.
 	var email, phone *string
 	if v, ok := p.UserData["email"]; ok && v != nil {
-		s := strings.TrimSpace(v.(string))
+		s, ok := v.(string)
+		if !ok {
+			return nil, jsonrpc.NewError(400, nil, "Invalid email: must be a string")
+		}
+		s = strings.TrimSpace(s)
 		if !emailPattern.MatchString(s) {
 			return nil, jsonrpc.NewError(400, nil, "Invalid email format")
 		}
 		email = &s
 	}
 	if v, ok := p.UserData["phone"]; ok && v != nil {
-		s := strings.TrimSpace(v.(string))
+		s, ok := v.(string)
+		if !ok {
+			return nil, jsonrpc.NewError(400, nil, "Invalid phone: must be a string")
+		}
+		s = strings.TrimSpace(s)
 		if !phonePattern.MatchString(s) {
 			return nil, jsonrpc.NewError(400, nil, "Invalid phone format: must be +[0-9]+")
 		}

@@ -9,6 +9,13 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// maxRequestBodyBytes caps the size of a single JSON-RPC request body.
+// JSON-RPC requests are small; this bounds memory use and prevents trivial
+// memory-exhaustion DoS. Batches are subject to the same cap. A body exceeding
+// the cap fails io.ReadAll with an *http.MaxBytesError and is surfaced as a
+// 400 ParseError by the read-error path below.
+const maxRequestBodyBytes = 1 << 20 // 1 MiB
+
 // Handler returns a gin.HandlerFunc that serves JSON-RPC 2.0 over POST /.
 // Behavior mirrors @steemit/koa-jsonrpc's middleware:
 //   - body parse failure -> 400 + ParseError
@@ -21,6 +28,10 @@ import (
 // internal 405 check; we rely on Gin's routing instead.
 func (s *Server) Handler(log zerolog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Cap the request body to bound memory use. An oversized body makes
+		// io.ReadAll fail (the writer gets a 413-like signal) and flows into
+		// the same 400 ParseError path as other read failures.
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxRequestBodyBytes)
 		body, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			respondError(c, http.StatusBadRequest, &Response{
