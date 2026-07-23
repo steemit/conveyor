@@ -104,6 +104,30 @@ func TestMiddleware_ParseError_400(t *testing.T) {
 	}
 }
 
+// TestMiddleware_OversizedBody_400 verifies that a request body exceeding the
+// 1 MiB cap is rejected with a 400 ParseError (memory-exhaustion DoS defense).
+func TestMiddleware_OversizedBody_400(t *testing.T) {
+	r := setupTestRouter(t)
+	// 2 MiB body — well over the 1 MiB cap.
+	big := strings.Repeat("x", 2<<20)
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(big))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for oversized body, got %d", w.Code)
+	}
+	var resp map[string]any
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
+	errObj, ok := resp["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected error object, got: %v", resp)
+	}
+	if int(errObj["code"].(float64)) != ParseError {
+		t.Fatalf("expected ParseError for oversized body, got %v", errObj["code"])
+	}
+}
+
 func TestMiddleware_NonPost_NotRoutedByRPC(t *testing.T) {
 	// In this architecture, GET / is healthcheck (registered in server.app),
 	// POST / is RPC. The test router only registers POST /, so a GET / is a

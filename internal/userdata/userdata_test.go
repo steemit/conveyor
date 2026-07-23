@@ -108,6 +108,34 @@ func TestSetUserData_InvalidPhone(t *testing.T) {
 	}
 }
 
+// TestSetUserData_NonStringEmail verifies that a non-string email value does
+// not panic and returns a clean 400 (previously v.(string) would panic).
+func TestSetUserData_NonStringEmail(t *testing.T) {
+	u := testUserData(t)
+	_, err := u.setUserData(userCtx("alice"), &jsonrpc.Request{Params: []byte(`{"account":"alice","userData":{"email":123}}`)})
+	if err == nil {
+		t.Fatal("expected error for non-string email")
+	}
+	e, ok := err.(*jsonrpc.Error)
+	if !ok || e.Code != 400 {
+		t.Fatalf("expected 400, got %v", err)
+	}
+}
+
+// TestSetUserData_NonStringPhone verifies that a non-string phone value does
+// not panic and returns a clean 400.
+func TestSetUserData_NonStringPhone(t *testing.T) {
+	u := testUserData(t)
+	_, err := u.setUserData(userCtx("alice"), &jsonrpc.Request{Params: []byte(`{"account":"alice","userData":{"phone":456}}`)})
+	if err == nil {
+		t.Fatal("expected error for non-string phone")
+	}
+	e, ok := err.(*jsonrpc.Error)
+	if !ok || e.Code != 400 {
+		t.Fatalf("expected 400, got %v", err)
+	}
+}
+
 func TestIsEmailRegistered(t *testing.T) {
 	u := testUserData(t)
 	u.setUserData(adminCtx(), &jsonrpc.Request{Params: []byte(`{"account":"alice","userData":{"email":"alice@example.com"}}`)})

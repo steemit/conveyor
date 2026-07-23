@@ -5,6 +5,8 @@
 package summarizer
 
 import (
+	"errors"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -20,6 +22,10 @@ const (
 	cacheSize   = 10000
 	cacheTTL    = 1 * time.Hour
 	fetchTimeout = 2 * time.Second
+	// maxResponseBytes bounds the fetched body. summarize_url reads untrusted
+	// remote HTML; without a cap a malicious server could stream gigabytes and
+	// exhaust memory. 1 MiB is ample for metadata extraction from a page.
+	maxResponseBytes int64 = 1 << 20 // 1 MiB
 )
 
 // summarizedURL is the RPC result, matching the TS SummarizedUrl interface
@@ -51,7 +57,8 @@ type Summarizer struct {
 	client *http.Client
 }
 
-// New creates a Summarizer with a fresh LRU cache and 2s-timeout HTTP client.
+// New creates a Summarizer with a fresh LRU cache and an SSRF-safe HTTP client
+// (2s timeout, private-IP blocking, scheme validation on every redirect).
 func New() *Summarizer {
 	c, _ := lru.New[string, *cacheEntry](cacheSize)
 	return &Summarizer{
@@ -59,9 +66,27 @@ func New() *Summarizer {
 		client: &http.Client{
 			Timeout: fetchTimeout,
 			// Many sites block the default Go User-Agent; set a descriptive one.
-			Transport: &userAgentTransport{base: http.DefaultTransport},
+			// The underlying transport resolves and validates IPs before
+			// connecting (see newSafeTransport / safeDialContext).
+			Transport: &userAgentTransport{base: newSafeTransport()},
+			// Re-validate the scheme on every redirect hop and bound the chain.
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				if len(via) >= maxRedirects {
+					return errors.New("too many redirects")
+				}
+				return validateScheme(req.URL)
+			},
 		},
 	}
+}
+
+// newWithClient builds a Summarizer backed by the given HTTP client. It is the
+// test seam that lets tests point summarizer at a loopback httptest server
+// (which the production SSRF dialer would refuse) without weakening the
+// production path.
+func newWithClient(c *http.Client) *Summarizer {
+	cache, _ := lru.New[string, *cacheEntry](cacheSize)
+	return &Summarizer{cache: cache, client: c}
 }
 
 // userAgentTransport wraps an http.RoundTripper to inject a User-Agent header
@@ -103,6 +128,10 @@ func (s *Summarizer) SummarizeUrl(ctx *jsonrpc.Context, req *jsonrpc.Request) (a
 	if err != nil || parsed.Host == "" {
 		return nil, jsonrpc.NewError(400, nil, "Cannot parse URL")
 	}
+	// Scheme allowlist (defends against file:/// etc. before any fetch).
+	if err := validateScheme(parsed); err != nil {
+		return nil, jsonrpc.NewError(400, nil, "Cannot parse URL")
+	}
 
 	// Blacklist check.
 	blacklisted := isBlacklisted(parsed.Host, parsed.Path)
@@ -122,8 +151,12 @@ func (s *Summarizer) SummarizeUrl(ctx *jsonrpc.Context, req *jsonrpc.Request) (a
 	}
 	defer resp.Body.Close()
 
+	// Cap the fetched body so a malicious/redirected server cannot stream
+	// gigabytes into memory. The reader is scoped to this fetch only.
+	body := io.LimitReader(resp.Body, maxResponseBytes)
+
 	// Parse HTML and extract metadata via goquery.
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	doc, err := goquery.NewDocumentFromReader(body)
 	if err != nil {
 		return nil, jsonrpc.NewError(400, nil, "Cannot parse HTML")
 	}
