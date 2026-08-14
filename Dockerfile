@@ -1,5 +1,5 @@
 # Build stage — CGO_ENABLED=1 because mattn/go-sqlite3 requires it.
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Version is passed via build-arg (avoids needing .git in the build context,
 # which .dockerignore excludes). Set with: docker build --build-arg VERSION=$(git rev-parse --short HEAD)
