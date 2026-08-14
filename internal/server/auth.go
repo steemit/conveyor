@@ -14,6 +14,26 @@ import (
 // steemgosdk's API.VerifySignedRequest, which internally calls steemutil's
 // rpc.Validate (envelope/freshness/decode) + rpc.VerifySignedRpc (secp256k1
 // recovery against the account's posting key fetched via get_accounts).
+//
+// KNOWN LIMITATION — replay within the freshness window:
+//
+// rpc.Validate checks the nonce FORMAT (8-byte hex) and the timestamp
+// freshness (60s), but does NOT track nonce uniqueness — a captured signed
+// request can be replayed verbatim within 60 seconds. This matches the
+// original TS service (@steemit/koa-jsonrpc + @steemit/rpc-auth) and is
+// accepted because every current RPC method is idempotent (or near- enough
+// that a replay converges to the same state).
+//
+// If a NON-idempotent method is ever added (counters, transfers, one-time
+// token consumption, ...), replay protection becomes mandatory:
+//
+//   - Track used nonces keyed by (account, nonce, timestamp) with a TTL of
+//     ~60s (the freshness window).
+//   - In a multi-instance deployment, an in-process cache is NOT sufficient
+//     (a replay hitting a different instance would bypass it) — use a SHARED
+//     store such as Redis.
+//   - Reject duplicates with a 401 "replayed request" before invoking the
+//     handler, right after VerifySignedRequest succeeds below.
 type conveyorAuthenticator struct {
 	api *api.API
 }
@@ -51,6 +71,11 @@ func (a *conveyorAuthenticator) Authenticate(ctx context.Context, method string,
 	if err != nil {
 		return nil, account, jsonrpc.NewError(401, err, "Unauthorized")
 	}
+
+	// Replay protection would go here (see the KNOWN LIMITATION note above):
+	// reject a (account, nonce, timestamp) tuple that has already been seen.
+	// Deferred until a non-idempotent method requires it; would need Redis
+	// (or another shared store) to work across instances.
 
 	// Re-serialize the decoded params (interface{}) to json.RawMessage so the
 	// handler's UnmarshalParams works normally.
