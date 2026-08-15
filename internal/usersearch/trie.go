@@ -84,21 +84,64 @@ func (t *AccountNameTrie) MatchPrefix(prefix string) []string {
 	return result
 }
 
-// addNames incrementally adds new names to the trie (sorted insert).
+// addNames merges a sorted list of names into the trie. Both t.names and
+// newNames must be sorted ascending; the merge deduplicates in a single
+// O(N+M) pass (no map rebuild, no re-sort).
+//
+// Previously this rebuilt a map of ALL existing names and re-sorted the whole
+// slice on every call — and updateTrie called it once PER PAGE (~1160 pages
+// for ~1.16M accounts), costing ~34GB of cumulative allocations per refresh
+// and pinning the CPU on small instances (observed 97% on t2.micro).
 func (t *AccountNameTrie) addNames(newNames []string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	existing := make(map[string]struct{}, len(t.names))
-	for _, n := range t.names {
-		existing[n] = struct{}{}
-	}
-	for _, n := range newNames {
-		if _, ok := existing[n]; !ok {
-			existing[n] = struct{}{}
-			t.names = append(t.names, n)
+	t.names = mergeSortedNames(t.names, newNames)
+}
+
+// mergeSortedNames merges two ascending-sorted name lists into a new
+// strictly-sorted (duplicate-free) slice in a single O(N+M) pass. Inputs must
+// be sorted but MAY contain adjacent duplicates — the merge dedups both
+// across lists and within each list. Callers guard the sorted invariant
+// (see isStrictlySorted).
+func mergeSortedNames(a, b []string) []string {
+	out := make([]string, 0, len(a)+len(b))
+	appendUnique := func(s string) {
+		if len(out) == 0 || out[len(out)-1] != s {
+			out = append(out, s)
 		}
 	}
-	sort.Strings(t.names)
+	i, j := 0, 0
+	for i < len(a) && j < len(b) {
+		switch {
+		case a[i] < b[j]:
+			appendUnique(a[i])
+			i++
+		case a[i] > b[j]:
+			appendUnique(b[j])
+			j++
+		default: // equal: keep one, advance both
+			appendUnique(a[i])
+			i++
+			j++
+		}
+	}
+	for ; i < len(a); i++ {
+		appendUnique(a[i])
+	}
+	for ; j < len(b); j++ {
+		appendUnique(b[j])
+	}
+	return out
+}
+
+// isStrictlySorted reports whether s is strictly ascending (no duplicates).
+func isStrictlySorted(s []string) bool {
+	for i := 1; i < len(s); i++ {
+		if s[i-1] >= s[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // StartRefreshing begins periodic background refresh of the trie via
@@ -131,11 +174,21 @@ func (t *AccountNameTrie) StopRefreshing() {
 	}
 }
 
-// updateTrie walks lookup_accounts from '' and incrementally adds new names.
+// updateTrie walks lookup_accounts from '' and merges the full account list
+// into the trie.
+//
+// It collects ALL pages first (network I/O, no lock held — MatchPrefix stays
+// responsive during the multi-minute walk) and then performs a single sorted
+// merge. Pages from lookup_accounts are lexicographically ordered and the
+// cursor concatenation preserves global order; each page is still checked
+// (and defensively sorted) so an upstream behavior change can never corrupt
+// the sorted invariant MatchPrefix's binary search depends on — worst case it
+// degrades to a per-page sort, never to silently-wrong autocomplete results.
 func (t *AccountNameTrie) updateTrie() {
 	if t.client == nil {
 		return
 	}
+	var collected []string
 	start := ""
 	for {
 		page, err := t.client.api.LookupAccounts(start, pageSize)
@@ -145,13 +198,26 @@ func (t *AccountNameTrie) updateTrie() {
 		if len(page) == 0 {
 			break
 		}
-		t.addNames(page)
+		if !isStrictlySorted(page) {
+			sort.Strings(page)
+		}
+		collected = append(collected, page...)
 		last := page[len(page)-1]
 		if last == start || len(page) < pageSize {
 			break
 		}
 		start = last
 	}
+	if len(collected) == 0 {
+		return
+	}
+	// Cross-page boundary sanity: concatenated pages must stay ascending.
+	// If not (unexpected upstream behavior), sort the whole collection so the
+	// merge precondition holds.
+	if !isStrictlySorted(collected) {
+		sort.Strings(collected)
+	}
+	t.addNames(collected)
 }
 
 // loadAllAccountNames loads ALL account names via 27 parallel shards

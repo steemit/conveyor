@@ -41,7 +41,20 @@ type LogStream struct {
 type TelemetryConfig struct {
 	Enabled     bool   `mapstructure:"enabled"`
 	ServiceName string `mapstructure:"service_name"`
-	Endpoint    string `mapstructure:"otlp_endpoint"` // host:port, e.g. localhost:4318
+	// Endpoint is the OTLP/HTTP target. Accepts host:port (e.g.
+	// "localhost:4318") or a full URL ("http://10.188.1.50:5080"); URL form
+	// also contributes its path when OTLPPath is unset.
+	Endpoint string `mapstructure:"otlp_endpoint"`
+	// OTLPPath overrides the export URL path. OpenObserve needs
+	// "/api/<org>/v1/traces" instead of the default "/v1/traces".
+	OTLPPath string `mapstructure:"otlp_path"`
+	// OTLPHeaders carries extra export headers, e.g. OpenObserve Basic Auth:
+	// "Authorization=Basic <base64>". Env form is comma-separated
+	// "Key=Value" pairs (viper cannot split those into a map itself).
+	OTLPHeaders map[string]string `mapstructure:"otlp_headers"`
+	// ResourceAttributes adds resource attributes, e.g.
+	// "deployment.environment=dev" (comma-separated Key=Value env form).
+	ResourceAttributes map[string]string `mapstructure:"resource_attributes"`
 }
 
 // StorageConfig configures the blob store used for drafts and feature-flags.
@@ -130,6 +143,8 @@ func Load() (*Config, error) {
 	bindEnv(v, "telemetry.enabled", "CONVEYOR_TELEMETRY_ENABLED")
 	bindEnv(v, "telemetry.service_name", "CONVEYOR_TELEMETRY_SERVICE_NAME")
 	bindEnv(v, "telemetry.otlp_endpoint", "CONVEYOR_TELEMETRY_OTLP_ENDPOINT")
+	bindEnv(v, "telemetry.otlp_path", "CONVEYOR_TELEMETRY_OTLP_PATH")
+	bindEnv(v, "telemetry.resource_attributes", "CONVEYOR_TELEMETRY_RESOURCE_ATTRIBUTES")
 	bindEnv(v, "trusted_proxies", "TRUSTED_PROXIES")
 
 	var cfg Config
@@ -147,7 +162,33 @@ func Load() (*Config, error) {
 			}
 		}
 	}
+	// Comma-separated "Key=Value" env vars for map-typed telemetry fields
+	// (viper cannot split those into maps itself). Mirrors jussi's
+	// JUSSI_TELEMETRY_OTLP_HEADERS handling.
+	if m := parseKeyValueEnv(os.Getenv("CONVEYOR_TELEMETRY_OTLP_HEADERS")); len(m) > 0 {
+		cfg.Telemetry.OTLPHeaders = m
+	}
+	if m := parseKeyValueEnv(os.Getenv("CONVEYOR_TELEMETRY_RESOURCE_ATTRIBUTES")); len(m) > 0 {
+		cfg.Telemetry.ResourceAttributes = m
+	}
 	return &cfg, nil
+}
+
+// parseKeyValueEnv parses "Key=Value,Key2=Value2" into a map. Entries without
+// '=' are skipped.
+func parseKeyValueEnv(raw string) map[string]string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil
+	}
+	m := make(map[string]string)
+	for _, pair := range strings.Split(raw, ",") {
+		parts := strings.SplitN(strings.TrimSpace(pair), "=", 2)
+		if len(parts) == 2 && parts[0] != "" {
+			m[parts[0]] = parts[1]
+		}
+	}
+	return m
 }
 
 func bindEnv(v *viper.Viper, key, env string) {
