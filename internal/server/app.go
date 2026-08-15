@@ -54,11 +54,7 @@ func New(cfg *config.Config) (*App, error) {
 	// produce span-export errors.
 	telemetryOK := false
 	if cfg.Telemetry.Enabled {
-		shutdown, err := telemetry.Setup(
-			cfg.Telemetry.ServiceName,
-			cfg.Telemetry.Endpoint,
-			log,
-		)
+		shutdown, err := telemetry.Setup(cfg.Telemetry, log)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to initialize OpenTelemetry")
 		} else {
