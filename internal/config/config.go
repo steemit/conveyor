@@ -144,7 +144,12 @@ func Load() (*Config, error) {
 	bindEnv(v, "telemetry.service_name", "CONVEYOR_TELEMETRY_SERVICE_NAME")
 	bindEnv(v, "telemetry.otlp_endpoint", "CONVEYOR_TELEMETRY_OTLP_ENDPOINT")
 	bindEnv(v, "telemetry.otlp_path", "CONVEYOR_TELEMETRY_OTLP_PATH")
-	bindEnv(v, "telemetry.resource_attributes", "CONVEYOR_TELEMETRY_RESOURCE_ATTRIBUTES")
+	// NOTE: NO viper env binding for map-typed fields (otlp_headers,
+	// resource_attributes) — viper cannot cast a "Key=Value,..." env string
+	// into map[string]string and the unmarshal error is FATAL at startup
+	// ("expected a map, got 'string'", observed on the pr109 dev deploy).
+	// They are parsed manually below (same approach as jussi's fix for
+	// JUSSI_TELEMETRY_OTLP_HEADERS, commit 758133f).
 	bindEnv(v, "trusted_proxies", "TRUSTED_PROXIES")
 
 	var cfg Config
@@ -175,7 +180,7 @@ func Load() (*Config, error) {
 }
 
 // parseKeyValueEnv parses "Key=Value,Key2=Value2" into a map. Entries without
-// '=' are skipped.
+// '=' are skipped; keys and values are trimmed.
 func parseKeyValueEnv(raw string) map[string]string {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
@@ -183,9 +188,13 @@ func parseKeyValueEnv(raw string) map[string]string {
 	}
 	m := make(map[string]string)
 	for _, pair := range strings.Split(raw, ",") {
-		parts := strings.SplitN(strings.TrimSpace(pair), "=", 2)
-		if len(parts) == 2 && parts[0] != "" {
-			m[parts[0]] = parts[1]
+		parts := strings.SplitN(pair, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		key := strings.TrimSpace(parts[0])
+		if key != "" {
+			m[key] = strings.TrimSpace(parts[1])
 		}
 	}
 	return m
