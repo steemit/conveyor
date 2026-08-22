@@ -5,12 +5,23 @@ package drafts
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
 
 	"github.com/steemit/conveyor/internal/jsonrpc"
 	"github.com/steemit/conveyor/internal/store"
+)
+
+// Per-account draft blob limits. Without them a self-authenticated account
+// can grow its blob without bound, and since every save/list/remove reads,
+// parses and rewrites the whole blob, the cumulative cost is quadratic
+// (audit 2026-08-18 T-010). The request-body cap already bounds a single
+// draft; these constants bound the accumulated blob.
+const (
+	maxDraftsPerAccount = 200
+	maxDraftsBytes      = 2 << 20 // 2 MiB
 )
 
 // Drafts holds the dependencies for draft operations.
@@ -100,7 +111,15 @@ func (d *Drafts) save(ctx *jsonrpc.Context, req *jsonrpc.Request) (any, error) {
 		}
 	}
 	if !found {
+		if len(drafts) >= maxDraftsPerAccount {
+			return nil, jsonrpc.NewError(400, nil, "Too many drafts")
+		}
 		drafts = append(drafts, p.Draft)
+	}
+	// Bound the serialized blob even when the count is under the limit
+	// (e.g. a few huge drafts). Marshal failures surface on write below.
+	if b, err := json.Marshal(drafts); err == nil && len(b) > maxDraftsBytes {
+		return nil, jsonrpc.NewError(400, nil, "Drafts too large")
 	}
 	if err := d.writeDrafts(req.Ctx, p.Account, drafts); err != nil {
 		return nil, err
