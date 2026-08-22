@@ -111,7 +111,7 @@ func New(cfg *config.Config) (*App, error) {
 	if cacheCleanup == 0 {
 		cacheCleanup = 60 * time.Second
 	}
-	usClient := usersearch.NewCachingClient(cfg.RpcNode, cacheTTL, cacheCleanup)
+	usClient := usersearch.NewCachingClient(cfg.RpcNode, cacheTTL, cacheCleanup, log)
 	accountNames := usersearch.LoadAccountNames("user-data/accounts/accounts.js")
 	if len(accountNames) == 0 {
 		log.Warn().Msg("no account names loaded (user-data/accounts/accounts.js missing or empty); autocomplete will be limited until refresh populates the trie — run 'make user-accounts' to generate")
@@ -128,9 +128,18 @@ func New(cfg *config.Config) (*App, error) {
 
 	a.registerMethods(rpc, blobStore, db, usClient, trie)
 
+	// Explicit timeouts defend against Slowloris / slow-body attacks: Go's
+	// http.Server defaults never time out (audit 2026-08-18 T-004). Bodies are
+	// capped at 1 MiB, so read budgets are tight; WriteTimeout is generous on
+	// purpose because a legitimate batch of summarize_url calls can run for
+	// tens of seconds.
 	a.httpSrv = &http.Server{
-		Addr:    ":" + cfg.Port,
-		Handler: engine,
+		Addr:              ":" + cfg.Port,
+		Handler:           engine,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      60 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 	return a, nil
 }

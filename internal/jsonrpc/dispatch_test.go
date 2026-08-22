@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/rs/zerolog"
 )
@@ -223,4 +225,70 @@ func TestRegister_DuplicatePanics(t *testing.T) {
 		}
 	}()
 	s.Register("x", func(ctx *Context, req *Request) (any, error) { return nil, nil })
+}
+
+// TestBatch_PanicRecovered verifies that a panicking handler inside a batch
+// is converted into a single internal-error response instead of crashing the
+// process: gin.Recovery() only covers the top-level request goroutine, so
+// without the explicit recover in handleBatch the panic would take down the
+// whole server (audit 2026-08-18 T-009).
+func TestBatch_PanicRecovered(t *testing.T) {
+	s := NewServer()
+	s.Register("panic", func(ctx *Context, req *Request) (any, error) {
+		panic("boom")
+	})
+	s.Register("ok", func(ctx *Context, req *Request) (any, error) { return "fine", nil })
+	items := []json.RawMessage{
+		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "id": 1, "method": "ok"}),
+		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "id": 2, "method": "panic"}),
+		mustMarshal(t, map[string]any{"jsonrpc": "2.0", "id": 3, "method": "ok"}),
+	}
+	responses := s.handleBatch(context.Background(), items, testLog(), "")
+	if len(responses) != 3 {
+		t.Fatalf("expected 3 responses, got %d", len(responses))
+	}
+	// responses[0] and [2] succeed; responses[1] is the internal error.
+	if responses[0].Error != nil || responses[0].Result != "fine" {
+		t.Fatalf("unexpected first response: %+v", responses[0])
+	}
+	if responses[1].Error == nil || responses[1].Error.Code != InternalError {
+		t.Fatalf("expected InternalError for panicking item, got %+v", responses[1])
+	}
+	if responses[2].Error != nil || responses[2].Result != "fine" {
+		t.Fatalf("unexpected last response: %+v", responses[2])
+	}
+}
+
+// TestBatch_ConcurrencyBounded verifies that handleBatch never runs more than
+// maxBatchConcurrency sub-requests at once (audit 2026-08-18 T-001).
+func TestBatch_ConcurrencyBounded(t *testing.T) {
+	s := NewServer()
+	var mu sync.Mutex
+	var cur, max int
+	s.Register("slow", func(ctx *Context, req *Request) (any, error) {
+		mu.Lock()
+		cur++
+		if cur > max {
+			max = cur
+		}
+		mu.Unlock()
+		time.Sleep(5 * time.Millisecond)
+		mu.Lock()
+		cur--
+		mu.Unlock()
+		return 1, nil
+	})
+
+	const n = maxBatchItems // biggest batch the middleware accepts
+	items := make([]json.RawMessage, n)
+	for i := 0; i < n; i++ {
+		items[i] = mustMarshal(t, map[string]any{"jsonrpc": "2.0", "id": i, "method": "slow"})
+	}
+	responses := s.handleBatch(context.Background(), items, testLog(), "")
+	if len(responses) != n {
+		t.Fatalf("expected %d responses, got %d", n, len(responses))
+	}
+	if max > maxBatchConcurrency {
+		t.Fatalf("observed %d concurrent dispatches, want <= %d", max, maxBatchConcurrency)
+	}
 }
