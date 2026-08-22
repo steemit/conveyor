@@ -3,6 +3,8 @@ package jsonrpc
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"testing"
@@ -131,8 +133,36 @@ func TestDispatch_HandlerError_WrappedAsInternal(t *testing.T) {
 	if resp.Error == nil || resp.Error.Code != InternalError {
 		t.Fatalf("expected InternalError, got %+v", resp.Error)
 	}
-	if !strings.Contains(resp.Error.Message, "disk full") {
-		t.Fatalf("expected cause in message, got: %s", resp.Error.Message)
+	// The wire message must be generic; the cause only shows up in Error()
+	// (server-side logs), never in Message (audit 2026-08-18 T-007).
+	if resp.Error.Message != "Internal error" {
+		t.Fatalf("expected generic message, got: %s", resp.Error.Message)
+	}
+	if !strings.Contains(resp.Error.Error(), "disk full") {
+		t.Fatalf("expected cause preserved in Error(), got: %s", resp.Error.Error())
+	}
+}
+
+// TestError_CauseNotOnWire verifies that NewError with a cause keeps the
+// message clean for clients while Error() retains the detail for logs, and
+// that JSON marshalling never includes the cause (audit 2026-08-18 T-007).
+func TestError_CauseNotOnWire(t *testing.T) {
+	e := NewError(InternalError, fmt.Errorf("failed to GetOrderBook: sql: no rows"), "Internal error")
+	if e.Message != "Internal error" {
+		t.Fatalf("message must stay generic, got: %s", e.Message)
+	}
+	if !strings.Contains(e.Error(), "GetOrderBook") {
+		t.Fatalf("Error() must retain cause detail, got: %s", e.Error())
+	}
+	if err := errors.Unwrap(e); err == nil || !strings.Contains(err.Error(), "GetOrderBook") {
+		t.Fatalf("Unwrap must expose the cause, got: %v", err)
+	}
+	b, err := json.Marshal(e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(b), "GetOrderBook") {
+		t.Fatalf("cause leaked into JSON wire format: %s", string(b))
 	}
 }
 

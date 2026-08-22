@@ -100,6 +100,9 @@ func (s *Server) dispatch(ctx context.Context, data json.RawMessage, baseLog zer
 	if err != nil {
 		e, ok := err.(*Error)
 		if !ok {
+			// A plain error is an unexpected internal failure: log the
+			// detail, return a generic message (audit 2026-08-18 T-007).
+			logCtx.Error().Err(err).Msg("rpc handler internal error")
 			e = ErrInternalError(err)
 		}
 		telemetry.RecordSpanError(span, e)
