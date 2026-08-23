@@ -2,6 +2,9 @@ package drafts
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/steemit/conveyor/internal/jsonrpc"
@@ -115,5 +118,49 @@ func TestList_UnauthorizedOtherAccount(t *testing.T) {
 	_, err := d.list(testCtx("bob"), req) // ctx.Account=bob, but params account=alice
 	if err == nil {
 		t.Fatal("expected unauthorized error")
+	}
+}
+
+// TestSave_CountCap verifies that appending past maxDraftsPerAccount fails,
+// while replacing an existing uuid still succeeds (audit 2026-08-18 T-010).
+func TestSave_CountCap(t *testing.T) {
+	d := testDrafts(t)
+	for i := 0; i < maxDraftsPerAccount; i++ {
+		req := &jsonrpc.Request{Ctx: context.Background(), Params: []byte(`{"account":"alice","draft":{"uuid":"d` + strconv.Itoa(i) + `","t":"x"}}`)}
+		if _, err := d.save(testCtx("alice"), req); err != nil {
+			t.Fatalf("save %d unexpected error: %v", i, err)
+		}
+	}
+	// One more append must fail.
+	req := &jsonrpc.Request{Ctx: context.Background(), Params: []byte(`{"account":"alice","draft":{"uuid":"overflow","t":"x"}}`)}
+	_, err := d.save(testCtx("alice"), req)
+	if err == nil {
+		t.Fatal("expected error when exceeding draft count cap")
+	}
+	e, ok := err.(*jsonrpc.Error)
+	if !ok || e.Code != 400 {
+		t.Fatalf("expected 400, got %v", err)
+	}
+	// Replacing an existing uuid must still work.
+	upd := &jsonrpc.Request{Ctx: context.Background(), Params: []byte(`{"account":"alice","draft":{"uuid":"d0","t":"y"}}`)}
+	if _, err := d.save(testCtx("alice"), upd); err != nil {
+		t.Fatalf("replace at cap should succeed, got: %v", err)
+	}
+}
+
+// TestSave_SizeCap verifies that a draft set whose serialized blob exceeds
+// maxDraftsBytes is rejected (audit 2026-08-18 T-010).
+func TestSave_SizeCap(t *testing.T) {
+	d := testDrafts(t)
+	big := strings.Repeat("x", maxDraftsBytes) // alone exceeds the blob cap
+	params := fmt.Sprintf(`{"account":"alice","draft":{"uuid":"big","body":"%s"}}`, big)
+	req := &jsonrpc.Request{Ctx: context.Background(), Params: []byte(params)}
+	_, err := d.save(testCtx("alice"), req)
+	if err == nil {
+		t.Fatal("expected error when draft blob exceeds byte cap")
+	}
+	e, ok := err.(*jsonrpc.Error)
+	if !ok || e.Code != 400 {
+		t.Fatalf("expected 400, got %v", err)
 	}
 }
