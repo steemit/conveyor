@@ -114,8 +114,8 @@ func (s *Server) Handler(log zerolog.Logger) gin.HandlerFunc {
 	}
 }
 
-// withMessage overrides the message (used for static error strings like
-// "Method Not Allowed" where there's no cause to append).
+// withMessage overrides the message for static error strings like
+// "Parse error: empty body" that carry no cause.
 func (e *Error) withMessage(msg string) *Error {
 	e.Message = msg
 	return e
