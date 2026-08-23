@@ -14,7 +14,6 @@ import (
 type Config struct {
 	Port      string          `mapstructure:"port"`
 	Name      string          `mapstructure:"name"`
-	NumWorkers int            `mapstructure:"num_workers"`
 	RpcNode   string          `mapstructure:"rpc_node"`
 	AdminRole string          `mapstructure:"admin_role"`
 	Log       []LogStream     `mapstructure:"log"`
@@ -129,7 +128,6 @@ func Load() (*Config, error) {
 	// mangles underscore keys). Names mirror custom-environment-variables.toml.
 	bindEnv(v, "port", "PORT")
 	bindEnv(v, "name", "NAME")
-	bindEnv(v, "num_workers", "NUM_WORKERS")
 	bindEnv(v, "rpc_node", "RPC_NODE")
 	bindEnv(v, "admin_role", "ADMIN_ROLE")
 	bindEnv(v, "storage.type", "STORAGE_TYPE")

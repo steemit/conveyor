@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -76,6 +77,37 @@ func TestMiddleware_EmptyBatch_400(t *testing.T) {
 	r.ServeHTTP(w, req)
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400, got %d", w.Code)
+	}
+	var resp map[string]any
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
+	errObj, ok := resp["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected error object, got: %v", resp)
+	}
+	if int(errObj["code"].(float64)) != InvalidRequest {
+		t.Fatalf("expected InvalidRequest, got %v", errObj["code"])
+	}
+}
+
+// TestMiddleware_BatchTooLarge_400 verifies that a batch exceeding
+// maxBatchItems is rejected up front with 400 InvalidRequest instead of being
+// dispatched in full (audit 2026-08-18 T-001).
+func TestMiddleware_BatchTooLarge_400(t *testing.T) {
+	r := setupTestRouter(t)
+	var sb strings.Builder
+	sb.WriteByte('[')
+	for i := 0; i < maxBatchItems+1; i++ {
+		if i > 0 {
+			sb.WriteByte(',')
+		}
+		sb.WriteString(`{"jsonrpc":"2.0","id":` + strconv.Itoa(i) + `,"method":"hello"}`)
+	}
+	sb.WriteByte(']')
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(sb.String()))
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for oversized batch, got %d: %s", w.Code, w.Body.String())
 	}
 	var resp map[string]any
 	_ = json.Unmarshal(w.Body.Bytes(), &resp)

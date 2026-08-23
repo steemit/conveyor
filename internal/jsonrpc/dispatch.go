@@ -3,6 +3,7 @@ package jsonrpc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 
 	"github.com/rs/zerolog"
@@ -11,6 +12,12 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
+
+// maxBatchConcurrency bounds how many batch sub-requests are dispatched at
+// once. Without it every item spawns its own unbounded goroutine, so a single
+// request can create thousands of concurrent dispatches (audit 2026-08-18
+// T-001).
+const maxBatchConcurrency = 8
 
 // dispatch processes a single parsed request object and returns its response
 // (or nil if it is a notification that should not be answered).
@@ -119,11 +126,27 @@ func (s *Server) handleBatch(ctx context.Context, items []json.RawMessage, baseL
 	defer span.End()
 
 	responses := make([]*Response, len(items))
+	sem := make(chan struct{}, maxBatchConcurrency)
 	var wg sync.WaitGroup
 	for i, item := range items {
 		wg.Add(1)
+		sem <- struct{}{}
 		go func(idx int, d json.RawMessage) {
 			defer wg.Done()
+			defer func() { <-sem }()
+			// gin.Recovery() only covers the top-level request goroutine; an
+			// unrecovered panic in this child goroutine would crash the whole
+			// process. Convert it into a single internal-error response
+			// instead (audit 2026-08-18 T-009).
+			defer func() {
+				if r := recover(); r != nil {
+					baseLog.Error().Interface("panic", r).Msg("recovered panic in batch dispatch")
+					responses[idx] = &Response{
+						JSONRPC: "2.0", ID: ID{kind: idNull},
+						Error: ErrInternalError(fmt.Errorf("handler panic")),
+					}
+				}
+			}()
 			responses[idx] = s.dispatch(spanCtx, d, baseLog, clientIP)
 		}(i, item)
 	}

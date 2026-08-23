@@ -6,25 +6,48 @@ import (
 	"time"
 
 	"github.com/patrickmn/go-cache"
+	"github.com/rs/zerolog"
 	steemapi "github.com/steemit/steemgosdk/api"
 	protocolapi "github.com/steemit/steemutil/protocol/api"
 )
 
 const pageSize = 1000
 
+// maxFollowPages caps the follower/following pagination loops. Without a cap
+// these loops walk the ENTIRE follower list of the requested account, so a
+// single unauthenticated get_account call for a high-follower account would
+// fan out into thousands of upstream calls (audit 2026-08-18 T-003). 10 pages
+// x 1000 entries = at most 10000 entries per list, truncated past that.
+const maxFollowPages = 10
+
+// maxHistoryPages caps the account-history walk as a backstop behind the
+// 30-day cutoff: very-high-volume accounts can still rack up hundreds of
+// pages within 30 days (audit 2026-08-18 T-003).
+const maxHistoryPages = 10
+
+// maxBatchAccountConcurrency bounds how many accounts LoadAccountsJSON loads
+// at once; each account fans out into several upstream calls, so an unbounded
+// pool multiplies the blast radius of one autocomplete request (audit
+// 2026-08-18 T-003).
+const maxBatchAccountConcurrency = 8
+
 // CachingClient wraps steemgosdk's API with a TTL cache for account data.
 // It mirrors TS src/user-search/client.ts CachingClient.
 type CachingClient struct {
 	api   *steemapi.API
 	cache *cache.Cache
+	log   zerolog.Logger
 }
 
 // NewCachingClient creates a client backed by the given Steem RPC node.
-// Cache TTL defaults to 600s (matching TS config cacheClient.ttl).
-func NewCachingClient(rpcNode string, ttl, cleanupInterval time.Duration) *CachingClient {
+// Cache TTL defaults to 600s (matching TS config cacheClient.ttl). The logger
+// is used for truncation warnings when pagination caps are hit; tests can
+// pass zerolog.Nop().
+func NewCachingClient(rpcNode string, ttl, cleanupInterval time.Duration, log zerolog.Logger) *CachingClient {
 	return &CachingClient{
 		api:   steemapi.NewAPI(rpcNode),
 		cache: cache.New(ttl, cleanupInterval),
+		log:   log,
 	}
 }
 
@@ -45,10 +68,13 @@ func (c *CachingClient) getFollowCount(account string) (*protocolapi.FollowCount
 	return c.api.GetFollowCount(account)
 }
 
-// getFollowers paginates through all followers of the given type ("blog" or "ignore").
+// getFollowers paginates through followers of the given type ("blog" or
+// "ignore"), up to maxFollowPages pages; the result is truncated (with a log
+// line) beyond that instead of walking the full list.
 func (c *CachingClient) getFollowers(account, followType string) ([]*protocolapi.FollowReturn, error) {
 	var all []*protocolapi.FollowReturn
 	start := ""
+	fetched := 0
 	for {
 		page, err := c.api.GetFollowers(account, start, followType, pageSize)
 		if err != nil {
@@ -58,8 +84,14 @@ func (c *CachingClient) getFollowers(account, followType string) ([]*protocolapi
 			break
 		}
 		all = append(all, page...)
+		fetched++
 		last := page[len(page)-1].Follower
 		if last == start || len(page) < pageSize {
+			break
+		}
+		if fetched >= maxFollowPages {
+			c.log.Warn().Str("account", account).Str("follow_type", followType).
+				Int("pages", fetched).Msg("getFollowers: page cap reached, follower list truncated")
 			break
 		}
 		start = last
@@ -67,10 +99,12 @@ func (c *CachingClient) getFollowers(account, followType string) ([]*protocolapi
 	return all, nil
 }
 
-// getFollowing paginates through all following.
+// getFollowing paginates through following, up to maxFollowPages pages; the
+// result is truncated (with a log line) beyond that.
 func (c *CachingClient) getFollowing(account string) ([]*protocolapi.FollowReturn, error) {
 	var all []*protocolapi.FollowReturn
 	start := ""
+	fetched := 0
 	for {
 		page, err := c.api.GetFollowing(account, start, "blog", pageSize)
 		if err != nil {
@@ -80,8 +114,14 @@ func (c *CachingClient) getFollowing(account string) ([]*protocolapi.FollowRetur
 			break
 		}
 		all = append(all, page...)
+		fetched++
 		last := page[len(page)-1].Following
 		if last == start || len(page) < pageSize {
+			break
+		}
+		if fetched >= maxFollowPages {
+			c.log.Warn().Str("account", account).
+				Int("pages", fetched).Msg("getFollowing: page cap reached, following list truncated")
 			break
 		}
 		start = last
@@ -111,6 +151,12 @@ func (c *CachingClient) getAccountTransferTargetCounts(account string, days int)
 	// Determine total history length from the last entry's index.
 	lastIdx := history[len(history)-1].Index
 	totalPages := int(lastIdx/pageSize) + 1
+	if totalPages > maxHistoryPages {
+		c.log.Warn().Str("account", account).
+			Int("total_pages", totalPages).Int("capped_pages", maxHistoryPages).
+			Msg("getAccountTransferTargetCounts: history walk capped")
+		totalPages = maxHistoryPages
+	}
 
 	// Process pages from newest to oldest.
 	for pageNum := 0; pageNum < totalPages; pageNum++ {
@@ -266,14 +312,18 @@ func (c *CachingClient) LoadAccountJSON(account string, contextAccount string, d
 	return &j
 }
 
-// LoadAccountsJSON batch-loads multiple accounts' JSON (with context).
+// LoadAccountsJSON batch-loads multiple accounts' JSON (with context),
+// running at most maxBatchAccountConcurrency loads at once.
 func (c *CachingClient) LoadAccountsJSON(accounts []string, contextAccount string, days int) []*UserAccountJSON {
 	results := make([]*UserAccountJSON, len(accounts))
+	sem := make(chan struct{}, maxBatchAccountConcurrency)
 	var wg sync.WaitGroup
 	for i, acct := range accounts {
 		wg.Add(1)
+		sem <- struct{}{}
 		go func(idx int, name string) {
 			defer wg.Done()
+			defer func() { <-sem }()
 			results[idx] = c.LoadAccountJSON(name, contextAccount, days)
 		}(i, acct)
 	}

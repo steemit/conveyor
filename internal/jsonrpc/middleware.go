@@ -2,6 +2,7 @@ package jsonrpc
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -15,6 +16,12 @@ import (
 // the cap fails io.ReadAll with an *http.MaxBytesError and is surfaced as a
 // 400 ParseError by the read-error path below.
 const maxRequestBodyBytes = 1 << 20 // 1 MiB
+
+// maxBatchItems caps the number of sub-requests accepted in a single JSON-RPC
+// batch. Without a cap, one sub-1-MiB body can carry thousands of sub-requests
+// which are all dispatched concurrently, amplifying a single unauthenticated
+// request into thousands of upstream calls (audit 2026-08-18 T-001).
+const maxBatchItems = 50
 
 // Handler returns a gin.HandlerFunc that serves JSON-RPC 2.0 over POST /.
 // Behavior mirrors @steemit/koa-jsonrpc's middleware:
@@ -68,6 +75,14 @@ func (s *Server) Handler(log zerolog.Logger) gin.HandlerFunc {
 				respondError(c, http.StatusBadRequest, &Response{
 					JSONRPC: "2.0", ID: ID{kind: idNull},
 					Error: ErrInvalidRequest(nil),
+				})
+				return
+			}
+			if len(items) > maxBatchItems {
+				respondError(c, http.StatusBadRequest, &Response{
+					JSONRPC: "2.0", ID: ID{kind: idNull},
+					Error: ErrInvalidRequest(nil).withMessage(
+						fmt.Sprintf("Invalid Request: batch exceeds %d items", maxBatchItems)),
 				})
 				return
 			}

@@ -1,5 +1,4 @@
 port = 'PORT'
-num_workers = 'NUM_WORKERS'
 rpc_node = 'RPC_NODE'
 admin_role = 'ADMIN_ROLE'
 [log]
