@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -82,5 +83,35 @@ func TestParseKeyValueEnv(t *testing.T) {
 	m := parseKeyValueEnv("A=1, B = 2 ,noequals,=3,C=")
 	if len(m) != 3 || m["A"] != "1" || m["B"] != "2" || m["C"] != "" {
 		t.Errorf("got %v", m)
+	}
+}
+
+// TestLoad_DatabaseSSLModes covers the T-008 TLS configuration surface: the
+// default is "prefer" (self-hosting friendly), DATABASE_SSL_MODE overrides it,
+// and an unknown value fails fast with a clear message.
+func TestLoad_DatabaseSSLModes(t *testing.T) {
+	chdirRepoRoot(t)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Database.SSLMode != "prefer" {
+		t.Fatalf("expected default ssl_mode prefer, got %q", cfg.Database.SSLMode)
+	}
+
+	t.Setenv("DATABASE_SSL_MODE", "verify-full")
+	t.Setenv("DATABASE_SSL_ROOT_CERT", "certs/rds-us-east-1-bundle.pem")
+	cfg, err = Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Database.SSLMode != "verify-full" || cfg.Database.SSLRootCert != "certs/rds-us-east-1-bundle.pem" {
+		t.Fatalf("env override not applied: %+v", cfg.Database)
+	}
+
+	t.Setenv("DATABASE_SSL_MODE", "full-verify")
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "invalid value") {
+		t.Fatalf("expected invalid ssl_mode error, got: %v", err)
 	}
 }

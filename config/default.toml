@@ -30,6 +30,14 @@ type = 'memory' # valid types are: memory, s3
 [database]
 dialect = 'sqlite'
 operatorsAliases = false
+# postgres TLS posture (libpq sslmode). Default 'prefer' encrypts when the
+# server supports TLS and works for plain self-hosted setups. Deployments
+# carrying PII should set 'verify-full' together with a CA bundle:
+#   ssl_mode = 'verify-full'
+#   ssl_root_cert = 'certs/rds-us-east-1-bundle.pem'  # AWS RDS (us-east-1)
+# or via DATABASE_SSL_MODE / DATABASE_SSL_ROOT_CERT env vars.
+# ssl_mode = 'prefer'
+# ssl_root_cert = ''
 
 [cacheClient]
 ttl = 600

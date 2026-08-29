@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+
+	"github.com/steemit/conveyor/internal/config"
 )
 
 func freshDB(t *testing.T) *gorm.DB {
@@ -135,5 +137,34 @@ func TestTableName(t *testing.T) {
 	}
 	if (UserTag{}).TableName() != "usertag" {
 		t.Error("UserTag table should be 'usertag'")
+	}
+}
+
+// TestPostgresDSN verifies the libpq DSN assembly (audit 2026-08-18 T-008):
+// sslmode is deployment-controlled — defaults to "prefer" (friction-free for
+// self-hosted postgres without TLS), and verify-full deployments attach a CA
+// bundle via sslrootcert.
+func TestPostgresDSN(t *testing.T) {
+	base := config.DatabaseConfig{
+		Dialect: "postgres", Host: "db.internal", Port: "5432",
+		Username: "conveyor", Password: "secret", Name: "conveyor",
+	}
+
+	// Empty ssl_mode falls back to prefer (code-level belt in addition to the
+	// viper default).
+	got := postgresDSN(base)
+	want := "host=db.internal port=5432 user=conveyor password=secret dbname=conveyor sslmode=prefer"
+	if got != want {
+		t.Fatalf("default DSN mismatch:\n got: %s\nwant: %s", got, want)
+	}
+
+	// verify-full + CA bundle path (quoted to survive unusual paths).
+	full := base
+	full.SSLMode = "verify-full"
+	full.SSLRootCert = "certs/rds-us-east-1-bundle.pem"
+	got = postgresDSN(full)
+	want = "host=db.internal port=5432 user=conveyor password=secret dbname=conveyor sslmode=verify-full sslrootcert='certs/rds-us-east-1-bundle.pem'"
+	if got != want {
+		t.Fatalf("verify-full DSN mismatch:\n got: %s\nwant: %s", got, want)
 	}
 }

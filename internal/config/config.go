@@ -70,6 +70,23 @@ type DatabaseConfig struct {
 	Port     string `mapstructure:"port"`
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
+	// SSLMode is the libpq sslmode for the postgres dialect:
+	// disable | allow | prefer | require | verify-ca | verify-full.
+	// Default "prefer" keeps self-hosted deployments friction-free (encrypt
+	// when the server supports TLS, plain otherwise). Deployments carrying
+	// PII (steemit production) should set verify-full via DATABASE_SSL_MODE
+	// together with DATABASE_SSL_ROOT_CERT (audit 2026-08-18 T-008).
+	SSLMode string `mapstructure:"ssl_mode"`
+	// SSLRootCert is an optional path to a CA bundle used by verify-ca /
+	// verify-full (e.g. the RDS regional bundle vendored at
+	// certs/rds-us-east-1-bundle.pem). Ignored by other modes.
+	SSLRootCert string `mapstructure:"ssl_root_cert"`
+}
+
+// validSSLModes lists the accepted libpq sslmode values.
+var validSSLModes = map[string]bool{
+	"disable": true, "allow": true, "prefer": true,
+	"require": true, "verify-ca": true, "verify-full": true,
 }
 
 // CacheClientConfig configures the user-search CachingClient TTL.
@@ -118,6 +135,7 @@ func Load() (*Config, error) {
 	v.SetDefault("accounts_refresh_interval", 600000)
 	v.SetDefault("cacheClient.ttl", 600)
 	v.SetDefault("cacheClient.interval", 60)
+	v.SetDefault("database.ssl_mode", "prefer")
 
 	// Telemetry defaults.
 	v.SetDefault("telemetry.enabled", true)
@@ -138,6 +156,8 @@ func Load() (*Config, error) {
 	bindEnv(v, "database.username", "DATABASE_USERNAME")
 	bindEnv(v, "database.password", "DATABASE_PASSWORD")
 	bindEnv(v, "database.dialect", "DATABASE_DIALECT")
+	bindEnv(v, "database.ssl_mode", "DATABASE_SSL_MODE")
+	bindEnv(v, "database.ssl_root_cert", "DATABASE_SSL_ROOT_CERT")
 	bindEnv(v, "telemetry.enabled", "CONVEYOR_TELEMETRY_ENABLED")
 	bindEnv(v, "telemetry.service_name", "CONVEYOR_TELEMETRY_SERVICE_NAME")
 	bindEnv(v, "telemetry.otlp_endpoint", "CONVEYOR_TELEMETRY_OTLP_ENDPOINT")
@@ -153,6 +173,11 @@ func Load() (*Config, error) {
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("unmarshal config: %w", err)
+	}
+	// Fail fast on a mistyped sslmode instead of surfacing as an opaque
+	// libpq connection error at first DB use.
+	if cfg.Database.SSLMode != "" && !validSSLModes[cfg.Database.SSLMode] {
+		return nil, fmt.Errorf("database.ssl_mode: invalid value %q (valid: disable, allow, prefer, require, verify-ca, verify-full)", cfg.Database.SSLMode)
 	}
 	// viper binds a comma-separated env var as a single string; split it into
 	// a slice so []string unmarshals cleanly.
