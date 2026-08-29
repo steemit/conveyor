@@ -41,6 +41,10 @@ COPY --from=builder /app/conveyor .
 COPY --from=builder /app/config config
 COPY --from=builder /app/user-data user-data
 
+# RDS CA bundle (public AWS artifact, us-east-1 roots). Only consulted when
+# DATABASE_SSL_ROOT_CERT points here; plain self-hosted deployments ignore it.
+COPY --from=builder /app/certs certs
+
 RUN chown -R app:app /app
 USER app
 

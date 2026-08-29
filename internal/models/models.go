@@ -85,11 +85,7 @@ func NewDB(cfg config.DatabaseConfig) (*gorm.DB, error) {
 			Logger: logger.Default.LogMode(logger.Warn),
 		})
 	case "postgres":
-		dsn := fmt.Sprintf(
-			"host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
-			cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Name,
-		)
-		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		db, err = gorm.Open(postgres.Open(postgresDSN(cfg)), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Warn),
 		})
 	default:
@@ -104,6 +100,26 @@ func NewDB(cfg config.DatabaseConfig) (*gorm.DB, error) {
 	}
 
 	return db, nil
+}
+
+// postgresDSN builds the libpq connection string from the database config.
+// The TLS posture is deployment-controlled (audit 2026-08-18 T-008): sslmode
+// defaults to "prefer" so self-hosted deployments work out of the box, while
+// PII-carrying deployments set sslmode=verify-full plus sslrootcert (e.g. the
+// vendored RDS bundle) via DATABASE_SSL_MODE / DATABASE_SSL_ROOT_CERT.
+func postgresDSN(cfg config.DatabaseConfig) string {
+	sslMode := cfg.SSLMode
+	if sslMode == "" {
+		sslMode = "prefer"
+	}
+	dsn := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Name, sslMode,
+	)
+	if cfg.SSLRootCert != "" {
+		dsn += fmt.Sprintf(" sslrootcert='%s'", cfg.SSLRootCert)
+	}
+	return dsn
 }
 
 // NewTestDB creates an in-memory SQLite database (for unit tests). Each call
