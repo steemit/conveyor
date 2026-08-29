@@ -101,6 +101,16 @@ func (t *userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error
 }
 
 // Register registers the conveyor.summarize_url method (public, no auth).
+//
+// Abuse control (audit 2026-08-18 T-006, accepted 2026-08-27): per-IP rate
+// limiting for this method is delegated to the openresty gateway
+// (resty.limit.req, 20 req/s + burst 100 per client IP). The dev environment
+// has this live in front of conveyor; the production compose with the
+// openresty sidecar is prepared in the orchestration repo but NOT yet
+// deployed — until it is, production has no per-IP cap on this endpoint
+// beyond upstream Cloudflare/ELB. SSRF to internal networks is blocked by
+// safehttp (parse-then-dial IP validation); the residual risk is public
+// fetch amplification only.
 func (s *Summarizer) Register(rpc *jsonrpc.Server) {
 	rpc.Register("conveyor.summarize_url", s.SummarizeUrl)
 }

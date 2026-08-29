@@ -29,6 +29,24 @@ func New(s store.BlobStore, prefix, adminRole string) *Flags {
 }
 
 // Register registers all feature-flag RPC methods.
+//
+// KNOWN LIMITATION (audit 2026-08-18 T-011, accepted 2026-08-27): grouping is
+// fully deterministic and unsalted — flagProbability hashes only the PUBLIC
+// inputs (account + flag name), and the threshold is the sole secret. Anyone
+// controlling N accounts can recover the threshold offline (call
+// get_feature_flags for their own accounts, bracket the N on/off boundary)
+// and then predict EVERY account's grouping without touching the server;
+// values are identical across deployments (no per-deployment salt), so
+// precomputed tables are portable.
+//
+// Currently NO consumer calls these methods in production (condenser-legacy's
+// get_feature_flags path is disabled via an early return; faucet and the new
+// condenser never call them), so the exposure is dormant.
+//
+// BEFORE putting these methods into real use: derive the probability from
+// SHA256(serverSecretSalt + account + flag) with the salt injected from the
+// environment/secret store (never stored in the blob), and accept that
+// enabling a salt re-shuffles every account's grouping once.
 func (f *Flags) Register(rpc *jsonrpc.Server) {
 	rpc.RegisterAuthenticated("conveyor.get_feature_flag", f.getFlag)
 	rpc.RegisterAuthenticated("conveyor.set_feature_flag", f.setFlag)

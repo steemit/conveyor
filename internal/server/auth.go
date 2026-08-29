@@ -34,6 +34,18 @@ import (
 //     store such as Redis.
 //   - Reject duplicates with a 401 "replayed request" before invoking the
 //     handler, right after VerifySignedRequest succeeds below.
+//
+// CHECKLIST (decision 2026-08-27, re-audit T-002): before registering ANY new
+// authenticated method, evaluate its idempotency:
+//
+//  1. Is the handler idempotent (a verbatim replay within 60s converges to
+//     the same state)? If yes, note why next to its Register call.
+//  2. If not idempotent, implement the nonce dedup described above FIRST —
+//     the method must not ship without it.
+//  3. Consumers sign server-side today (faucet: set_user_data/assign_tag/
+//     is_email_registered/is_phone_registered; condenser-legacy: TOS
+//     get_tags_for_user/assign_tag), so there is no end-user-browser capture
+//     surface — re-assess if a browser-facing signed caller is added.
 type conveyorAuthenticator struct {
 	api *api.API
 }
