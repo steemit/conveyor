@@ -1,7 +1,8 @@
 # Build stage — CGO_ENABLED=1 because mattn/go-sqlite3 requires it.
-# golang:1.26-alpine tracks the latest 1.26.x patch, which carries the
-# standard-library security fixes (audit 2026-08-18 T-005 requires >=1.26.6).
-FROM golang:1.26-alpine AS builder
+# Pinned to 1.26.10 (not a floating tag) for GO-2026-6809 / CVE-2026-111943
+# (crypto/x509 intermediate blacklist); also satisfies audit 2026-08-18 T-005
+# (>=1.26.6).
+FROM golang:1.26.10-alpine AS builder
 
 # Version is passed via build-arg (avoids needing .git in the build context,
 # which .dockerignore excludes). Set with: docker build --build-arg VERSION=$(git rev-parse --short HEAD)
