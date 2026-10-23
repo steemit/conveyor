@@ -13,8 +13,8 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
-	github.com/steemit/steemgosdk v0.0.24
-	github.com/steemit/steemutil v0.0.26
+	github.com/steemit/steemgosdk v0.0.33
+	github.com/steemit/steemutil v0.0.33
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.63.0
 	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.43.0
